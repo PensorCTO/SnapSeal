@@ -1,0 +1,19 @@
+---
+description: "Workflow for ingesting new raw sources into the LLM Wiki."
+globs:
+  - "raw/**"
+  - "manifest.md"
+  - "wiki/**"
+alwaysApply: false
+---
+
+When ingesting a source:
+
+1. Read `AGENTS.md`.
+2. Read `manifest.md`.
+3. Process only `PENDING` rows unless the user asks otherwise.
+4. Create or update `wiki/sources/<Source_Name>.md`.
+5. Create or update durable pages under `wiki/concepts/` or `wiki/analyses/`.
+6. Update `wiki/index.md`, `wiki/overview.md`, `wiki/glossary.md`, and `wiki/log.md` as needed.
+7. Mark the source `COMPILED` in `manifest.md`.
+8. Run `python3 scripts/wiki_ingest.py --validate`.

@@ -1,0 +1,14 @@
+---
+description: "Workflow for answering questions against the compiled wiki."
+globs:
+  - "wiki/**"
+alwaysApply: false
+---
+
+When answering questions about the knowledge base:
+
+1. Read `wiki/index.md` first.
+2. Use linked summaries to choose relevant pages.
+3. Read those pages before answering.
+4. Cite wiki page paths in the response.
+5. If the answer creates durable synthesis, offer to save it under `wiki/analyses/`.

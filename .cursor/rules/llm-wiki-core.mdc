@@ -1,0 +1,15 @@
+---
+description: "Always-on Cursor context for this Karpathy-style LLM Wiki."
+alwaysApply: true
+---
+
+This project is a Karpathy-style LLM Wiki.
+
+Core files:
+- `AGENTS.md`: canonical wiki schema and operating contract.
+- `manifest.md`: ingestion control plane.
+- `raw/`: immutable source documents.
+- `wiki/index.md`: first page to read when querying the wiki.
+- `wiki/log.md`: chronological activity log.
+
+Keep this rule short. Put detailed workflows in `AGENTS.md` and task-specific rules.

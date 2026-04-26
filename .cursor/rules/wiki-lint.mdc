@@ -1,0 +1,19 @@
+---
+description: "Workflow for linting and maintaining the health of the LLM Wiki."
+globs:
+  - "wiki/**"
+  - "manifest.md"
+alwaysApply: false
+---
+
+When linting the wiki, check:
+
+- Missing YAML frontmatter.
+- Missing `tags` or `summary`.
+- Missing `Core Synthesis`, `Provenance Tracking`, or `Related Notes`.
+- Broken wiki links.
+- Orphan pages.
+- Missing manifest rows.
+- Manifest rows marked `PENDING` for already compiled sources.
+- Important terms missing from `wiki/glossary.md`.
+- Pages absent from `wiki/index.md`.
