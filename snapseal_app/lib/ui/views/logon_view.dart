@@ -99,11 +99,10 @@ class _LogonViewState extends ConsumerState<LogonView> {
   Future<void> _sendMagicLink() async {
     final haptics = ref.read(hapticServiceProvider);
     await haptics.tap();
-    await ref
+    final magicLinkSent = await ref
         .read(authControllerProvider.notifier)
         .sendMagicLink(_emailController.text);
-    final auth = ref.read(authControllerProvider);
-    if (auth.error == null && auth.otpSent) {
+    if (magicLinkSent) {
       await haptics.success();
     } else {
       await haptics.error();
@@ -125,7 +124,7 @@ class _ConfigNotice extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Text(
           'Supabase is not configured yet. The local wallet shell is usable; '
-          'Magic Link auth requires SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY.',
+          'Magic Link auth requires SUPABASE_URL and SUPABASE_ANON_KEY.',
           style: const TextStyle(color: CupertinoColors.label, fontSize: 13),
         ),
       ),

@@ -16,7 +16,9 @@ class SealLedgerRepository {
 
   bool get isConfigured => _client != null;
 
-  Future<SealLedgerSyncStatus> syncAssetFingerprint(String assetFingerprint) async {
+  Future<SealLedgerSyncStatus> syncAssetFingerprint(
+    String assetFingerprint,
+  ) async {
     final client = _requiredClient();
     final userId = client.auth.currentUser?.id;
     if (userId == null) {
@@ -53,7 +55,7 @@ class SealLedgerRepository {
     if (client == null) {
       throw StateError(
         'Supabase is not configured. Run with --dart-define SUPABASE_URL=... '
-        'and --dart-define SUPABASE_PUBLISHABLE_KEY=...',
+        'and --dart-define SUPABASE_ANON_KEY=...',
       );
     }
     return client;

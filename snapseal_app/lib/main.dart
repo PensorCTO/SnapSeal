@@ -9,9 +9,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (AppConfig.hasSupabaseConfig) {
-    debugPrint(
-      '[SupabaseInit] PKCE enabled, expecting deep links on snapseal://login-callback',
-    );
     await Supabase.initialize(
       url: AppConfig.supabaseUrl,
       anonKey: AppConfig.supabaseAnonKey,
@@ -19,7 +16,7 @@ Future<void> main() async {
         authFlowType: AuthFlowType.pkce,
         detectSessionInUri: true,
       ),
-      debug: true,
+      debug: false,
     );
   }
 

@@ -43,7 +43,7 @@ class AuthRepository {
     if (client == null) {
       throw StateError(
         'Supabase is not configured. Run with --dart-define SUPABASE_URL=... '
-        'and --dart-define SUPABASE_PUBLISHABLE_KEY=...',
+        'and --dart-define SUPABASE_ANON_KEY=...',
       );
     }
     return client;

@@ -31,7 +31,9 @@ class LocalVaultStorage {
     }
 
     final targetPath = p.join(originals.path, '$assetFingerprint.seal');
-    await Isolate.run(() => File(targetPath).writeAsBytesSync(bytes, flush: true));
+    await Isolate.run(
+      () => File(targetPath).writeAsBytesSync(bytes, flush: true),
+    );
     return targetPath;
   }
 
@@ -46,7 +48,9 @@ class LocalVaultStorage {
     }
 
     final targetPath = p.join(thumbnails.path, '$assetFingerprint.jpg');
-    await Isolate.run(() => File(targetPath).writeAsBytesSync(bytes, flush: true));
+    await Isolate.run(
+      () => File(targetPath).writeAsBytesSync(bytes, flush: true),
+    );
     return targetPath;
   }
 

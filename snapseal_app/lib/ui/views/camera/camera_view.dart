@@ -78,11 +78,12 @@ class _CameraViewState extends ConsumerState<CameraView> {
       final result = await ref
           .read(vaultServiceProvider)
           .sealAndStoreCapture(xfile);
+      if (!mounted) return;
       if (!result.pendingSync) {
         await ref.read(hapticServiceProvider).heavyImpact();
+        if (!mounted) return;
       }
       ref.invalidate(dashboardControllerProvider);
-      if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) return;
@@ -108,14 +109,10 @@ class _CameraViewState extends ConsumerState<CameraView> {
       appBar: AppBar(title: const Text('Capture')),
       body: Stack(
         children: [
-          Positioned.fill(
-            child: _buildCameraLayer(theme),
-          ),
+          Positioned.fill(child: _buildCameraLayer(theme)),
           if (_isSealing)
             const Positioned.fill(
-              child: RepaintBoundary(
-                child: _SealingOverlay(),
-              ),
+              child: RepaintBoundary(child: _SealingOverlay()),
             ),
           if (_errorMessage != null)
             Positioned(
@@ -159,9 +156,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
     if (_isSealing) {
       return const ColoredBox(color: Colors.black);
     }
-    return RepaintBoundary(
-      child: CameraPreview(_controller!),
-    );
+    return RepaintBoundary(child: CameraPreview(_controller!));
   }
 }
 

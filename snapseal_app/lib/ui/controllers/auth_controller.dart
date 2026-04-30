@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -10,14 +9,7 @@ final authStateProvider = StreamProvider<AuthState?>((ref) {
   if (client == null) {
     return Stream.value(null);
   }
-  return client.auth.onAuthStateChange.map((state) {
-    // Supabase deep-link interception logs are emitted by supabase_flutter
-    // when debug mode is enabled. This app-level log helps device debugging.
-    debugPrint(
-      '[AuthState] event=${state.event.name} hasSession=${state.session != null}',
-    );
-    return state;
-  });
+  return client.auth.onAuthStateChange;
 });
 
 final authControllerProvider = NotifierProvider<AuthController, AuthUiState>(
@@ -73,14 +65,16 @@ class AuthController extends Notifier<AuthUiState> {
     );
   }
 
-  Future<void> sendMagicLink(String email) async {
+  Future<bool> sendMagicLink(String email) async {
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
       await ref.read(authRepositoryProvider).sendMagicLink(email);
       state = state.copyWith(isLoading: false, otpSent: true);
+      return true;
     } catch (error) {
       state = state.copyWith(isLoading: false, error: error.toString());
+      return false;
     }
   }
 

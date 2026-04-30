@@ -10,7 +10,7 @@ profile-to-wallet mapping, and an active-wallet replica of Polygon proof rows.
 ```bash
 flutter run \
   --dart-define SUPABASE_URL=<project-url> \
-  --dart-define SUPABASE_PUBLISHABLE_KEY=<publishable-key>
+  --dart-define SUPABASE_ANON_KEY=<rotated-public-anon-key>
 ```
 
 Without those values, the local wallet shell still opens and the auth form shows
@@ -31,7 +31,7 @@ the SnapSeal project values, then run:
 
 ## Manual Magic Link Verification
 
-1. Launch the app on simulator/device with Supabase URL and publishable key.
+1. Launch the app on simulator/device with Supabase URL and rotated public anon key.
 2. Enter an email and tap `Send Magic Link`.
 3. Confirm `Check your email for the Magic Link.` appears.
 4. Open the email and tap the link containing `snapseal://login-callback`.

@@ -63,11 +63,16 @@ class VaultService {
   }
 
   Future<SealCaptureResult> sealAndStoreCapture(XFile capturedFile) async {
-    final rawMediaBytes = await Isolate.run(
-      () => File(capturedFile.path).readAsBytesSync(),
-    );
-    final mimeType = _inferMimeType(capturedFile.path);
-    return _sealAndStoreBytes(rawMediaBytes, mimeType: mimeType);
+    final capturedPath = capturedFile.path;
+    try {
+      final rawMediaBytes = await Isolate.run(
+        () => File(capturedPath).readAsBytesSync(),
+      );
+      final mimeType = _inferMimeType(capturedPath);
+      return await _sealAndStoreBytes(rawMediaBytes, mimeType: mimeType);
+    } finally {
+      await _deleteTemporaryCapture(capturedPath);
+    }
   }
 
   Future<SealCaptureResult> _sealAndStoreBytes(
@@ -176,5 +181,18 @@ class VaultService {
       return 'image/heic';
     }
     return 'image/jpeg';
+  }
+
+  Future<void> _deleteTemporaryCapture(String path) async {
+    try {
+      await Isolate.run(() {
+        final file = File(path);
+        if (file.existsSync()) {
+          file.deleteSync();
+        }
+      });
+    } catch (_) {
+      // Best-effort privacy cleanup; do not mask the sealing outcome.
+    }
   }
 }
