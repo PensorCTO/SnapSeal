@@ -17,7 +17,7 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses
 
-No analysis pages yet.
+- [[SnapSeal_Master_Blueprint]] - Current-state application blueprint covering completed capabilities, unfinished work, and working use cases.
 
 ## Maintenance
 
