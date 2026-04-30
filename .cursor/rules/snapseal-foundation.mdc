@@ -1,0 +1,18 @@
+---
+description: SnapSeal proof-certainty wallet architecture rules
+globs: snapseal_app/lib/**/*.dart, supabase/migrations/*.sql
+alwaysApply: false
+---
+
+# SnapSeal Foundation
+
+- SnapSeal is a mathematical certainty wallet, not a general secrecy vault.
+- Original media bytes must enter the app through `VaultService`, which hashes,
+  encrypts, stores, indexes, and later re-verifies them before courier transfer.
+- Dashboard rendering must use local thumbnails and SQLite metadata; do not
+  decrypt original media for scrollable UI.
+- Local device state owns media metadata, thumbnails, encrypted originals, and
+  vault keys. A local burn must wipe all of them.
+- Supabase stores OTP auth profiles and an active-wallet replica of Polygon
+  proof rows. Polygon remains the durable proof layer.
+- Do not derive `wallet_id` from email. Keep `wallet_id` opaque and generated.
