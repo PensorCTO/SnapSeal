@@ -1,0 +1,60 @@
+name: Supabase Pipeline
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - ".github/workflows/supabase.yml"
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Push migrations to the linked SnapSeal project"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase DB
+        run: supabase db start
+
+      - name: Apply migrations locally
+        run: supabase db reset
+
+      - name: Lint local database
+        run: supabase db lint --local --fail-on warning
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    needs: validate
+
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SNAPSEAL_SUPABASE_DB_PASSWORD }}
+      SNAPSEAL_SUPABASE_PROJECT_REF: ${{ secrets.SNAPSEAL_SUPABASE_PROJECT_REF }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link SnapSeal project
+        run: supabase link --project-ref "$SNAPSEAL_SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Push migrations
+        run: supabase db push
