@@ -66,10 +66,22 @@ class AuthController extends Notifier<AuthUiState> {
   }
 
   Future<bool> sendMagicLink(String email) async {
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(isLoading: true, clearError: true, otpSent: false);
 
     try {
-      await ref.read(authRepositoryProvider).sendMagicLink(email);
+      final client = ref.read(supabaseClientProvider);
+      if (client == null) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Supabase is not configured.',
+        );
+        return false;
+      }
+      await client.auth.signInWithOtp(
+        email: email.trim(),
+        shouldCreateUser: true,
+        emailRedirectTo: 'snapseal://login-callback',
+      );
       state = state.copyWith(isLoading: false, otpSent: true);
       return true;
     } catch (error) {

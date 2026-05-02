@@ -29,68 +29,85 @@ class _LogonViewState extends ConsumerState<LogonView> {
     return CupertinoPageScaffold(
       navigationBar: const CupertinoNavigationBar(middle: Text('SnapSeal')),
       child: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    'Mathematical certainty wallet',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Authenticate with a Magic Link. Untouchable media remains local.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: CupertinoColors.secondaryLabel,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            'Mathematical certainty wallet',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Authenticate with a Magic Link. Untouchable media remains local.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: CupertinoColors.secondaryLabel,
+                            ),
+                          ),
+                          const SizedBox(height: 28),
+                          if (!auth.isConfigured) const _ConfigNotice(),
+                          CupertinoTextField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            autofillHints: const [AutofillHints.email],
+                            placeholder: 'Email',
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          CupertinoButton.filled(
+                            onPressed: auth.isLoading ? null : _sendMagicLink,
+                            child: auth.isLoading
+                                ? const CupertinoActivityIndicator()
+                                : const Text('Send Magic Link'),
+                          ),
+                          if (auth.otpSent) ...[
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Check your email for the Magic Link.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: CupertinoColors.activeGreen,
+                              ),
+                            ),
+                          ],
+                          if (auth.error != null) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              auth.error!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: CupertinoColors.systemRed,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 28),
-                  if (!auth.isConfigured) const _ConfigNotice(),
-                  CupertinoTextField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    placeholder: 'Email',
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  CupertinoButton.filled(
-                    onPressed: auth.isLoading ? null : _sendMagicLink,
-                    child: auth.isLoading
-                        ? const CupertinoActivityIndicator()
-                        : const Text('Send Magic Link'),
-                  ),
-                  if (auth.otpSent) ...[
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Check your email for the Magic Link.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: CupertinoColors.activeGreen),
-                    ),
-                  ],
-                  if (auth.error != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      auth.error!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: CupertinoColors.systemRed),
-                    ),
-                  ],
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
