@@ -7,7 +7,7 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: SnapSealApp()));
 
     expect(find.text('SnapSeal'), findsOneWidget);
-    expect(find.text('Send Magic Link'), findsOneWidget);
+    expect(find.text('Send Magic Number'), findsOneWidget);
     expect(find.text('Mathematical certainty wallet'), findsOneWidget);
   });
 }

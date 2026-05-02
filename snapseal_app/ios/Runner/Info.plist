@@ -47,18 +47,5 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>SnapSeal uses the camera to capture media for sealing.</string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>com.snapseal.snapseal.oauth</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>snapseal</string>
-			</array>
-		</dict>
-	</array>
 </dict>
 </plist>

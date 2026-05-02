@@ -16,11 +16,8 @@ flutter run \
 Without those values, the local wallet shell still opens and the auth form shows
 a configuration notice.
 
-Configure Supabase Auth URL allow-list with:
-
-- `snapseal://login-callback`
-
-The app uses PKCE with native deep-link handling built into `supabase_flutter`.
+SnapSeal uses Supabase email OTP with the 6-digit `{{ .Token }}` in the email
+template. No native deep-link callback is required.
 
 For the standard repo pipeline, copy `../.env.example` to `../.env.local`, fill
 the SnapSeal project values, then run:
@@ -29,13 +26,13 @@ the SnapSeal project values, then run:
 ../scripts/snapseal_supabase_pipeline.sh app-run
 ```
 
-## Manual Magic Link Verification
+## Manual Magic Number Verification
 
 1. Launch the app on simulator/device with Supabase URL and rotated public anon key.
-2. Enter an email and tap `Send Magic Link`.
-3. Confirm `Check your email for the Magic Link.` appears.
-4. Open the email and tap the link containing `snapseal://login-callback`.
-5. Verify app logs include auth state updates and the app redirects to `/dashboard`.
+2. Enter an email and tap `Send Magic Number`.
+3. Confirm `Check your email for the 6-digit Magic Number.` appears.
+4. Type the 6-digit code from the email and tap `Verify Magic Number`.
+5. Verify the app redirects to `/dashboard`.
 6. Tap sign out and verify the app returns to `/logon` after local burn.
 
 ## Foundation

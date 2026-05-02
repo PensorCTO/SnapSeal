@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/haptic_service.dart';
@@ -15,10 +16,12 @@ class LogonView extends ConsumerStatefulWidget {
 
 class _LogonViewState extends ConsumerState<LogonView> {
   final _emailController = TextEditingController();
+  final _otpController = TextEditingController();
 
   @override
   void dispose() {
     _emailController.dispose();
+    _otpController.dispose();
     super.dispose();
   }
 
@@ -54,7 +57,7 @@ class _LogonViewState extends ConsumerState<LogonView> {
                           ),
                           const SizedBox(height: 12),
                           const Text(
-                            'Authenticate with a Magic Link. Untouchable media remains local.',
+                            'Authenticate with a 6-digit Magic Number. Untouchable media remains local.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 15,
@@ -75,19 +78,42 @@ class _LogonViewState extends ConsumerState<LogonView> {
                           ),
                           const SizedBox(height: 14),
                           CupertinoButton.filled(
-                            onPressed: auth.isLoading ? null : _sendMagicLink,
+                            onPressed: auth.isLoading ? null : _sendOtp,
                             child: auth.isLoading
                                 ? const CupertinoActivityIndicator()
-                                : const Text('Send Magic Link'),
+                                : const Text('Send Magic Number'),
                           ),
                           if (auth.otpSent) ...[
                             const SizedBox(height: 12),
                             const Text(
-                              'Check your email for the Magic Link.',
+                              'Check your email for the 6-digit Magic Number.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: CupertinoColors.activeGreen,
                               ),
+                            ),
+                            const SizedBox(height: 12),
+                            CupertinoTextField(
+                              controller: _otpController,
+                              keyboardType: TextInputType.number,
+                              autofillHints: const [AutofillHints.oneTimeCode],
+                              placeholder: '6-digit code',
+                              textAlign: TextAlign.center,
+                              maxLength: 6,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(6),
+                              ],
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 14,
+                              ),
+                              onSubmitted: (_) => _verifyOtp(),
+                            ),
+                            const SizedBox(height: 12),
+                            CupertinoButton(
+                              onPressed: auth.isLoading ? null : _verifyOtp,
+                              child: const Text('Verify Magic Number'),
                             ),
                           ],
                           if (auth.error != null) ...[
@@ -113,13 +139,27 @@ class _LogonViewState extends ConsumerState<LogonView> {
     );
   }
 
-  Future<void> _sendMagicLink() async {
+  Future<void> _sendOtp() async {
     final haptics = ref.read(hapticServiceProvider);
     await haptics.tap();
-    final magicLinkSent = await ref
+    _otpController.clear();
+    final otpSent = await ref
         .read(authControllerProvider.notifier)
-        .sendMagicLink(_emailController.text);
-    if (magicLinkSent) {
+        .sendOtp(_emailController.text);
+    if (otpSent) {
+      await haptics.success();
+    } else {
+      await haptics.error();
+    }
+  }
+
+  Future<void> _verifyOtp() async {
+    final haptics = ref.read(hapticServiceProvider);
+    await haptics.tap();
+    final verified = await ref
+        .read(authControllerProvider.notifier)
+        .verifyOtp(email: _emailController.text, token: _otpController.text);
+    if (verified) {
       await haptics.success();
     } else {
       await haptics.error();
@@ -141,7 +181,7 @@ class _ConfigNotice extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Text(
           'Supabase is not configured yet. The local wallet shell is usable; '
-          'Magic Link auth requires SUPABASE_URL and SUPABASE_ANON_KEY.',
+          'Magic Number auth requires SUPABASE_URL and SUPABASE_ANON_KEY.',
           style: const TextStyle(color: CupertinoColors.label, fontSize: 13),
         ),
       ),

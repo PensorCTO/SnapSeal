@@ -65,7 +65,7 @@ class AuthController extends Notifier<AuthUiState> {
     );
   }
 
-  Future<bool> sendMagicLink(String email) async {
+  Future<bool> sendOtp(String email) async {
     state = state.copyWith(isLoading: true, clearError: true, otpSent: false);
 
     try {
@@ -80,9 +80,47 @@ class AuthController extends Notifier<AuthUiState> {
       await client.auth.signInWithOtp(
         email: email.trim(),
         shouldCreateUser: true,
-        emailRedirectTo: 'snapseal://login-callback',
       );
       state = state.copyWith(isLoading: false, otpSent: true);
+      return true;
+    } catch (error) {
+      state = state.copyWith(isLoading: false, error: error.toString());
+      return false;
+    }
+  }
+
+  Future<bool> verifyOtp({required String email, required String token}) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    try {
+      final client = ref.read(supabaseClientProvider);
+      if (client == null) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Supabase is not configured.',
+        );
+        return false;
+      }
+
+      final normalizedToken = token.trim();
+      if (normalizedToken.length != 6) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Enter the 6-digit code from your email.',
+        );
+        return false;
+      }
+
+      await client.auth.verifyOTP(
+        email: email.trim(),
+        token: normalizedToken,
+        type: OtpType.email,
+      );
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: true,
+        otpSent: false,
+      );
       return true;
     } catch (error) {
       state = state.copyWith(isLoading: false, error: error.toString());
