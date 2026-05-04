@@ -1,20 +1,29 @@
-import 'dart:isolate';
+import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
+import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:postgrest/postgrest.dart';
 
 import '../../core/crypto/cipher_engine.dart';
+import '../../core/ghost_key/native_enclave_channel.dart';
 import '../../data/local/vault_database.dart';
 import '../../data/models/archive_item.dart';
 import '../../data/models/sealed_asset.dart';
 import '../../data/services/local_vault_storage.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
+import '../blockchain/chain_notarizer.dart';
 
 final secureStorageProvider = Provider<FlutterSecureStorage>(
   (ref) => const FlutterSecureStorage(),
+);
+
+final nativeEnclaveChannelProvider = Provider<NativeEnclaveChannel>(
+  (ref) => NativeEnclaveChannel(),
 );
 
 final vaultServiceProvider = Provider<VaultService>(
@@ -23,17 +32,29 @@ final vaultServiceProvider = Provider<VaultService>(
     storage: ref.watch(localVaultStorageProvider),
     secureStorage: ref.watch(secureStorageProvider),
     sealLedgerRepository: ref.watch(sealLedgerRepositoryProvider),
+    chainNotarizer: ref.watch(chainNotarizerProvider),
+    nativeEnclave: ref.watch(nativeEnclaveChannelProvider),
   ),
 );
+
+class ProofLockConflictException implements Exception {
+  ProofLockConflictException(this.status);
+  final String status;
+
+  @override
+  String toString() => 'Proof already exists on ledger (status=$status).';
+}
 
 class SealCaptureResult {
   const SealCaptureResult({
     required this.assetFingerprint,
     required this.pendingSync,
+    this.chainTxHash,
   });
 
   final String assetFingerprint;
   final bool pendingSync;
+  final String? chainTxHash;
 }
 
 class VaultService {
@@ -42,10 +63,14 @@ class VaultService {
     required LocalVaultStorage storage,
     required FlutterSecureStorage secureStorage,
     required SealLedgerRepository sealLedgerRepository,
+    required ChainNotarizer chainNotarizer,
+    required NativeEnclaveChannel nativeEnclave,
   }) : _database = database,
        _storage = storage,
        _secureStorage = secureStorage,
-       _sealLedgerRepository = sealLedgerRepository;
+       _sealLedgerRepository = sealLedgerRepository,
+       _chainNotarizer = chainNotarizer,
+       _nativeEnclave = nativeEnclave;
 
   static const _vaultKeyName = 'snapseal:vault_key';
 
@@ -53,33 +78,151 @@ class VaultService {
   final LocalVaultStorage _storage;
   final FlutterSecureStorage _secureStorage;
   final SealLedgerRepository _sealLedgerRepository;
+  final ChainNotarizer _chainNotarizer;
+  final NativeEnclaveChannel _nativeEnclave;
+
+  /// ProofLock pipeline: isolate hash → preflight RPC → TEE sign → simulated chain
+  /// → AES-GCM local vault → `proof_ledger` → burn source.
+  Future<SealCaptureResult> proofLockFile(File sourceFile, String userId) async {
+    final path = sourceFile.path;
+    final mimeType = _inferMimeType(path);
+
+    final bundle = await _readFileAndSha256InIsolate(path);
+    final fileHash = bundle.hash;
+    final rawMediaBytes = bundle.bytes;
+
+    var pendingRemoteSync =
+        !_sealLedgerRepository.isConfigured || userId.trim().isEmpty;
+    String? chainTxHash;
+
+    if (!pendingRemoteSync) {
+      try {
+        final status = await _sealLedgerRepository.checkProofStatus(fileHash);
+        if (status != 'new') {
+          throw ProofLockConflictException(status);
+        }
+      } on ProofLockConflictException {
+        rethrow;
+      } catch (e) {
+        if (_isRecoverableRemoteFailure(e)) {
+          pendingRemoteSync = true;
+        } else {
+          rethrow;
+        }
+      }
+    }
+
+    final deviceSignature = await _nativeEnclave.signHash(fileHash);
+
+    if (!pendingRemoteSync) {
+      try {
+        chainTxHash = await _chainNotarizer.notarizeFileHash(
+          fileHash: fileHash,
+          deviceSignature: deviceSignature,
+        );
+      } catch (e) {
+        if (_isRecoverableRemoteFailure(e)) {
+          pendingRemoteSync = true;
+          chainTxHash = null;
+        } else {
+          rethrow;
+        }
+      }
+    }
+
+    await _persistSealedBytes(
+      rawMediaBytes,
+      mimeType: mimeType,
+      assetFingerprint: fileHash,
+    );
+
+    var pendingSync = true;
+
+    if (!pendingRemoteSync && chainTxHash != null) {
+      try {
+        await _sealLedgerRepository.insertProofLedgerRow(
+          assetHash: fileHash,
+          deviceSignature: deviceSignature,
+          chainTxHash: chainTxHash,
+        );
+        pendingSync = false;
+      } on PostgrestException catch (e) {
+        if (e.code == '23505') {
+          pendingSync = false;
+        } else if (_isRecoverableRemoteFailure(e)) {
+          pendingSync = true;
+        } else {
+          rethrow;
+        }
+      } catch (e) {
+        if (_isRecoverableRemoteFailure(e)) {
+          pendingSync = true;
+        } else {
+          rethrow;
+        }
+      }
+    } else {
+      pendingSync = pendingRemoteSync;
+    }
+
+    await _database.setPendingSync(
+      assetFingerprint: fileHash,
+      pendingSync: pendingSync,
+    );
+
+    await _deleteSourceAfterSeal(path);
+
+    return SealCaptureResult(
+      assetFingerprint: fileHash,
+      pendingSync: pendingSync,
+      chainTxHash: chainTxHash,
+    );
+  }
 
   Future<String> sealAndStore(
     Uint8List rawMediaBytes, {
     String? mimeType,
+    required String userId,
   }) async {
-    final result = await _sealAndStoreBytes(rawMediaBytes, mimeType: mimeType);
-    return result.assetFingerprint;
-  }
-
-  Future<SealCaptureResult> sealAndStoreCapture(XFile capturedFile) async {
-    final capturedPath = capturedFile.path;
+    final tempDir = await Directory.systemTemp.createTemp('snapseal_seal_');
+    final tempFile = File('${tempDir.path}/media.bin');
     try {
-      final rawMediaBytes = await Isolate.run(
-        () => File(capturedPath).readAsBytesSync(),
-      );
-      final mimeType = _inferMimeType(capturedPath);
-      return await _sealAndStoreBytes(rawMediaBytes, mimeType: mimeType);
+      await tempFile.writeAsBytes(rawMediaBytes, flush: true);
+      final result = await proofLockFile(tempFile, userId);
+      return result.assetFingerprint;
     } finally {
-      await _deleteTemporaryCapture(capturedPath);
+      await tempDir.delete(recursive: true);
     }
   }
 
-  Future<SealCaptureResult> _sealAndStoreBytes(
-    Uint8List rawMediaBytes, {
-    String? mimeType,
+  Future<SealCaptureResult> sealAndStoreCapture(
+    XFile capturedFile, {
+    required String userId,
   }) async {
-    final assetFingerprint = await CipherEngine.generateHash(rawMediaBytes);
+    final path = capturedFile.path;
+    try {
+      return await proofLockFile(File(path), userId);
+    } finally {
+      await _deleteTemporaryCapture(path);
+    }
+  }
+
+  Future<({String hash, Uint8List bytes})> _readFileAndSha256InIsolate(
+    String path,
+  ) {
+    return Isolate.run(() {
+      final bytes = File(path).readAsBytesSync();
+      final hash = crypto.sha256.convert(bytes).toString();
+      return (hash: hash, bytes: bytes);
+    });
+  }
+
+  /// Persists encrypted media + SQLite row. Returns whether local row wants sync.
+  Future<void> _persistSealedBytes(
+    Uint8List rawMediaBytes, {
+    required String? mimeType,
+    required String assetFingerprint,
+  }) async {
     final keyBytes = await _loadOrCreateKeyBytes();
     final encryptedBytes = await CipherEngine.encrypt(
       bytes: rawMediaBytes,
@@ -106,26 +249,6 @@ class VaultService {
         createdAt: DateTime.now().toUtc(),
         pendingSync: true,
       ),
-    );
-
-    var pendingSync = true;
-    if (_sealLedgerRepository.isConfigured) {
-      try {
-        await _sealLedgerRepository.syncAssetFingerprint(assetFingerprint);
-        pendingSync = false;
-      } catch (_) {
-        pendingSync = true;
-      }
-    }
-
-    await _database.setPendingSync(
-      assetFingerprint: assetFingerprint,
-      pendingSync: pendingSync,
-    );
-
-    return SealCaptureResult(
-      assetFingerprint: assetFingerprint,
-      pendingSync: pendingSync,
     );
   }
 
@@ -194,5 +317,23 @@ class VaultService {
     } catch (_) {
       // Best-effort privacy cleanup; do not mask the sealing outcome.
     }
+  }
+
+  Future<void> _deleteSourceAfterSeal(String path) async {
+    await _deleteTemporaryCapture(path);
+  }
+
+  bool _isRecoverableRemoteFailure(Object error) {
+    if (error is SocketException) return true;
+    if (error is HandshakeException) return true;
+    if (error is TimeoutException) return true;
+    final message = error.toString().toLowerCase();
+    return message.contains('socket') ||
+        message.contains('connection refused') ||
+        message.contains('network is unreachable') ||
+        message.contains('failed host lookup') ||
+        message.contains('timed out') ||
+        message.contains('connection reset') ||
+        message.contains('connection closed');
   }
 }

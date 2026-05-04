@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/haptic_service.dart';
+import '../../../data/supabase/auth_repository.dart';
 import '../../../domain/services/vault_service.dart';
 import '../../controllers/dashboard_controller.dart';
 
@@ -75,9 +76,10 @@ class _CameraViewState extends ConsumerState<CameraView> {
 
     try {
       final xfile = await controller.takePicture();
+      final userId = ref.read(supabaseClientProvider)?.auth.currentUser?.id ?? '';
       final result = await ref
           .read(vaultServiceProvider)
-          .sealAndStoreCapture(xfile);
+          .sealAndStoreCapture(xfile, userId: userId);
       if (!mounted) return;
       if (!result.pendingSync) {
         await ref.read(hapticServiceProvider).heavyImpact();

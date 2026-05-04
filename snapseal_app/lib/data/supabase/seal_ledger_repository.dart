@@ -9,6 +9,8 @@ final sealLedgerRepositoryProvider = Provider<SealLedgerRepository>(
 
 enum SealLedgerSyncStatus { synced, alreadySynced }
 
+/// Active-wallet ledger (`seal_ledger`) plus ProofLock RPC/table surface
+/// (`check_proof_status`, simulated chain notarization, `proof_ledger`).
 class SealLedgerRepository {
   const SealLedgerRepository(this._client);
 
@@ -48,6 +50,57 @@ class SealLedgerRepository {
 
       rethrow;
     }
+  }
+
+  /// ProofLock pre-flight: `'new' | 'anonymous' | 'owned_by_me' | 'owned_by_other'`.
+  Future<String> checkProofStatus(String fileHash) async {
+    final client = _requiredClient();
+    final response = await client.rpc(
+      'check_proof_status',
+      params: <String, dynamic>{'p_file_hash': fileHash},
+    );
+    if (response is! String) {
+      throw StateError('check_proof_status returned unexpected type.');
+    }
+    return response;
+  }
+
+  /// Testing stand-in for Polygon: writes [simulated_chain_ledger], returns tx id.
+  Future<String> simulateChainNotarize({
+    required String fileHash,
+    required String deviceSignature,
+  }) async {
+    final client = _requiredClient();
+    final response = await client.rpc(
+      'simulate_chain_notarize',
+      params: <String, dynamic>{
+        'p_file_hash': fileHash,
+        'p_device_signature': deviceSignature,
+      },
+    );
+    if (response is! String) {
+      throw StateError('simulate_chain_notarize returned unexpected type.');
+    }
+    return response;
+  }
+
+  Future<void> insertProofLedgerRow({
+    required String assetHash,
+    required String deviceSignature,
+    required String chainTxHash,
+  }) async {
+    final client = _requiredClient();
+    final userId = client.auth.currentUser?.id;
+    if (userId == null) {
+      throw StateError('No authenticated user for proof ledger sync.');
+    }
+    final walletId = await _getWalletId(client, userId);
+    await client.from('proof_ledger').insert(<String, dynamic>{
+      'asset_hash': assetHash,
+      'wallet_id': walletId,
+      'device_signature': deviceSignature,
+      'chain_tx_hash': chainTxHash,
+    });
   }
 
   SupabaseClient _requiredClient() {
