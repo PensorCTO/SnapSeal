@@ -16,3 +16,7 @@ alwaysApply: false
 - Supabase stores OTP auth profiles and an active-wallet replica of Polygon
   proof rows. Polygon remains the durable proof layer.
 - Do not derive `wallet_id` from email. Keep `wallet_id` opaque and generated.
+- **ProofLock / viability track:** For market-grade provenance, plan for **hardware-backed signing** (iOS Secure Enclave / Android hardware Keystore) via `MethodChannel` or equivalent **before** claiming device-bound proofs. Pure software hashing of camera-delivered bytes is **not** sufficient for the ProofLock manifest bar (see wiki [[ProofLock_Refactor_Scope]]).
+- **Supabase schema direction:** Prefer explicit **RPC** entry points (`SECURITY DEFINER` in a **non-exposed** schema such as `private`) for sensitive reads (e.g. courier unlock). If `courier_packages`-style tables are introduced, match **RLS + no broad SELECT** patterns from the manifest; keep `anon`/`authenticated` **grants** aligned with Data API settings.
+- **Indexing:** Ledger tables should carry **unique** constraints on content fingerprints/hashes where duplicates must be impossible; add btree indexes for owner/wallet lookup as volume grows (see manifest and Postgres skill).
+- **Vault crypto today:** Local encryption uses **AES-GCM** (`CipherEngine`); do **not** replace with manifest placeholder XOR schemes unless explicitly re-specified and reviewed.

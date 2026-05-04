@@ -18,3 +18,12 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 - Created `wiki/analyses/SnapSeal_Master_Blueprint.md`.
 - Documented finished capabilities, unfinished work, working functional use cases, and current risks for the SnapSeal app.
 - Updated `wiki/index.md`, `wiki/overview.md`, and `wiki/glossary.md` to include the SnapSeal blueprint.
+
+## [2026-05-03] ingest | ProofLock Architectural Manifest
+
+- Added immutable source `raw/prooflock_architectural_manifest.md`.
+- Created `wiki/sources/ProofLock_Architectural_Manifest.md`.
+- Created `wiki/analyses/ProofLock_Refactor_Scope.md` (manifest ↔ codebase gap analysis and phased effort).
+- Updated `wiki/analyses/SnapSeal_Master_Blueprint.md` for email OTP auth and ProofLock target alignment.
+- Updated `wiki/index.md`, `wiki/overview.md`, `wiki/glossary.md`, and aligned Cursor rules for capture paths and foundation constraints.
+- Marked manifest row `COMPILED` in `manifest.md`.

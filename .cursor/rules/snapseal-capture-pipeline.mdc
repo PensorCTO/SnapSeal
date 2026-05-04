@@ -1,20 +1,20 @@
 ---
+description: Constraints for the Camera-to-Vault pipeline, ensuring media integrity and UI performance.
+globs: snapseal_app/lib/ui/views/camera/**, snapseal_app/lib/domain/services/vault_service.dart
 alwaysApply: true
 ---
----
-description: Constraints for the Camera-to-Vault pipeline, ensuring media integrity and UI performance.
-globs: lib/ui/views/camera/**, lib/data/services/vault_service.dart
----
+
 # SnapSeal Capture Pipeline Rules
 
 ## 1. Zero-Jank Capture
 - **Rule**: High-frequency animations (scanning lasers, melting wax) must run in a `RepaintBoundary`.
-- **Rule**: All file I/O and Cryptography MUST occur in `Isolate.run()` to prevent frame drops on the camera preview.
+- **Rule**: All file I/O and Cryptography MUST occur in `Isolate.run()` (or equivalent isolate offload) to prevent frame drops on the camera preview.
 
 ## 2. Integrity or Failure
 - **Rule**: The "Seal" is not complete until both the Local SQLite record AND the Supabase ledger record are committed.
-- **Rule**: If the Supabase push fails (e.g., no internet), the local record must be marked as `pending_sync`.
+- **Rule**: If the Supabase push fails (e.g., no internet), the local record must be marked as `pending_sync` and later reconciled (retry worker / manual retry — tracked in wiki).
+- **Rule** (ProofLock target): Pre-flight ledger checks (e.g. RPC `check_proof_status`) and hardware-backed signing belong **before** treating a capture as externally notarized; see [[ProofLock_Refactor_Scope]] in the wiki.
 
 ## 3. UI Metaphors
 - **Rule**: Use `HapticService.heavyImpact()` at the exact moment the "Digital Wax Seal" animation completes.
-- **Context Anchors**: `lib/core/services/haptic_service.dart`, `lib/ui/widgets/wax_seal_anim.dart`.
+- **Context Anchors**: `snapseal_app/lib/core/services/haptic_service.dart`, `snapseal_app/lib/ui/widgets/wax_seal_anim.dart`.
