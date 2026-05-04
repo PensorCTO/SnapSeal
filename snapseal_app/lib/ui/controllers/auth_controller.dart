@@ -66,6 +66,16 @@ class AuthController extends Notifier<AuthUiState> {
   }
 
   Future<bool> sendOtp(String email) async {
+    final normalizedEmail = email.trim();
+    if (normalizedEmail.isEmpty) {
+      state = state.copyWith(
+        isLoading: false,
+        otpSent: false,
+        error: 'Enter your email address.',
+      );
+      return false;
+    }
+
     state = state.copyWith(isLoading: true, clearError: true, otpSent: false);
 
     try {
@@ -78,7 +88,7 @@ class AuthController extends Notifier<AuthUiState> {
         return false;
       }
       await client.auth.signInWithOtp(
-        email: email.trim(),
+        email: normalizedEmail,
         shouldCreateUser: true,
       );
       state = state.copyWith(isLoading: false, otpSent: true);
@@ -90,6 +100,23 @@ class AuthController extends Notifier<AuthUiState> {
   }
 
   Future<bool> verifyOtp({required String email, required String token}) async {
+    final normalizedEmail = email.trim();
+    final normalizedToken = token.trim();
+    if (normalizedEmail.isEmpty) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Enter your email address.',
+      );
+      return false;
+    }
+    if (!RegExp(r'^\d{6}$').hasMatch(normalizedToken)) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Enter the 6-digit code from your email.',
+      );
+      return false;
+    }
+
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
@@ -102,17 +129,8 @@ class AuthController extends Notifier<AuthUiState> {
         return false;
       }
 
-      final normalizedToken = token.trim();
-      if (normalizedToken.length != 6) {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Enter the 6-digit code from your email.',
-        );
-        return false;
-      }
-
       await client.auth.verifyOTP(
-        email: email.trim(),
+        email: normalizedEmail,
         token: normalizedToken,
         type: OtpType.email,
       );

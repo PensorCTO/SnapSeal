@@ -49,10 +49,17 @@ scripts/snapseal_supabase_pipeline.sh login
 scripts/snapseal_supabase_pipeline.sh link
 scripts/snapseal_supabase_pipeline.sh push-dry-run
 scripts/snapseal_supabase_pipeline.sh push
+scripts/snapseal_supabase_pipeline.sh config-push
 ```
 
 Use `push-dry-run` before `push` so migration history and SQL are visible before
 the remote database changes.
+
+Auth settings such as the 6-digit email OTP length live in
+`supabase/config.toml`, not database migrations. Run `config-push` after linking
+the remote project so the hosted Supabase project uses `auth.email.otp_length =
+6`. The Magic Link email template in the hosted dashboard must include
+`{{ .Token }}` for typed-number OTP login.
 
 ## Flutter App
 

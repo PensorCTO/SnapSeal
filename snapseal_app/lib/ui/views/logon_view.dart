@@ -68,9 +68,12 @@ class _LogonViewState extends ConsumerState<LogonView> {
                           if (!auth.isConfigured) const _ConfigNotice(),
                           CupertinoTextField(
                             controller: _emailController,
+                            enabled: !auth.isLoading,
                             keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.done,
                             autofillHints: const [AutofillHints.email],
                             placeholder: 'Email',
+                            clearButtonMode: OverlayVisibilityMode.editing,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 14,
                               vertical: 14,
@@ -78,10 +81,16 @@ class _LogonViewState extends ConsumerState<LogonView> {
                           ),
                           const SizedBox(height: 14),
                           CupertinoButton.filled(
-                            onPressed: auth.isLoading ? null : _sendOtp,
-                            child: auth.isLoading
+                            onPressed: auth.isLoading || !auth.isConfigured
+                                ? null
+                                : _sendOtp,
+                            child: auth.isLoading && !auth.otpSent
                                 ? const CupertinoActivityIndicator()
-                                : const Text('Send Magic Number'),
+                                : Text(
+                                    auth.otpSent
+                                        ? 'Resend Magic Number'
+                                        : 'Send Magic Number',
+                                  ),
                           ),
                           if (auth.otpSent) ...[
                             const SizedBox(height: 12),
@@ -95,7 +104,9 @@ class _LogonViewState extends ConsumerState<LogonView> {
                             const SizedBox(height: 12),
                             CupertinoTextField(
                               controller: _otpController,
+                              enabled: !auth.isLoading,
                               keyboardType: TextInputType.number,
+                              textInputAction: TextInputAction.done,
                               autofillHints: const [AutofillHints.oneTimeCode],
                               placeholder: '6-digit code',
                               textAlign: TextAlign.center,
@@ -111,8 +122,21 @@ class _LogonViewState extends ConsumerState<LogonView> {
                               onSubmitted: (_) => _verifyOtp(),
                             ),
                             const SizedBox(height: 12),
-                            CupertinoButton(
-                              onPressed: auth.isLoading ? null : _verifyOtp,
+                            ValueListenableBuilder<TextEditingValue>(
+                              valueListenable: _otpController,
+                              builder: (context, otpValue, child) {
+                                final canVerify = _isSixDigitCode(
+                                  otpValue.text,
+                                );
+                                return CupertinoButton.filled(
+                                  onPressed: auth.isLoading || !canVerify
+                                      ? null
+                                      : _verifyOtp,
+                                  child: auth.isLoading
+                                      ? const CupertinoActivityIndicator()
+                                      : child!,
+                                );
+                              },
                               child: const Text('Verify Magic Number'),
                             ),
                           ],
@@ -165,6 +189,8 @@ class _LogonViewState extends ConsumerState<LogonView> {
       await haptics.error();
     }
   }
+
+  bool _isSixDigitCode(String value) => RegExp(r'^\d{6}$').hasMatch(value);
 }
 
 class _ConfigNotice extends StatelessWidget {
