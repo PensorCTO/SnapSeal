@@ -27,3 +27,10 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 - Updated `wiki/analyses/SnapSeal_Master_Blueprint.md` for email OTP auth and ProofLock target alignment.
 - Updated `wiki/index.md`, `wiki/overview.md`, `wiki/glossary.md`, and aligned Cursor rules for capture paths and foundation constraints.
 - Marked manifest row `COMPILED` in `manifest.md`.
+
+## [2026-05-09] analysis | System Context Audit
+
+- Created `wiki/analyses/System_Context_Audit_2026-05-09.md`.
+- Audited git status, wiki health, Flutter implementation surfaces, Supabase migrations, and pipeline scripts.
+- Re-validated wiki with `python3 scripts/wiki_ingest.py --validate` and app smoke tests with `flutter test`.
+- Updated `wiki/index.md` to include the new comprehensive context baseline page.
