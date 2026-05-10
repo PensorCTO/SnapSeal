@@ -10,13 +10,27 @@ import 'camera/camera_view.dart';
 import 'logon_view.dart';
 
 /// Vault-first home: local SQLite metadata + thumbnails; capture via FAB.
-class VaultDashboardView extends ConsumerWidget {
+class VaultDashboardView extends ConsumerStatefulWidget {
   const VaultDashboardView({super.key});
 
   static const routePath = '/vault-dashboard';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<VaultDashboardView> createState() => _VaultDashboardViewState();
+}
+
+class _VaultDashboardViewState extends ConsumerState<VaultDashboardView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(dashboardControllerProvider.notifier).syncPendingInBackground();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final archive = ref.watch(dashboardControllerProvider);
 
     return Scaffold(
