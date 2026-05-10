@@ -19,6 +19,12 @@ auth.json
 # Cursor local-only files
 .cursor/rules/personal.mdc
 .cursor/mcp.local.json
+.agent/
+.claude/
+.continue/
+.agents/.skill-lock.json
+.agents/skills/flutter-expert/
+.agents/skills/mobile-cross/
 
 # Logs
 *.log
