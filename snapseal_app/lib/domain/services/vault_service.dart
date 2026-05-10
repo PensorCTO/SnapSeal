@@ -239,17 +239,26 @@ class VaultService {
       bytes: thumbnailBytes,
     );
 
-    await _database.upsertArchiveItem(
-      ArchiveItem(
-        assetFingerprint: assetFingerprint,
+    try {
+      await _database.upsertArchiveItem(
+        ArchiveItem(
+          assetFingerprint: assetFingerprint,
+          encryptedPath: encryptedPath,
+          thumbnailPath: thumbnailPath,
+          byteLength: rawMediaBytes.length,
+          mimeType: mimeType,
+          createdAt: DateTime.now().toUtc(),
+          pendingSync: true,
+        ),
+      );
+    } catch (_) {
+      // Compensating cleanup keeps local vault + SQLite metadata consistent.
+      await _storage.deleteAssetFiles(
         encryptedPath: encryptedPath,
         thumbnailPath: thumbnailPath,
-        byteLength: rawMediaBytes.length,
-        mimeType: mimeType,
-        createdAt: DateTime.now().toUtc(),
-        pendingSync: true,
-      ),
-    );
+      );
+      rethrow;
+    }
   }
 
   Future<SealedAsset> extractForCourier(String assetFingerprint) async {

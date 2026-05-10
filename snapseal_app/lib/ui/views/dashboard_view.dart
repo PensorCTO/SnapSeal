@@ -86,10 +86,7 @@ class DashboardView extends ConsumerWidget {
           FloatingActionButton.extended(
             heroTag: 'capture-fab',
             onPressed: () async {
-              final captured = await context.push<bool>(CameraView.routePath);
-              if (captured == true) {
-                ref.invalidate(dashboardControllerProvider);
-              }
+              await context.push<bool>(CameraView.routePath);
             },
             icon: const Icon(Icons.camera_alt_outlined),
             label: const Text('Capture'),

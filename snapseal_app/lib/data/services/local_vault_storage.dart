@@ -58,6 +58,22 @@ class LocalVaultStorage {
     return Isolate.run(() => File(path).readAsBytesSync());
   }
 
+  Future<void> deleteAssetFiles({
+    required String encryptedPath,
+    required String thumbnailPath,
+  }) async {
+    await Isolate.run(() {
+      final encrypted = File(encryptedPath);
+      if (encrypted.existsSync()) {
+        encrypted.deleteSync();
+      }
+      final thumbnail = File(thumbnailPath);
+      if (thumbnail.existsSync()) {
+        thumbnail.deleteSync();
+      }
+    });
+  }
+
   Future<void> deleteAll() async {
     final vault = await _vaultDirectory;
     if (vault.existsSync()) {
