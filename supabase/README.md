@@ -47,10 +47,15 @@ variables:
 ```bash
 scripts/snapseal_supabase_pipeline.sh login
 scripts/snapseal_supabase_pipeline.sh link
+scripts/snapseal_supabase_pipeline.sh migration-list
 scripts/snapseal_supabase_pipeline.sh push-dry-run
 scripts/snapseal_supabase_pipeline.sh push
 scripts/snapseal_supabase_pipeline.sh config-push
 ```
+
+Prefer these script commands over typing raw `supabase ...` in the shell: the
+script loads repo-root `.env.local` first, so remote Postgres commands receive
+`SUPABASE_DB_PASSWORD` (the bare CLI does not load `.env.local` by default).
 
 Use `push-dry-run` before `push` so migration history and SQL are visible before
 the remote database changes.

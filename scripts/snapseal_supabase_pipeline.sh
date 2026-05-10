@@ -30,6 +30,7 @@ Commands:
   lint          Run local Supabase DB lint
   push-dry-run  Preview remote migration push
   push          Push migrations to linked remote project
+  migration-list  Local vs remote migration history (loads .env.local; needs SUPABASE_DB_PASSWORD)
   config-push   Push supabase/config.toml Auth/project settings to remote
   app-run       Run Flutter app with Supabase Dart defines
 
@@ -103,6 +104,9 @@ case "${1:-help}" in
     ;;
   push)
     supabase_cmd db push
+    ;;
+  migration-list)
+    supabase_cmd migration list
     ;;
   config-push)
     require_env SNAPSEAL_SUPABASE_PROJECT_REF
