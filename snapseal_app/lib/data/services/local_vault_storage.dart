@@ -6,11 +6,67 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../models/archive_item.dart';
+
 final localVaultStorageProvider = Provider<LocalVaultStorage>(
   (ref) => LocalVaultStorage(),
 );
 
 class LocalVaultStorage {
+  /// Paths persisted in SQLite are absolute. If the app container moves (reinstall,
+  /// simulator reset), those paths break while files still live under the current
+  /// canonical vault layout. Prefer existing files at stored paths; otherwise fall
+  /// back to `{vault}/thumbnails/{fingerprint}.jpg` and `{vault}/originals/{fingerprint}.seal`.
+  Future<ArchiveItem> resolveArchivePaths(ArchiveItem item) async {
+    final canonicalThumb =
+        await _canonicalThumbnailPath(item.assetFingerprint);
+    final canonicalEnc =
+        await _canonicalEncryptedPath(item.assetFingerprint);
+
+    var thumbnailPath = item.thumbnailPath;
+    if (!_pathExists(thumbnailPath) && _pathExists(canonicalThumb)) {
+      thumbnailPath = canonicalThumb;
+    }
+
+    var encryptedPath = item.encryptedPath;
+    if (!_pathExists(encryptedPath) && _pathExists(canonicalEnc)) {
+      encryptedPath = canonicalEnc;
+    }
+
+    if (thumbnailPath == item.thumbnailPath &&
+        encryptedPath == item.encryptedPath) {
+      return item;
+    }
+
+    return ArchiveItem(
+      assetFingerprint: item.assetFingerprint,
+      encryptedPath: encryptedPath,
+      thumbnailPath: thumbnailPath,
+      byteLength: item.byteLength,
+      createdAt: item.createdAt,
+      pendingSync: item.pendingSync,
+      mimeType: item.mimeType,
+    );
+  }
+
+  Future<String> _canonicalThumbnailPath(String assetFingerprint) async {
+    final vault = await _vaultDirectory;
+    return p.join(vault.path, 'thumbnails', '$assetFingerprint.jpg');
+  }
+
+  Future<String> _canonicalEncryptedPath(String assetFingerprint) async {
+    final vault = await _vaultDirectory;
+    return p.join(vault.path, 'originals', '$assetFingerprint.seal');
+  }
+
+  bool _pathExists(String path) {
+    try {
+      return File(path).existsSync();
+    } on FileSystemException {
+      return false;
+    }
+  }
+
   Future<Directory> get _vaultDirectory async {
     final documents = await getApplicationDocumentsDirectory();
     final directory = Directory(p.join(documents.path, 'snapseal_vault'));

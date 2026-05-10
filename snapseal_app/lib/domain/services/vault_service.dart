@@ -266,15 +266,79 @@ class VaultService {
     }
   }
 
+  /// If the thumbnail file is missing but the encrypted original exists, decrypt,
+  /// verify the SHA-256 fingerprint, regenerate a JPEG thumbnail (image media), and
+  /// write it under the vault. Returns [item] unchanged if the thumb exists,
+  /// the original is missing, verification fails, or decode/thumbnail generation fails
+  /// (e.g. non-image sealed payload).
+  Future<ArchiveItem> regenerateMissingThumbnail(ArchiveItem item) async {
+    if (_localFileExists(item.thumbnailPath)) {
+      return item;
+    }
+    if (!_localFileExists(item.encryptedPath)) {
+      return item;
+    }
+
+    try {
+      final keyBytes = await _loadOrCreateKeyBytes();
+      final encryptedBytes =
+          await _storage.readEncryptedOriginal(item.encryptedPath);
+      final clearBytes = await CipherEngine.decrypt(
+        encryptedPayload: encryptedBytes,
+        keyBytes: keyBytes,
+      );
+      final verifiedFingerprint = await CipherEngine.generateHash(clearBytes);
+      if (verifiedFingerprint != item.assetFingerprint) {
+        return item;
+      }
+
+      final thumbnailBytes = await CipherEngine.generateThumbnail(clearBytes);
+      if (thumbnailBytes.isEmpty) {
+        return item;
+      }
+
+      final thumbnailPath = await _storage.writeThumbnail(
+        assetFingerprint: item.assetFingerprint,
+        bytes: thumbnailBytes,
+      );
+
+      return ArchiveItem(
+        assetFingerprint: item.assetFingerprint,
+        encryptedPath: item.encryptedPath,
+        thumbnailPath: thumbnailPath,
+        byteLength: item.byteLength,
+        createdAt: item.createdAt,
+        pendingSync: item.pendingSync,
+        mimeType: item.mimeType,
+      );
+    } catch (_) {
+      return item;
+    }
+  }
+
+  bool _localFileExists(String path) {
+    try {
+      return File(path).existsSync();
+    } on FileSystemException {
+      return false;
+    }
+  }
+
   Future<SealedAsset> extractForCourier(String assetFingerprint) async {
     final item = await _database.findArchiveItem(assetFingerprint);
     if (item == null) {
       throw StateError('No sealed asset exists for $assetFingerprint.');
     }
 
+    final resolved = await _storage.resolveArchivePaths(item);
+    if (resolved.thumbnailPath != item.thumbnailPath ||
+        resolved.encryptedPath != item.encryptedPath) {
+      await _database.upsertArchiveItem(resolved);
+    }
+
     final keyBytes = await _loadOrCreateKeyBytes();
     final encryptedBytes = await _storage.readEncryptedOriginal(
-      item.encryptedPath,
+      resolved.encryptedPath,
     );
     final clearBytes = await CipherEngine.decrypt(
       encryptedPayload: encryptedBytes,
