@@ -3,9 +3,10 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../../core/di/locator.dart';
 import '../models/archive_item.dart';
 
-final vaultDatabaseProvider = Provider<VaultDatabase>((ref) => VaultDatabase());
+final vaultDatabaseProvider = Provider<VaultDatabase>((ref) => getIt<VaultDatabase>());
 
 class VaultDatabase {
   Database? _database;
@@ -21,7 +22,7 @@ class VaultDatabase {
 
     return _database = await openDatabase(
       databasePath,
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE archive_items (
@@ -31,7 +32,9 @@ class VaultDatabase {
             byte_length INTEGER NOT NULL,
             mime_type TEXT,
             created_at TEXT NOT NULL,
-            pending_sync INTEGER NOT NULL DEFAULT 0
+            pending_sync INTEGER NOT NULL DEFAULT 0,
+            title TEXT,
+            description TEXT
           )
         ''');
       },
@@ -40,6 +43,16 @@ class VaultDatabase {
           await db.execute('''
             ALTER TABLE archive_items
             ADD COLUMN pending_sync INTEGER NOT NULL DEFAULT 0
+          ''');
+        }
+        if (oldVersion < 3) {
+          await db.execute('''
+            ALTER TABLE archive_items
+            ADD COLUMN title TEXT
+          ''');
+          await db.execute('''
+            ALTER TABLE archive_items
+            ADD COLUMN description TEXT
           ''');
         }
       },
@@ -97,6 +110,20 @@ class VaultDatabase {
     await db.update(
       'archive_items',
       {'pending_sync': pendingSync ? 1 : 0},
+      where: 'asset_fingerprint = ?',
+      whereArgs: [assetFingerprint],
+    );
+  }
+
+  Future<void> updateArchiveMetadata({
+    required String assetFingerprint,
+    required String? title,
+    required String? description,
+  }) async {
+    final db = await _db;
+    await db.update(
+      'archive_items',
+      {'title': title, 'description': description},
       where: 'asset_fingerprint = ?',
       whereArgs: [assetFingerprint],
     );

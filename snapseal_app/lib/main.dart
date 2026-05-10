@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/snapseal_app.dart';
 import 'core/config/app_config.dart';
+import 'core/di/injection.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +16,8 @@ Future<void> main() async {
       debug: false,
     );
   }
+
+  await configureDependencies();
 
   runApp(const ProviderScope(child: SnapSealApp()));
 }

@@ -2,7 +2,7 @@
 
 ## 1) Project identity and intent
 
-`ProofLockCleanup` currently hosts a Flutter product named **SnapSeal**, positioned as a "mathematical certainty wallet" for authenticated media capture, local sealing, and ledger replication. The repository also contains an LLM wiki used as the canonical synthesis layer for architecture, constraints, and ongoing alignment with a stricter future-state target called **ProofLock**.
+`ProofLockCleanup` currently hosts a Flutter product named **SnapSeal**, positioned as a **tamper-evident** local media vault (authenticity heuristics and risk reduction—not claims of absolute proof-of-truth) for authenticated media capture, local sealing, and ledger replication. The repository also contains an LLM wiki used as the canonical synthesis layer for architecture, constraints, and ongoing alignment with a stricter future-state target called **ProofLock**.
 
 At a high level:
 
@@ -266,7 +266,7 @@ Current repo-level constraints reflected across rules/wiki/code:
 
 - Hosted Supabase schema drift can break RPC/table expectations across environments.
 - Repair migration that recreates proof tables is destructive for prior legacy rows.
-- Public-read policy posture for ledger data requires continued explicit privacy/security review.
+- Ledger `SELECT` was tightened to wallet-scoped authenticated reads (`supabase/migrations/20260510120000_tighten_ledger_select_rls.sql`); continue explicit privacy/security review for RPCs (`check_proof_status`), grants, and any verification UX.
 - Partial failure windows still exist outside newly added local compensating cleanup logic.
 - Product messaging must not overclaim hardware-backed provenance until native signing and attestation paths exist.
 

@@ -32,7 +32,8 @@ Commands:
   push          Push migrations to linked remote project
   migration-list  Local vs remote migration history (loads .env.local; needs SUPABASE_DB_PASSWORD)
   config-push   Push supabase/config.toml Auth/project settings to remote
-  app-run       Run Flutter app with Supabase Dart defines
+  flutter-defines  Write snapseal_app/dart_defines.json from .env.local (filtered)
+  app-run       Run Flutter app using dart_defines.json from .env.local
 
 Environment:
   SNAPSEAL_ENV_FILE                 Defaults to .env.local
@@ -112,12 +113,21 @@ case "${1:-help}" in
     require_env SNAPSEAL_SUPABASE_PROJECT_REF
     supabase_cmd config push --project-ref "$SNAPSEAL_SUPABASE_PROJECT_REF"
     ;;
+  flutter-defines)
+    require_env SUPABASE_URL
+    require_env SUPABASE_ANON_KEY
+    python3 "$ROOT_DIR/scripts/write_flutter_dart_defines.py" \
+      --env-file "$ENV_FILE" \
+      --out "$APP_DIR/dart_defines.json"
+    echo "Wrote $APP_DIR/dart_defines.json"
+    ;;
   app-run)
     require_env SUPABASE_URL
     require_env SUPABASE_ANON_KEY
-    (cd "$APP_DIR" && flutter run \
-      --dart-define "SUPABASE_URL=$SUPABASE_URL" \
-      --dart-define "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY")
+    python3 "$ROOT_DIR/scripts/write_flutter_dart_defines.py" \
+      --env-file "$ENV_FILE" \
+      --out "$APP_DIR/dart_defines.json"
+    (cd "$APP_DIR" && flutter run --dart-define-from-file dart_defines.json)
     ;;
   help|--help|-h)
     usage

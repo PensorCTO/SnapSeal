@@ -48,7 +48,7 @@ class _LogonViewState extends ConsumerState<LogonView> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           const Text(
-                            'Mathematical certainty wallet',
+                            'Tamper-evident media vault',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 28,
@@ -207,7 +207,10 @@ class _ConfigNotice extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Text(
           'Supabase is not configured yet. The local wallet shell is usable; '
-          'Magic Number auth requires SUPABASE_URL and SUPABASE_ANON_KEY.',
+          'Magic Number auth requires SUPABASE_URL and SUPABASE_ANON_KEY. '
+          'From the repo root run `bash scripts/snapseal_supabase_pipeline.sh app-run`. '
+          'If you are already in `scripts/`, run `./snapseal_supabase_pipeline.sh app-run` '
+          '(a bare filename is not on your PATH).',
           style: const TextStyle(color: CupertinoColors.label, fontSize: 13),
         ),
       ),

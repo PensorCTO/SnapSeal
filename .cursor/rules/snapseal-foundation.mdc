@@ -1,12 +1,13 @@
 ---
-description: SnapSeal proof-certainty wallet architecture rules
+description: SnapSeal tamper-evident vault architecture rules
 globs: snapseal_app/lib/**/*.dart, supabase/migrations/*.sql
 alwaysApply: false
 ---
 
 # SnapSeal Foundation
 
-- SnapSeal is a mathematical certainty wallet, not a general secrecy vault.
+- SnapSeal is a **tamper-evident** media vault (risk reduction / authenticity
+  heuristics), not a general secrecy vault or a claim of absolute proof-of-reality.
 - Original media bytes must enter the app through `VaultService`, which hashes,
   encrypts, stores, indexes, and later re-verifies them before courier transfer.
 - Dashboard rendering must use local thumbnails and SQLite metadata; do not

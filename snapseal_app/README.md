@@ -1,11 +1,37 @@
 # SnapSeal App
 
-SnapSeal is a Flutter foundation for a mathematical certainty wallet. Captured
-media is intended to be hashed, encrypted into a local vault, indexed in SQLite,
-and displayed through local thumbnails. Supabase provides OTP authentication,
-profile-to-wallet mapping, and an active-wallet replica of Polygon proof rows.
+SnapSeal is a Flutter foundation for a tamper-evident local media vault.
+Captured media is hashed, encrypted into a local vault, indexed in SQLite, and
+shown via thumbnails. Supabase provides OTP authentication, profile-to-wallet
+mapping, and an active-wallet replica of Polygon proof rows.
+
+Any future PDF or certificate export must include the disclaimer in
+`lib/core/legal/disclaimers.dart` (FRE 902 framing — supports workflow disclosure,
+not guaranteed admissibility).
 
 ## Run
+
+Supabase keys are compile-time `dart-define` values (see `lib/core/config/app_config.dart`).
+Fill repo-root `.env.local` from `../.env.example` with **SUPABASE_URL** and **SUPABASE_ANON_KEY**.
+
+**Recommended (CLI):** generates a **filtered** `dart_defines.json` (only those two keys—CLI-only
+secrets such as `SUPABASE_DB_PASSWORD` stay out of the binary) and runs Flutter:
+
+```bash
+../scripts/snapseal_supabase_pipeline.sh app-run
+```
+
+**IDE / plain `flutter run`:** sync defines from `.env.local`, then run with the generated file:
+
+```bash
+../scripts/sync_flutter_dart_defines.sh
+flutter run --dart-define-from-file dart_defines.json
+```
+
+Or use the VS Code / Cursor launch configuration **snapseal_app (Supabase from .env.local)**,
+which runs the sync script before debug (`snapseal_app/dart_defines.json` is gitignored).
+
+Manual one-liners still work:
 
 ```bash
 flutter run \
@@ -18,13 +44,6 @@ a configuration notice.
 
 SnapSeal uses Supabase email OTP with the 6-digit `{{ .Token }}` in the email
 template. No native deep-link callback is required.
-
-For the standard repo pipeline, copy `../.env.example` to `../.env.local`, fill
-the SnapSeal project values, then run:
-
-```bash
-../scripts/snapseal_supabase_pipeline.sh app-run
-```
 
 ## Manual Magic Number Verification
 

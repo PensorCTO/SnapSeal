@@ -6,10 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../core/di/locator.dart';
 import '../models/archive_item.dart';
 
 final localVaultStorageProvider = Provider<LocalVaultStorage>(
-  (ref) => LocalVaultStorage(),
+  (ref) => getIt<LocalVaultStorage>(),
 );
 
 class LocalVaultStorage {
@@ -46,6 +47,8 @@ class LocalVaultStorage {
       createdAt: item.createdAt,
       pendingSync: item.pendingSync,
       mimeType: item.mimeType,
+      title: item.title,
+      description: item.description,
     );
   }
 

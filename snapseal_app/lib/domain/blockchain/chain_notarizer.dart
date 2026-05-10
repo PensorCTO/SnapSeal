@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import '../../core/di/locator.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
 
 /// Durable chain write path. Production: Polygon; today: Supabase-simulated ledger.
@@ -11,7 +11,7 @@ abstract class ChainNotarizer {
 }
 
 final chainNotarizerProvider = Provider<ChainNotarizer>(
-  (ref) => SimulatedChainNotarizer(ref.watch(sealLedgerRepositoryProvider)),
+  (ref) => getIt<ChainNotarizer>(),
 );
 
 class SimulatedChainNotarizer implements ChainNotarizer {

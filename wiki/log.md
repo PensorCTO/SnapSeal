@@ -53,3 +53,15 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 - Replaced `/dashboard` with `/vault-dashboard` via `VaultDashboardView` (`snapseal_app/lib/ui/views/vault_dashboard_view.dart`).
 - Added background pending-sync attempts (`VaultDatabase.listPendingArchiveItems`, `VaultService.retryPendingRemoteSync`, `DashboardController` fire-and-forget refresh).
 - Updated `wiki/analyses/SnapSeal_Master_Blueprint.md`, `wiki/analyses/Master_Context_10MAY2026.md`, and `snapseal_app/README.md`; ran `flutter test` / `dart analyze`.
+
+## [2026-05-10] maintenance | Tamper-evident wording + ledger RLS (wiki)
+
+- Aligned SnapSeal product framing with Rule 03 / app copy: **tamper-evident** media vault and risk-reduction language (not “mathematical certainty wallet”).
+- Updated `wiki/overview.md`, `wiki/glossary.md`, and `wiki/analyses/SnapSeal_Master_Blueprint.md` (including ledger `SELECT` now wallet-scoped per `20260510120000_tighten_ledger_select_rls.sql`).
+- Re-ran `python3 scripts/wiki_ingest.py --validate`.
+
+## [2026-05-10] maintenance | Repo root snapshots: tamper-evident wording
+
+- Updated `Master_Context10MAY2026.md` and `PHASE_2_Blueprints10MAY2026.md` to replace “mathematical certainty wallet” / “mathematical certainty” with tamper-evident / risk-reduction language consistent with [[overview]] and Rule 03.
+- Adjusted `Master_Context10MAY2026.md` risks to reflect wallet-scoped ledger `SELECT` (`20260510120000_tighten_ledger_select_rls.sql`).
+- Renamed `.cursor/rules/snapseal-foundation.mdc` rule description (metadata only) to tamper-evident vault wording.

@@ -12,6 +12,7 @@ venv/
 # Secrets and local config
 .env
 .env.local
+snapseal_app/dart_defines.json
 .env.*.local
 *.token
 auth.json

@@ -107,4 +107,52 @@ class DashboardController extends AsyncNotifier<List<ArchiveItem>> {
     await ref.read(vaultServiceProvider).burnLocalWallet();
     state = const AsyncData([]);
   }
+
+  Future<void> updateArchiveMetadata({
+    required String assetFingerprint,
+    required String? title,
+    required String? description,
+  }) async {
+    final db = ref.read(vaultDatabaseProvider);
+    final existing = await db.findArchiveItem(assetFingerprint);
+    if (existing == null) {
+      return;
+    }
+
+    final normalizedTitle = _normalizeMetadataField(title);
+    final normalizedDescription = _normalizeMetadataField(description);
+    if (normalizedTitle == existing.title &&
+        normalizedDescription == existing.description) {
+      return;
+    }
+
+    final updated = existing.copyWith(
+      title: normalizedTitle,
+      description: normalizedDescription,
+    );
+    await db.upsertArchiveItem(updated);
+
+    final current = state.asData?.value;
+    if (current == null) {
+      state = AsyncData(await _loadResolvedArchive());
+      return;
+    }
+
+    final refreshed = current
+        .map((item) =>
+            item.assetFingerprint == assetFingerprint ? updated : item)
+        .toList(growable: false);
+    state = AsyncData(refreshed);
+  }
+
+  String? _normalizeMetadataField(String? value) {
+    if (value == null) {
+      return null;
+    }
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+    return trimmed;
+  }
 }

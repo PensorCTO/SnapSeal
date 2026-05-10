@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/models/archive_item.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/dashboard_controller.dart';
+import 'archive_video_view.dart';
 import 'camera/camera_view.dart';
 import 'logon_view.dart';
 
@@ -67,24 +69,43 @@ class _VaultDashboardViewState extends ConsumerState<VaultDashboardView> {
               final item = items[index];
               return Card(
                 clipBehavior: Clip.antiAlias,
-                child: GridTile(
-                  footer: ColoredBox(
-                    color: Colors.black54,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Text(
-                        item.pendingSync
-                            ? '${item.assetFingerprint.substring(0, 12)} (pending)'
-                            : item.assetFingerprint.substring(0, 12),
-                        style: const TextStyle(color: Colors.white),
+                child: InkWell(
+                  onTap: () => _onArchiveItemTap(item),
+                  child: GridTile(
+                    footer: ColoredBox(
+                      color: Colors.black54,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (item.title != null && item.title!.isNotEmpty)
+                              Text(
+                                item.title!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            Text(
+                              item.pendingSync
+                                  ? '${item.assetFingerprint.substring(0, 12)} (pending)'
+                                  : item.assetFingerprint.substring(0, 12),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  child: Image.file(
-                    File(item.thumbnailPath),
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.image_not_supported_outlined),
+                    child: Image.file(
+                      File(item.thumbnailPath),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.image_not_supported_outlined),
+                    ),
                   ),
                 ),
               );
@@ -120,6 +141,101 @@ class _VaultDashboardViewState extends ConsumerState<VaultDashboardView> {
         ],
       ),
     );
+  }
+
+  Future<void> _onArchiveItemTap(ArchiveItem item) async {
+    if (!mounted) {
+      return;
+    }
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (context) {
+        final isVideo = item.mimeType?.startsWith('video/') ?? false;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isVideo)
+                ListTile(
+                  leading: const Icon(Icons.play_circle_outline),
+                  title: const Text('Play video'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(this.context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ArchiveVideoView(item: item),
+                      ),
+                    );
+                  },
+                ),
+              ListTile(
+                leading: const Icon(Icons.edit_note_outlined),
+                title: const Text('Manage title and description'),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  await _showMetadataDialog(item);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showMetadataDialog(ArchiveItem item) async {
+    final titleController = TextEditingController(text: item.title ?? '');
+    final descriptionController =
+        TextEditingController(text: item.description ?? '');
+    try {
+      final shouldSave = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Manage metadata'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Title',
+                ),
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldSave == true && mounted) {
+        await ref.read(dashboardControllerProvider.notifier).updateArchiveMetadata(
+              assetFingerprint: item.assetFingerprint,
+              title: titleController.text,
+              description: descriptionController.text,
+            );
+      }
+    } finally {
+      titleController.dispose();
+      descriptionController.dispose();
+    }
   }
 }
 

@@ -1,4 +1,6 @@
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../di/locator.dart';
 
 /// Hardware-backed signing bridge (Secure Enclave / Android Keystore).
 /// Native handlers register `com.snapseal.app/enclave` and implement `signHash`.
@@ -29,3 +31,7 @@ class NativeEnclaveChannel {
     return result;
   }
 }
+
+final nativeEnclaveChannelProvider = Provider<NativeEnclaveChannel>(
+  (ref) => getIt<NativeEnclaveChannel>(),
+);

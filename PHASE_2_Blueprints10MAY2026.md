@@ -2,7 +2,7 @@
 
 ## 1. Architectural Manifest
 
-This phase transitions the application from a "Camera-First" utility to a "Vault-First" evidence ledger, prioritizing mathematical certainty, zero-latency rendering, and strict hardware provenance for media capture.
+This phase transitions the application from a "Camera-First" utility to a "Vault-First" evidence ledger, prioritizing tamper-evident integrity signals (risk reduction), zero-latency rendering, and strict hardware provenance for media capture.
 
 ```mermaid
 graph TD

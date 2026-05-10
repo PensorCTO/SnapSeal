@@ -9,7 +9,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:postgrest/postgrest.dart';
 
-import '../../core/crypto/cipher_engine.dart';
+import '../../core/crypto/courier_crypto.dart';
+import '../../core/crypto/vault_encryption_handler.dart';
+import '../../core/di/locator.dart';
 import '../../core/ghost_key/native_enclave_channel.dart';
 import '../../data/local/vault_database.dart';
 import '../../data/models/archive_item.dart';
@@ -19,24 +21,8 @@ import '../../data/supabase/auth_repository.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
 import '../blockchain/chain_notarizer.dart';
 
-final secureStorageProvider = Provider<FlutterSecureStorage>(
-  (ref) => const FlutterSecureStorage(),
-);
-
-final nativeEnclaveChannelProvider = Provider<NativeEnclaveChannel>(
-  (ref) => NativeEnclaveChannel(),
-);
-
 final vaultServiceProvider = Provider<VaultService>(
-  (ref) => VaultService(
-    database: ref.watch(vaultDatabaseProvider),
-    storage: ref.watch(localVaultStorageProvider),
-    secureStorage: ref.watch(secureStorageProvider),
-    sealLedgerRepository: ref.watch(sealLedgerRepositoryProvider),
-    chainNotarizer: ref.watch(chainNotarizerProvider),
-    nativeEnclave: ref.watch(nativeEnclaveChannelProvider),
-    authRepository: ref.watch(authRepositoryProvider),
-  ),
+  (ref) => getIt<VaultService>(),
 );
 
 class ProofLockConflictException implements Exception {
@@ -64,6 +50,7 @@ class VaultService {
     required VaultDatabase database,
     required LocalVaultStorage storage,
     required FlutterSecureStorage secureStorage,
+    required VaultEncryptionHandler vaultEncryption,
     required SealLedgerRepository sealLedgerRepository,
     required ChainNotarizer chainNotarizer,
     required NativeEnclaveChannel nativeEnclave,
@@ -71,6 +58,7 @@ class VaultService {
   }) : _database = database,
        _storage = storage,
        _secureStorage = secureStorage,
+       _vaultEncryption = vaultEncryption,
        _sealLedgerRepository = sealLedgerRepository,
        _chainNotarizer = chainNotarizer,
        _nativeEnclave = nativeEnclave,
@@ -81,6 +69,7 @@ class VaultService {
   final VaultDatabase _database;
   final LocalVaultStorage _storage;
   final FlutterSecureStorage _secureStorage;
+  final VaultEncryptionHandler _vaultEncryption;
   final SealLedgerRepository _sealLedgerRepository;
   final ChainNotarizer _chainNotarizer;
   final NativeEnclaveChannel _nativeEnclave;
@@ -229,11 +218,12 @@ class VaultService {
     required String assetFingerprint,
   }) async {
     final keyBytes = await _loadOrCreateKeyBytes();
-    final encryptedBytes = await CipherEngine.encrypt(
+    final encryptedBytes = await _vaultEncryption.encrypt(
       bytes: rawMediaBytes,
       keyBytes: keyBytes,
     );
-    final thumbnailBytes = await CipherEngine.generateThumbnail(rawMediaBytes);
+    final thumbnailBytes =
+        await _vaultEncryption.generateThumbnail(rawMediaBytes);
 
     final encryptedPath = await _storage.writeEncryptedOriginal(
       assetFingerprint: assetFingerprint,
@@ -254,6 +244,8 @@ class VaultService {
           mimeType: mimeType,
           createdAt: DateTime.now().toUtc(),
           pendingSync: true,
+          title: null,
+          description: null,
         ),
       );
     } catch (_) {
@@ -283,16 +275,18 @@ class VaultService {
       final keyBytes = await _loadOrCreateKeyBytes();
       final encryptedBytes =
           await _storage.readEncryptedOriginal(item.encryptedPath);
-      final clearBytes = await CipherEngine.decrypt(
+      final clearBytes = await _vaultEncryption.decrypt(
         encryptedPayload: encryptedBytes,
         keyBytes: keyBytes,
       );
-      final verifiedFingerprint = await CipherEngine.generateHash(clearBytes);
+      final verifiedFingerprint =
+          await _vaultEncryption.generateHash(clearBytes);
       if (verifiedFingerprint != item.assetFingerprint) {
         return item;
       }
 
-      final thumbnailBytes = await CipherEngine.generateThumbnail(clearBytes);
+      final thumbnailBytes =
+          await _vaultEncryption.generateThumbnail(clearBytes);
       if (thumbnailBytes.isEmpty) {
         return item;
       }
@@ -310,6 +304,8 @@ class VaultService {
         createdAt: item.createdAt,
         pendingSync: item.pendingSync,
         mimeType: item.mimeType,
+        title: item.title,
+        description: item.description,
       );
     } catch (_) {
       return item;
@@ -340,15 +336,12 @@ class VaultService {
     final encryptedBytes = await _storage.readEncryptedOriginal(
       resolved.encryptedPath,
     );
-    final clearBytes = await CipherEngine.decrypt(
+    final clearBytes = await CourierCrypto.decryptAndVerifyFingerprint(
+      vault: _vaultEncryption,
       encryptedPayload: encryptedBytes,
       keyBytes: keyBytes,
+      expectedFingerprint: assetFingerprint,
     );
-    final verifiedFingerprint = await CipherEngine.generateHash(clearBytes);
-
-    if (verifiedFingerprint != assetFingerprint) {
-      throw StateError('Sealed media failed SHA-256 verification.');
-    }
 
     return SealedAsset(assetFingerprint: assetFingerprint, bytes: clearBytes);
   }
@@ -457,13 +450,13 @@ class VaultService {
   Future<Uint8List> _loadOrCreateKeyBytes() async {
     final existing = await _secureStorage.read(key: _vaultKeyName);
     if (existing != null) {
-      return CipherEngine.decodeKey(existing);
+      return _vaultEncryption.decodeKey(existing);
     }
 
-    final keyBytes = CipherEngine.generateKeyBytes();
+    final keyBytes = _vaultEncryption.generateKeyBytes();
     await _secureStorage.write(
       key: _vaultKeyName,
-      value: CipherEngine.encodeKey(keyBytes),
+      value: _vaultEncryption.encodeKey(keyBytes),
     );
     return keyBytes;
   }

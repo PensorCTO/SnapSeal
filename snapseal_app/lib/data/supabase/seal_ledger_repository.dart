@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'auth_repository.dart';
+import '../../core/di/locator.dart';
+
+import 'supabase_client_handle.dart';
 
 final sealLedgerRepositoryProvider = Provider<SealLedgerRepository>(
-  (ref) => SealLedgerRepository(ref.watch(supabaseClientProvider)),
+  (ref) => getIt<SealLedgerRepository>(),
 );
 
 enum SealLedgerSyncStatus { synced, alreadySynced }
@@ -12,11 +14,11 @@ enum SealLedgerSyncStatus { synced, alreadySynced }
 /// Active-wallet ledger (`seal_ledger`) plus ProofLock RPC/table surface
 /// (`check_proof_status`, simulated chain notarization, `proof_ledger`).
 class SealLedgerRepository {
-  const SealLedgerRepository(this._client);
+  SealLedgerRepository(this._handle);
 
-  final SupabaseClient? _client;
+  final SupabaseClientHandle _handle;
 
-  bool get isConfigured => _client != null;
+  bool get isConfigured => _handle.client != null;
 
   Future<SealLedgerSyncStatus> syncAssetFingerprint(
     String assetFingerprint,
@@ -104,7 +106,7 @@ class SealLedgerRepository {
   }
 
   SupabaseClient _requiredClient() {
-    final client = _client;
+    final client = _handle.client;
     if (client == null) {
       throw StateError(
         'Supabase is not configured. Run with --dart-define SUPABASE_URL=... '

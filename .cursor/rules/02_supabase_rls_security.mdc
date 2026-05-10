@@ -1,0 +1,12 @@
+---<rule>
+  <name>PostgreSQL RLS & RPC Strictness</name>
+  <description>Enforces defense-in-depth on the backend.</description>
+  <action>
+    - REQUIRE Row Level Security (RLS) on ALL tables (`proof_ledger`, `picture`, `video`, `courier_packages`).
+    - REQUIRE policies to explicitly handle `INSERT`, `UPDATE`, `DELETE`, and `SELECT` using `auth.uid()`.
+    - FORBID direct `SELECT` on black-box tables like `courier_packages`. Access must be gated through RPCs like `attempt_courier_unlock`.
+    - REQUIRE `SECURITY DEFINER` only on strictly necessary RPCs, with explicitly declared `SET search_path = public`.
+  </action>
+</rule>
+alwaysApply: true
+---

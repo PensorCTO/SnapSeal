@@ -7,7 +7,7 @@ summary: "Evolving high-level synthesis of the wiki's accumulated knowledge."
 
 ## Core Synthesis
 
-This wiki now tracks both the Karpathy-style LLM Wiki workflow and the emerging SnapSeal application. SnapSeal is a Flutter mathematical certainty wallet for authenticated media capture, local sealing, and active-wallet proof replication through Supabase, with Polygon still planned as the durable proof layer. **For the current verified product workflow and a short Supabase repair narrative, start with [[SnapSeal_Product_Baseline_2026-05]].** For a comprehensive architecture snapshot, see [[Master_Context_10MAY2026]]. A separate **ProofLock** architectural manifest ([[ProofLock_Architectural_Manifest]]) captures a **stricter target** (hardware-backed signing, Polygon + C2PA, RPC-first ledger/courier); [[ProofLock_Refactor_Scope]] maps that target to the current codebase and estimates refactor phases.
+This wiki now tracks both the Karpathy-style LLM Wiki workflow and the emerging SnapSeal application. SnapSeal is a Flutter **tamper-evident** local media vault (authenticity heuristics and risk reduction — not claims of absolute proof-of-truth) for authenticated capture, local sealing, and active-wallet proof replication through Supabase, with Polygon still planned as the durable proof layer. **For the current verified product workflow and a short Supabase repair narrative, start with [[SnapSeal_Product_Baseline_2026-05]].** For a comprehensive architecture snapshot, see [[Master_Context_10MAY2026]]. A separate **ProofLock** architectural manifest ([[ProofLock_Architectural_Manifest]]) captures a **stricter target** (hardware-backed signing, Polygon + C2PA, RPC-first ledger/courier); [[ProofLock_Refactor_Scope]] maps that target to the current codebase and estimates refactor phases.
 
 ## Current Themes
 
@@ -27,7 +27,7 @@ This wiki now tracks both the Karpathy-style LLM Wiki workflow and the emerging 
 ## Provenance Tracking
 
 * *Initial architecture*: Derived from `raw/sample_llm_wiki_source.md` (2026-04-26)
-* *SnapSeal application state*: Derived from `wiki/analyses/SnapSeal_Master_Blueprint.md` and `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md` (2026-04-30; baseline updated 2026-05-09)
+* *SnapSeal application state*: Derived from `wiki/analyses/SnapSeal_Master_Blueprint.md` and `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md` (2026-04-30; baseline updated 2026-05-09; product wording aligned tamper-evident framing 2026-05-10)
 * *ProofLock target architecture and refactor scope*: Derived from `wiki/sources/ProofLock_Architectural_Manifest.md` and `wiki/analyses/ProofLock_Refactor_Scope.md` (2026-05-03)
 
 ## Related Notes

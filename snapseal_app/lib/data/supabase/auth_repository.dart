@@ -1,29 +1,28 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/config/app_config.dart';
+import '../../core/di/locator.dart';
 
-final supabaseClientProvider = Provider<SupabaseClient?>((ref) {
-  if (!AppConfig.hasSupabaseConfig) {
-    return null;
-  }
-  return Supabase.instance.client;
-});
+import 'supabase_client_handle.dart';
+
+final supabaseClientProvider = Provider<SupabaseClient?>(
+  (ref) => getIt<SupabaseClientHandle>().client,
+);
 
 final authRepositoryProvider = Provider<AuthRepository>(
-  (ref) => AuthRepository(ref.watch(supabaseClientProvider)),
+  (ref) => getIt<AuthRepository>(),
 );
 
 class AuthRepository {
-  const AuthRepository(this._client);
+  AuthRepository(this._handle);
 
-  final SupabaseClient? _client;
+  final SupabaseClientHandle _handle;
 
-  bool get isConfigured => _client != null;
+  bool get isConfigured => _handle.client != null;
 
-  Session? get currentSession => _client?.auth.currentSession;
+  Session? get currentSession => _handle.client?.auth.currentSession;
 
   Future<void> signOut() async {
-    await _client?.auth.signOut();
+    await _handle.client?.auth.signOut();
   }
 }

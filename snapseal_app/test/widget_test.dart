@@ -3,31 +3,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:snapseal/app/snapseal_app.dart';
-import 'package:snapseal/core/ghost_key/native_enclave_channel.dart';
 import 'package:snapseal/data/models/archive_item.dart';
-import 'package:snapseal/domain/services/vault_service.dart';
+import 'package:snapseal/core/di/injection.dart';
 import 'package:snapseal/ui/controllers/dashboard_controller.dart';
 import 'package:snapseal/ui/views/camera/camera_view.dart';
 import 'package:snapseal/ui/views/vault_dashboard_view.dart';
 
 void main() {
+  setUpAll(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    await configureDependencies();
+  });
+
   testWidgets('renders the SnapSeal logon shell', (tester) async {
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          nativeEnclaveChannelProvider.overrideWithValue(
-            NativeEnclaveChannel(
-              signHashForTests: (hash) async => 'test:$hash',
-            ),
-          ),
-        ],
-        child: const SnapSealApp(),
+      const ProviderScope(
+        child: SnapSealApp(),
       ),
     );
 
     expect(find.text('SnapSeal'), findsOneWidget);
     expect(find.text('Send Magic Number'), findsOneWidget);
-    expect(find.text('Mathematical certainty wallet'), findsOneWidget);
+    expect(find.text('Tamper-evident media vault'), findsOneWidget);
   });
 
   testWidgets(
