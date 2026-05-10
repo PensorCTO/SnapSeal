@@ -7,6 +7,8 @@ summary: "Master blueprint of the current SnapSeal application state, completed 
 
 ## Core Synthesis
 
+**Current baseline:** verified primary workflow and compressed Supabase posture are summarized in [[SnapSeal_Product_Baseline_2026-05]] (read that page first for status).
+
 SnapSeal is currently a Flutter application for authenticated capture, local sealing, and active-wallet proof replication. The app is framed as a mathematical certainty wallet rather than a general secrecy vault: original media enters through `VaultService` (`snapseal_app/lib/domain/services/vault_service.dart`), is hashed, encrypted, stored locally, indexed in SQLite, represented by a lightweight thumbnail, and optionally synced to Supabase as an active-wallet ledger row. Polygon is still described as the intended durable proof layer, but no Polygon integration is implemented in the current codebase.
 
 The main application shell is functional. `snapseal_app/lib/main.dart` initializes Supabase only when `SUPABASE_URL` and the rotated public `SUPABASE_ANON_KEY` are supplied as Dart defines (no PKCE / URI session options in the current tree). The Riverpod and GoRouter stack routes unauthenticated users to `/logon`, sends authenticated users to `/dashboard`, and exposes `/camera` for capture.
@@ -15,7 +17,7 @@ Authentication uses **Supabase email OTP**: the logon flow sends a one-time code
 
 The local vault pipeline is the most complete functional area. Captured camera files are read off the UI thread via `Isolate.run`, fingerprinted (SHA-256), encrypted with **AES-GCM** using a locally generated 256-bit key in secure storage, thumbnailed, persisted under the app documents directory, and recorded in SQLite. The camera preview and sealing overlay are wrapped in repaint boundaries, and temporary capture files are deleted after sealing. Dashboard rendering uses thumbnail file paths and SQLite metadata rather than decrypting originals.
 
-Supabase support is foundational but not finished. The migration creates `profiles` and `seal_ledger`, enables RLS, creates a private user-trigger function to create profiles, and allows authenticated users to insert ledger rows for their wallet. `seal_ledger` has a **public read** policy (by design in the migration) for active-wallet transparency. The Flutter repository can insert asset fingerprints and treat duplicate inserts for the same wallet as already synced. Failed or unavailable Supabase sync leaves local rows marked `pending_sync`, but there is no retry queue, background sync loop, or reconciliation UI yet.
+Core Supabase-backed capture and ledger sync are **working on a migrated hosted project** (see [[SnapSeal_Product_Baseline_2026-05]]). Foundation migrations create `profiles` and `seal_ledger`, enable RLS, attach new-user profile creation, and allow authenticated users to insert ledger rows for their wallet. `seal_ledger` has a **public read** policy (by design in the migration) for active-wallet transparency. The Flutter repository can insert asset fingerprints and treat duplicate inserts for the same wallet as already synced. Failed or unavailable Supabase sync leaves local rows marked `pending_sync`, but there is no retry queue, background sync loop, or reconciliation UI yet. Broader product gaps (Polygon, reconciliation UX, ProofLock-class hardening) remain below.
 
 The developer pipeline is mostly scaffolded. `scripts/snapseal_supabase_pipeline.sh` supports local Supabase start/reset/lint, remote login/link/push, push dry-runs, and Flutter app runs with Dart defines. GitHub Actions validates Supabase migrations on pull requests and can manually deploy migrations to a linked project. Test coverage is still minimal: one widget test verifies the logon shell renders.
 
@@ -41,7 +43,6 @@ The ingested **ProofLock** manifest ([[ProofLock_Architectural_Manifest]]) descr
 
 ## Needs To Be Finished
 
-- Align Supabase schema and client with manifesto-style **pre-flight RPC** (`check_proof_status`) and evolved ledger naming (`proof_ledger`) if adopted; plan migrations and backfill.
 - Build pending-sync retry and reconciliation so offline ledger inserts can be retried after connectivity or auth returns.
 - Implement Polygon proof submission and persistence; `polygon_tx_hash` exists in the database but is not written by the app.
 - Add proof verification and lookup use cases beyond inserting active-wallet ledger rows.
@@ -69,7 +70,7 @@ When Supabase supplies a session through auth state changes, GoRouter redirects 
 
 ### Capture And Seal Media
 
-An authenticated user can open `/camera`, capture an image, and pass the captured file to `VaultService`. The service hashes the original bytes, encrypts them, creates a thumbnail, writes both artifacts locally, inserts SQLite metadata, attempts Supabase ledger sync, updates `pending_sync`, deletes the temporary camera file, and returns to the dashboard.
+An authenticated user can open `/camera`, capture an image, and pass the captured file to `VaultService`. The service hashes the original bytes, encrypts them, creates a thumbnail, writes both artifacts locally, inserts SQLite metadata, attempts Supabase ledger sync, updates `pending_sync`, deletes the temporary camera file, and returns to the dashboard. **Baseline (2026-05):** this path is verified end-to-end on a correctly migrated Supabase project ([[SnapSeal_Product_Baseline_2026-05]]).
 
 ### View The Local Wallet
 
@@ -105,9 +106,11 @@ Developers can run the Supabase helper script to start/reset/lint local Supabase
 * *Supabase schema and pipeline*: Derived from `supabase/migrations/20260428013509_snapseal_foundation.sql`, `supabase/README.md`, `supabase/config.toml`, `scripts/snapseal_supabase_pipeline.sh`, and `.github/workflows/supabase.yml` (2026-04-30)
 * *ProofLock target architecture*: Derived from `raw/prooflock_architectural_manifest.md` via [[ProofLock_Architectural_Manifest]] (2026-05-03)
 * *Testing state*: Derived from `snapseal_app/test/widget_test.dart` (2026-05-03)
+* *Product baseline and hosted DB repairs*: Cross-checked with [[SnapSeal_Product_Baseline_2026-05]] (2026-05-09)
 
 ## Related Notes
 
+* [[SnapSeal_Product_Baseline_2026-05]]
 * [[overview]]
 * [[glossary]]
 * [[ProofLock_Architectural_Manifest]]

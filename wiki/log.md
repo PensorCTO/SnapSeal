@@ -34,3 +34,10 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 - Audited git status, wiki health, Flutter implementation surfaces, Supabase migrations, and pipeline scripts.
 - Re-validated wiki with `python3 scripts/wiki_ingest.py --validate` and app smoke tests with `flutter test`.
 - Updated `wiki/index.md` to include the new comprehensive context baseline page.
+
+## [2026-05-09] maintenance | Product baseline and wiki consolidation
+
+- Added `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md` as the canonical SnapSeal status entry (verified workflow, compressed DB repair/backfill narrative).
+- Replaced `wiki/analyses/System_Context_Audit_2026-05-09.md` body with a short archived stub pointing to the baseline.
+- Updated `wiki/analyses/SnapSeal_Master_Blueprint.md`, `wiki/overview.md`, `wiki/index.md`, and `wiki/glossary.md` to link the baseline and trim duplicated audit prominence.
+- Re-ran `python3 scripts/wiki_ingest.py --validate`.
