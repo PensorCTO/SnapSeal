@@ -15,6 +15,7 @@ import '../../data/local/vault_database.dart';
 import '../../data/models/archive_item.dart';
 import '../../data/models/sealed_asset.dart';
 import '../../data/services/local_vault_storage.dart';
+import '../../data/supabase/auth_repository.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
 import '../blockchain/chain_notarizer.dart';
 
@@ -34,6 +35,7 @@ final vaultServiceProvider = Provider<VaultService>(
     sealLedgerRepository: ref.watch(sealLedgerRepositoryProvider),
     chainNotarizer: ref.watch(chainNotarizerProvider),
     nativeEnclave: ref.watch(nativeEnclaveChannelProvider),
+    authRepository: ref.watch(authRepositoryProvider),
   ),
 );
 
@@ -65,12 +67,14 @@ class VaultService {
     required SealLedgerRepository sealLedgerRepository,
     required ChainNotarizer chainNotarizer,
     required NativeEnclaveChannel nativeEnclave,
+    required AuthRepository authRepository,
   }) : _database = database,
        _storage = storage,
        _secureStorage = secureStorage,
        _sealLedgerRepository = sealLedgerRepository,
        _chainNotarizer = chainNotarizer,
-       _nativeEnclave = nativeEnclave;
+       _nativeEnclave = nativeEnclave,
+       _authRepository = authRepository;
 
   static const _vaultKeyName = 'snapseal:vault_key';
 
@@ -80,6 +84,7 @@ class VaultService {
   final SealLedgerRepository _sealLedgerRepository;
   final ChainNotarizer _chainNotarizer;
   final NativeEnclaveChannel _nativeEnclave;
+  final AuthRepository _authRepository;
 
   /// ProofLock pipeline: isolate hash → preflight RPC → TEE sign → simulated chain
   /// → AES-GCM local vault → `proof_ledger` → burn source.
@@ -288,6 +293,101 @@ class VaultService {
     await _database.deleteAll();
     await _storage.deleteAll();
     await _secureStorage.delete(key: _vaultKeyName);
+  }
+
+  /// Background-friendly: `seal_ledger` active-wallet row + proof ledger completion.
+  /// Returns `true` if [pending_sync] was cleared for this asset.
+  Future<bool> retryPendingRemoteSync(String assetFingerprint) async {
+    final item = await _database.findArchiveItem(assetFingerprint);
+    if (item == null || !item.pendingSync) {
+      return false;
+    }
+    if (!_sealLedgerRepository.isConfigured) {
+      return false;
+    }
+    final userId = _authRepository.currentSession?.user.id;
+    if (userId == null || userId.isEmpty) {
+      return false;
+    }
+
+    try {
+      await _sealLedgerRepository.syncAssetFingerprint(assetFingerprint);
+    } catch (_) {
+      // Best-effort: `seal_ledger` replica; proof path below is authoritative.
+    }
+
+    var pendingRemote = false;
+    try {
+      final status = await _sealLedgerRepository.checkProofStatus(assetFingerprint);
+      if (status == 'owned_by_other') {
+        return false;
+      }
+      if (status == 'owned_by_me') {
+        await _database.setPendingSync(
+          assetFingerprint: assetFingerprint,
+          pendingSync: false,
+        );
+        return true;
+      }
+    } catch (e) {
+      if (_isRecoverableRemoteFailure(e)) {
+        pendingRemote = true;
+      } else {
+        return false;
+      }
+    }
+
+    final deviceSignature = await _nativeEnclave.signHash(assetFingerprint);
+
+    String? chainTxHash;
+    if (!pendingRemote) {
+      try {
+        chainTxHash = await _chainNotarizer.notarizeFileHash(
+          fileHash: assetFingerprint,
+          deviceSignature: deviceSignature,
+        );
+      } catch (e) {
+        if (_isRecoverableRemoteFailure(e)) {
+          pendingRemote = true;
+        } else {
+          return false;
+        }
+      }
+    }
+
+    if (pendingRemote || chainTxHash == null) {
+      return false;
+    }
+
+    try {
+      await _sealLedgerRepository.insertProofLedgerRow(
+        assetHash: assetFingerprint,
+        deviceSignature: deviceSignature,
+        chainTxHash: chainTxHash,
+      );
+      await _database.setPendingSync(
+        assetFingerprint: assetFingerprint,
+        pendingSync: false,
+      );
+      return true;
+    } on PostgrestException catch (e) {
+      if (e.code == '23505') {
+        await _database.setPendingSync(
+          assetFingerprint: assetFingerprint,
+          pendingSync: false,
+        );
+        return true;
+      }
+      if (_isRecoverableRemoteFailure(e)) {
+        return false;
+      }
+      rethrow;
+    } catch (e) {
+      if (_isRecoverableRemoteFailure(e)) {
+        return false;
+      }
+      return false;
+    }
   }
 
   Future<Uint8List> _loadOrCreateKeyBytes() async {

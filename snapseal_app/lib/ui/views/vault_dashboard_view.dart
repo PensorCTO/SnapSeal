@@ -9,10 +9,11 @@ import '../controllers/dashboard_controller.dart';
 import 'camera/camera_view.dart';
 import 'logon_view.dart';
 
-class DashboardView extends ConsumerWidget {
-  const DashboardView({super.key});
+/// Vault-first home: local SQLite metadata + thumbnails; capture via FAB.
+class VaultDashboardView extends ConsumerWidget {
+  const VaultDashboardView({super.key});
 
-  static const routePath = '/dashboard';
+  static const routePath = '/vault-dashboard';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,7 +21,7 @@ class DashboardView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SnapSeal Wallet'),
+        title: const Text('Vault'),
         actions: [
           IconButton(
             tooltip: 'Sign out',
@@ -37,7 +38,7 @@ class DashboardView extends ConsumerWidget {
       body: archive.when(
         data: (items) {
           if (items.isEmpty) {
-            return const _EmptyWallet();
+            return const _EmptyVault();
           }
 
           return GridView.builder(
@@ -108,8 +109,8 @@ class DashboardView extends ConsumerWidget {
   }
 }
 
-class _EmptyWallet extends StatelessWidget {
-  const _EmptyWallet();
+class _EmptyVault extends StatelessWidget {
+  const _EmptyVault();
 
   @override
   Widget build(BuildContext context) {
@@ -124,16 +125,16 @@ class _EmptyWallet extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Icons.verified_user_outlined,
+                Icons.folder_special_outlined,
                 size: 72,
                 color: theme.colorScheme.primary,
               ),
               const SizedBox(height: 16),
-              Text('Vault ready', style: theme.textTheme.headlineMedium),
+              Text('Evidence vault', style: theme.textTheme.headlineMedium),
               const SizedBox(height: 8),
               const Text(
-                'Captured media will be hashed, encrypted, indexed locally, '
-                'and displayed here through lightweight thumbnails.',
+                'Sealed media is indexed here from local metadata and '
+                'lightweight thumbnails. Capture new evidence from the camera.',
                 textAlign: TextAlign.center,
               ),
             ],

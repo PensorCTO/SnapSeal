@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../ui/controllers/auth_controller.dart';
 import '../../ui/views/camera/camera_view.dart';
-import '../../ui/views/dashboard_view.dart';
+import '../../ui/views/vault_dashboard_view.dart';
 import '../../ui/views/logon_view.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -17,7 +17,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isOnLogon = state.matchedLocation == LogonView.routePath;
 
       if (isAuthenticated && isOnLogon) {
-        return DashboardView.routePath;
+        return VaultDashboardView.routePath;
       }
 
       if (!isAuthenticated && !isOnLogon) {
@@ -33,8 +33,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const LogonView(),
       ),
       GoRoute(
-        path: DashboardView.routePath,
-        builder: (context, state) => const DashboardView(),
+        path: VaultDashboardView.routePath,
+        builder: (context, state) => const VaultDashboardView(),
       ),
       GoRoute(
         path: CameraView.routePath,

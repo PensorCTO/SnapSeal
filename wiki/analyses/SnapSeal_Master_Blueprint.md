@@ -11,7 +11,7 @@ summary: "Master blueprint of the current SnapSeal application state, completed 
 
 SnapSeal is currently a Flutter application for authenticated capture, local sealing, and active-wallet proof replication. The app is framed as a mathematical certainty wallet rather than a general secrecy vault: original media enters through `VaultService` (`snapseal_app/lib/domain/services/vault_service.dart`), is hashed, encrypted, stored locally, indexed in SQLite, represented by a lightweight thumbnail, and optionally synced to Supabase as an active-wallet ledger row. Polygon is still described as the intended durable proof layer, but no Polygon integration is implemented in the current codebase.
 
-The main application shell is functional. `snapseal_app/lib/main.dart` initializes Supabase only when `SUPABASE_URL` and the rotated public `SUPABASE_ANON_KEY` are supplied as Dart defines (no PKCE / URI session options in the current tree). The Riverpod and GoRouter stack routes unauthenticated users to `/logon`, sends authenticated users to `/dashboard`, and exposes `/camera` for capture.
+The main application shell is functional. `snapseal_app/lib/main.dart` initializes Supabase only when `SUPABASE_URL` and the rotated public `SUPABASE_ANON_KEY` are supplied as Dart defines (no PKCE / URI session options in the current tree). The Riverpod and GoRouter stack routes unauthenticated users to `/logon`, sends authenticated users to `/vault-dashboard`, and exposes `/camera` for capture.
 
 Authentication uses **Supabase email OTP**: the logon flow sends a one-time code via `signInWithOtp`, collects a **6-digit** code in the UI, and completes session establishment with `verifyOTP` (`OtpType.email`). Unconfigured Supabase still allows the local wallet shell with an in-app notice. Signing out burns local wallet data before ending the Supabase session.
 
@@ -66,7 +66,7 @@ An email address entered on `/logon` can be submitted through `signInWithOtp`. O
 
 ### Enter The Authenticated Wallet
 
-When Supabase supplies a session through auth state changes, GoRouter redirects from `/logon` to `/dashboard`. When no session exists, protected routes redirect back to `/logon`.
+When Supabase supplies a session through auth state changes, GoRouter redirects from `/logon` to `/vault-dashboard`. When no session exists, protected routes redirect back to `/logon`.
 
 ### Capture And Seal Media
 
@@ -102,7 +102,7 @@ Developers can run the Supabase helper script to start/reset/lint local Supabase
 * *Application shell and routing*: Derived from `snapseal_app/lib/main.dart`, `snapseal_app/lib/app/snapseal_app.dart`, and `snapseal_app/lib/app/router/app_router.dart` (2026-04-30; routing re-verified 2026-05-03)
 * *Authentication behavior*: Derived from `snapseal_app/lib/data/supabase/auth_repository.dart`, `snapseal_app/lib/ui/controllers/auth_controller.dart`, and `snapseal_app/lib/ui/views/logon_view.dart` (2026-05-03)
 * *Capture and vault behavior*: Derived from `snapseal_app/lib/ui/views/camera/camera_view.dart`, `snapseal_app/lib/domain/services/vault_service.dart`, `snapseal_app/lib/core/crypto/cipher_engine.dart`, `snapseal_app/lib/data/local/vault_database.dart`, and `snapseal_app/lib/data/services/local_vault_storage.dart` (2026-05-03)
-* *Dashboard and local wallet behavior*: Derived from `snapseal_app/lib/ui/views/dashboard_view.dart`, `snapseal_app/lib/ui/controllers/dashboard_controller.dart`, and `snapseal_app/lib/data/models/archive_item.dart` (2026-04-30; re-verified 2026-05-03)
+* *Dashboard and local wallet behavior*: Derived from `snapseal_app/lib/ui/views/vault_dashboard_view.dart`, `snapseal_app/lib/ui/controllers/dashboard_controller.dart`, and `snapseal_app/lib/data/models/archive_item.dart` (2026-04-30; re-verified 2026-05-10)
 * *Supabase schema and pipeline*: Derived from `supabase/migrations/20260428013509_snapseal_foundation.sql`, `supabase/README.md`, `supabase/config.toml`, `scripts/snapseal_supabase_pipeline.sh`, and `.github/workflows/supabase.yml` (2026-04-30)
 * *ProofLock target architecture*: Derived from `raw/prooflock_architectural_manifest.md` via [[ProofLock_Architectural_Manifest]] (2026-05-03)
 * *Testing state*: Derived from `snapseal_app/test/widget_test.dart` (2026-05-03)

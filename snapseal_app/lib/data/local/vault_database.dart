@@ -61,6 +61,18 @@ class VaultDatabase {
     return rows.map(ArchiveItem.fromDatabase).toList(growable: false);
   }
 
+  /// Items still marked for remote sync (e.g. offline or recoverable API failure).
+  Future<List<ArchiveItem>> listPendingArchiveItems() async {
+    final db = await _db;
+    final rows = await db.query(
+      'archive_items',
+      where: 'pending_sync = ?',
+      whereArgs: [1],
+      orderBy: 'created_at ASC',
+    );
+    return rows.map(ArchiveItem.fromDatabase).toList(growable: false);
+  }
+
   Future<ArchiveItem?> findArchiveItem(String assetFingerprint) async {
     final db = await _db;
     final rows = await db.query(

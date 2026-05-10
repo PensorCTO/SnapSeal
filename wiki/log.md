@@ -41,3 +41,15 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 - Replaced `wiki/analyses/System_Context_Audit_2026-05-09.md` body with a short archived stub pointing to the baseline.
 - Updated `wiki/analyses/SnapSeal_Master_Blueprint.md`, `wiki/overview.md`, `wiki/index.md`, and `wiki/glossary.md` to link the baseline and trim duplicated audit prominence.
 - Re-ran `python3 scripts/wiki_ingest.py --validate`.
+
+## [2026-05-10] analysis | Master context architecture snapshot
+
+- Added `wiki/analyses/Master_Context_10MAY2026.md` as a schema-compliant first-class wiki artifact (frontmatter, core synthesis, provenance, related notes).
+- Indexed the new analysis in `wiki/index.md` under Analyses.
+- Captured a comprehensive current-state architecture snapshot spanning Flutter runtime, local vault/data model, Supabase operations/migrations, and ProofLock gap framing.
+
+## [2026-05-10] maintenance | Phase 2 vault-first dashboard route
+
+- Replaced `/dashboard` with `/vault-dashboard` via `VaultDashboardView` (`snapseal_app/lib/ui/views/vault_dashboard_view.dart`).
+- Added background pending-sync attempts (`VaultDatabase.listPendingArchiveItems`, `VaultService.retryPendingRemoteSync`, `DashboardController` fire-and-forget refresh).
+- Updated `wiki/analyses/SnapSeal_Master_Blueprint.md`, `wiki/analyses/Master_Context_10MAY2026.md`, and `snapseal_app/README.md`; ran `flutter test` / `dart analyze`.

@@ -22,6 +22,7 @@ Read this page first when answering questions about the wiki.
 - [[SnapSeal_Master_Blueprint]] - Current-state application blueprint covering completed capabilities, unfinished work, and working use cases.
 - [[ProofLock_Refactor_Scope]] - Gap analysis and phased effort from ProofLock manifesto to current SnapSeal implementation.
 - [[System_Context_Audit_2026-05-09]] - Archived stub (superseded by [[SnapSeal_Product_Baseline_2026-05]]).
+- [[Master_Context_10MAY2026]] - Comprehensive architecture breakdown snapshot for 2026-05-10.
 
 ## Maintenance
 

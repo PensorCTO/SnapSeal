@@ -32,7 +32,7 @@ the SnapSeal project values, then run:
 2. Enter an email and tap `Send Magic Number`.
 3. Confirm `Check your email for the 6-digit Magic Number.` appears.
 4. Type the 6-digit code from the email and tap `Verify Magic Number`.
-5. Verify the app redirects to `/dashboard`.
+5. Verify the app redirects to `/vault-dashboard`.
 6. Tap sign out and verify the app returns to `/logon` after local burn.
 
 ## Foundation

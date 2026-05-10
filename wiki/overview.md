@@ -7,7 +7,7 @@ summary: "Evolving high-level synthesis of the wiki's accumulated knowledge."
 
 ## Core Synthesis
 
-This wiki now tracks both the Karpathy-style LLM Wiki workflow and the emerging SnapSeal application. SnapSeal is a Flutter mathematical certainty wallet for authenticated media capture, local sealing, and active-wallet proof replication through Supabase, with Polygon still planned as the durable proof layer. **For the current verified product workflow and a short Supabase repair narrative, start with [[SnapSeal_Product_Baseline_2026-05]].** A separate **ProofLock** architectural manifest ([[ProofLock_Architectural_Manifest]]) captures a **stricter target** (hardware-backed signing, Polygon + C2PA, RPC-first ledger/courier); [[ProofLock_Refactor_Scope]] maps that target to the current codebase and estimates refactor phases.
+This wiki now tracks both the Karpathy-style LLM Wiki workflow and the emerging SnapSeal application. SnapSeal is a Flutter mathematical certainty wallet for authenticated media capture, local sealing, and active-wallet proof replication through Supabase, with Polygon still planned as the durable proof layer. **For the current verified product workflow and a short Supabase repair narrative, start with [[SnapSeal_Product_Baseline_2026-05]].** For a comprehensive architecture snapshot, see [[Master_Context_10MAY2026]]. A separate **ProofLock** architectural manifest ([[ProofLock_Architectural_Manifest]]) captures a **stricter target** (hardware-backed signing, Polygon + C2PA, RPC-first ledger/courier); [[ProofLock_Refactor_Scope]] maps that target to the current codebase and estimates refactor phases.
 
 ## Current Themes
 

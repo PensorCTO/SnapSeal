@@ -8,7 +8,7 @@ import 'package:snapseal/data/models/archive_item.dart';
 import 'package:snapseal/domain/services/vault_service.dart';
 import 'package:snapseal/ui/controllers/dashboard_controller.dart';
 import 'package:snapseal/ui/views/camera/camera_view.dart';
-import 'package:snapseal/ui/views/dashboard_view.dart';
+import 'package:snapseal/ui/views/vault_dashboard_view.dart';
 
 void main() {
   testWidgets('renders the SnapSeal logon shell', (tester) async {
@@ -35,11 +35,11 @@ void main() {
     (tester) async {
       final buildCounter = ValueNotifier<int>(0);
       final router = GoRouter(
-        initialLocation: DashboardView.routePath,
+        initialLocation: VaultDashboardView.routePath,
         routes: [
           GoRoute(
-            path: DashboardView.routePath,
-            builder: (context, state) => const DashboardView(),
+            path: VaultDashboardView.routePath,
+            builder: (context, state) => const VaultDashboardView(),
           ),
           GoRoute(
             path: CameraView.routePath,
