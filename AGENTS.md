@@ -10,6 +10,8 @@ This project follows the Karpathy LLM Wiki pattern:
 - `wiki/index.md` is the first navigation file to read before answering wiki questions.
 - `wiki/log.md` is an append-only chronological activity log.
 
+**Agent context:** Prefer the wiki (`wiki/index.md` → linked pages) for architecture, product state, constraints, and terminology. Do not rely on ContextStream or other external session-memory tools for project truth; those are out of scope for this workspace’s operating model.
+
 # Core Responsibilities
 - Ingest raw sources one at a time unless the user requests batch ingestion.
 - Extract durable claims, concepts, entities, terminology, contradictions, and open questions.
