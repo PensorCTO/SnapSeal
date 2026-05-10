@@ -24,7 +24,6 @@ auth.json
 .continue/
 .agents/.skill-lock.json
 .agents/skills/flutter-expert/
-.agents/skills/mobile-cross/
 
 # Logs
 *.log

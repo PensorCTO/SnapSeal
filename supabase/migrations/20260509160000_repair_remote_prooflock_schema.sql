@@ -159,3 +159,6 @@ $$;
 revoke all on function public.simulate_chain_notarize(text, text) from public;
 grant execute on function public.simulate_chain_notarize(text, text) to authenticated;
 grant execute on function public.simulate_chain_notarize(text, text) to service_role;
+
+-- Ensure PostgREST refreshes RPC metadata immediately after migration.
+notify pgrst, 'reload schema';
