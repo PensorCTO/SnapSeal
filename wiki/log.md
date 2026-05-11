@@ -65,3 +65,16 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 - Updated `Master_Context10MAY2026.md` and `PHASE_2_Blueprints10MAY2026.md` to replace “mathematical certainty wallet” / “mathematical certainty” with tamper-evident / risk-reduction language consistent with [[overview]] and Rule 03.
 - Adjusted `Master_Context10MAY2026.md` risks to reflect wallet-scoped ledger `SELECT` (`20260510120000_tighten_ledger_select_rls.sql`).
 - Renamed `.cursor/rules/snapseal-foundation.mdc` rule description (metadata only) to tamper-evident vault wording.
+
+## [2026-05-11] audit | Project audit + wiki refresh
+
+- Cross-checked Flutter vault/RPC/sync/native-channel paths against `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md`, `wiki/analyses/SnapSeal_Master_Blueprint.md`, `wiki/analyses/ProofLock_Refactor_Scope.md`, and `wiki/analyses/Master_Context_10MAY2026.md`.
+- Added `wiki/analyses/Project_Audit_2026-05-11.md` (schema-first-class) with findings table and residual gaps.
+- Updated baseline, blueprint, refactor scope, master context, `wiki/overview.md`, `wiki/index.md`, and `wiki/glossary.md` for **`proofLockFile`**, simulated **`NativeEnclaveChannel`**, **`proof_ledger`**, pending-sync **scheduler + UI retry**, **`dart_defines.json`**, and expanded tests.
+- Re-ran `python3 scripts/wiki_ingest.py --validate`.
+
+## [2026-05-11] ingest | Project audit raw source
+
+- Added immutable `raw/project_audit_2026-05-11.md` and source summary `wiki/sources/Project_Audit_2026-05-11_Source.md`; marked `COMPILED` in `manifest.md` targeting [[Project_Audit_2026-05-11_Source]].
+- Linked `wiki/analyses/Project_Audit_2026-05-11.md` provenance to the raw source; indexed the source in `wiki/index.md` and `wiki/overview.md`.
+- Re-ran `python3 scripts/wiki_ingest.py --validate`.

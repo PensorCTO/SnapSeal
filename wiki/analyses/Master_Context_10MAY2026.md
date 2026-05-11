@@ -7,9 +7,9 @@ summary: "Comprehensive architecture breakdown of the current repository state a
 
 ## Core Synthesis
 
-This page is the first-class wiki artifact version of the 10 MAY 2026 architecture review. The project is a dual system: a functional SnapSeal Flutter app plus an LLM-maintained architecture wiki. Current verified product reality is a **local-first secure media wallet** with Supabase-backed ledger replication and a confirmed logon -> capture -> dashboard happy path on a correctly migrated hosted project.
+This page is the first-class wiki artifact version of the 10 MAY 2026 architecture review. **For deltas after this date** (notably the **`VaultService.proofLockFile`** pipeline, **`check_proof_status` / `simulate_chain_notarize`**, simulated native **`signHash`**, **`proof_ledger` writes**, and **pending-sync scheduler + UI retry**), see [[Project_Audit_2026-05-11]]. The project remains a dual system: a functional SnapSeal Flutter app plus an LLM-maintained architecture wiki. Current verified product reality is a **local-first secure media wallet** with Supabase-backed proof surfaces and a confirmed logon → capture → **`/vault-dashboard`** happy path on a correctly migrated hosted project.
 
-Architecturally, runtime behavior is split into: (1) Flutter presentation/auth/routing, (2) vault-domain orchestration for sealing and extraction, (3) local data persistence (encrypted files + thumbnails + SQLite + secure key storage), and (4) Supabase auth/ledger/RPC surfaces. The app’s strongest implemented area is the sealing flow (isolate-backed IO/hash behavior, AES-GCM encryption, thumbnail generation, metadata persistence, and pending-sync handling when remote writes fail). Recent hardening includes compensating local file cleanup if SQLite write fails during sealing and dashboard refresh behavior cleanup when camera is dismissed without a capture result.
+Architecturally, runtime behavior is split into: (1) Flutter presentation/auth/routing, (2) vault-domain orchestration for sealing and extraction, (3) local data persistence (encrypted files + thumbnails + SQLite + secure key storage), and (4) Supabase auth/ledger/RPC surfaces. The app’s strongest implemented area is the sealing flow (isolate-backed IO/hash behavior, **remote preflight + simulated chain + device-signature step (currently non-production TEE)**, AES-GCM encryption, thumbnail generation, metadata persistence, and pending-sync handling when remote writes fail). Hardening includes compensating local file cleanup if SQLite write fails during sealing and dashboard refresh behavior cleanup when camera is dismissed without a capture result.
 
 On the data/infra side, the repository has moved beyond foundation migrations with targeted repair/backfill work for hosted Supabase drift. New migration surfaces rebuild proof-oriented tables (`simulated_chain_ledger`, `proof_ledger`) and restore RPCs (`check_proof_status`, `simulate_chain_notarize`) with `SECURITY DEFINER`, while a follow-up migration backfills `profiles` rows and missing `wallet_id` values from `auth.users`. Scripted operations have also been reinforced (`migration-list` in the Supabase pipeline script and a local hard-reset script for deterministic environment recovery).
 
@@ -30,10 +30,11 @@ The major architecture gap remains unchanged: **SnapSeal current-state != ProofL
    - GoRouter guards based on session state.
    - Sign-out burns local wallet state before remote sign-out.
 2. **Capture + Seal Pipeline**
-   - Camera capture -> isolate-backed file/hash operations.
-   - SHA-256 fingerprint -> AES-GCM encryption -> thumbnail generation.
+   - Camera capture → isolate-backed file/hash operations.
+   - When online: **`check_proof_status`**, **`signHash`** (native channel — **simulated** today), **`simulate_chain_notarize`** (or future Polygon adapter).
+   - SHA-256 fingerprint + AES-GCM encryption + thumbnail generation.
    - Local persistence to filesystem + SQLite metadata update.
-   - Supabase ledger sync attempt; failure leaves `pending_sync`.
+   - Supabase **`proof_ledger`** insert on success; failures leave `pending_sync` with backoff + background/UX retry hooks (see [[Project_Audit_2026-05-11]]).
 3. **Dashboard + Retrieval**
    - Dashboard renders from local metadata + local thumbnails.
    - Courier extraction primitive verifies hash after decrypt.
@@ -58,7 +59,7 @@ The major architecture gap remains unchanged: **SnapSeal current-state != ProofL
 
 - Hosted schema drift remains an operational risk without strict migration hygiene.
 - Repair migration for proof tables is destructive for pre-existing legacy rows.
-- `pending_sync` retry/reconciliation remains missing.
+- `pending_sync` can still frustrate users when errors are non-recoverable or silent; **scheduler + “Retry now”** exist but are not a full reconciliation product (see [[Project_Audit_2026-05-11]]).
 - Public-read ledger policy posture still needs explicit production review.
 - No production Polygon anchoring, native TEE signing path, or C2PA integration yet.
 - Automated test depth remains limited on critical crypto/sync/capture failure paths.
@@ -88,4 +89,5 @@ The major architecture gap remains unchanged: **SnapSeal current-state != ProofL
 * [[ProofLock_Architectural_Manifest]]
 * [[overview]]
 * [[log]]
+* [[Project_Audit_2026-05-11]]
 

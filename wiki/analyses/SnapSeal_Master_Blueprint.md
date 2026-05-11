@@ -9,7 +9,7 @@ summary: "Master blueprint of the current SnapSeal application state, completed 
 
 **Current baseline:** verified primary workflow and compressed Supabase posture are summarized in [[SnapSeal_Product_Baseline_2026-05]] (read that page first for status).
 
-SnapSeal is currently a Flutter application for authenticated capture, local sealing, and active-wallet proof replication. The app is framed as a **tamper-evident** media vault (risk reduction / authenticity heuristics) rather than a general secrecy vault or an absolute “proof-of-reality” claim: original media enters through `VaultService` (`snapseal_app/lib/domain/services/vault_service.dart`), is hashed, encrypted (AES-GCM via `VaultEncryptionHandler` / `CipherEngine`), stored locally, indexed in SQLite, represented by a lightweight thumbnail, and optionally synced to Supabase as an active-wallet ledger row. Polygon is still described as the intended durable proof layer, but no Polygon integration is implemented in the current codebase.
+SnapSeal is currently a Flutter application for authenticated capture, local sealing, and Supabase-backed **proof surfaces** (`check_proof_status`, simulated chain notarization, **`proof_ledger`**). The app is framed as a **tamper-evident** media vault (risk reduction / authenticity heuristics) rather than a general secrecy vault or an absolute “proof-of-reality” claim: **`VaultService.proofLockFile`** (used by capture and in-memory seal helpers) hashes in an isolate, runs **`check_proof_status`** when configured, obtains a **device signature** via `NativeEnclaveChannel` (iOS/Android handlers exist but return **simulated dev** signatures until Secure Enclave / Keystore work lands), calls **`ChainNotarizer`** (default **`SimulatedChainNotarizer`** → RPC `simulate_chain_notarize`; **`PolygonChainNotarizer`** is a **stub** that throws), encrypts with **AES-GCM** (`VaultEncryptionHandler`), persists to local storage + SQLite, and inserts **`proof_ledger`** when the remote path completes. **`seal_ledger`** remains in schema and is still touched in **`retryPendingRemoteSync`** as a best-effort replica step. Polygon as **durable** chain truth is still **not** implemented end-to-end.
 
 The main application shell is functional. `snapseal_app/lib/main.dart` initializes Supabase only when `SUPABASE_URL` and the rotated public `SUPABASE_ANON_KEY` are supplied as Dart defines (no PKCE / URI session options in the current tree). The Riverpod and GoRouter stack routes unauthenticated users to `/logon`, sends authenticated users to `/vault-dashboard`, and exposes `/camera` for capture.
 
@@ -17,13 +17,13 @@ Authentication uses **Supabase email OTP**: the logon flow sends a one-time code
 
 The local vault pipeline is the most complete functional area. Captured camera files are read off the UI thread via `Isolate.run`, fingerprinted (SHA-256), encrypted with **AES-GCM** using a locally generated 256-bit key in secure storage, thumbnailed, persisted under the app documents directory, and recorded in SQLite. The camera preview and sealing overlay are wrapped in repaint boundaries, and temporary capture files are deleted after sealing. Dashboard rendering uses thumbnail file paths and SQLite metadata rather than decrypting originals.
 
-Core Supabase-backed capture and ledger sync are **working on a migrated hosted project** (see [[SnapSeal_Product_Baseline_2026-05]]). Foundation migrations create `profiles` and `seal_ledger`, enable RLS, attach new-user profile creation, and allow authenticated users to insert ledger rows for their wallet. A forward migration (`supabase/migrations/20260510120000_tighten_ledger_select_rls.sql`) replaces earlier **world-readable** `SELECT` on ledger tables with **wallet-scoped** reads for authenticated sessions (aligned with ProofLock tenant-boundary intent). The Flutter repository can insert asset fingerprints and treat duplicate inserts for the same wallet as already synced. Failed or unavailable Supabase sync leaves local rows marked `pending_sync`, but there is no retry queue, background sync loop, or reconciliation UI yet. Broader product gaps (Polygon, reconciliation UX, ProofLock-class hardening) remain below.
+Core Supabase-backed capture and ledger sync are **working on a migrated hosted project** (see [[SnapSeal_Product_Baseline_2026-05]]). Foundation migrations create `profiles` and `seal_ledger`, enable RLS, attach new-user profile creation, and allow authenticated users to insert ledger rows for their wallet. A forward migration (`supabase/migrations/20260510120000_tighten_ledger_select_rls.sql`) replaces earlier **world-readable** `SELECT` on ledger tables with **wallet-scoped** reads for authenticated sessions (aligned with ProofLock tenant-boundary intent). The Flutter client implements **`SealLedgerRepository`**: `check_proof_status`, `simulate_chain_notarize`, **`seal_ledger` sync**, and **`proof_ledger` insert**. When remote work cannot finish, SQLite keeps **`pending_sync`** with exponential backoff fields; **`PendingSyncScheduler`** fire-and-forget retries every ~3 minutes, **`VaultDashboardView`** triggers **`syncPendingInBackground`** on open, and a banner offers **Retry now**. Broader gaps (real TEE signing, Polygon, C2PA, courier RPC model) remain below.
 
 The developer pipeline is mostly scaffolded. `scripts/snapseal_supabase_pipeline.sh` supports local Supabase start/reset/lint, remote login/link/push, push dry-runs, and Flutter app runs with Dart defines. GitHub Actions validates Supabase migrations on pull requests and can manually deploy migrations to a linked project. Test coverage is still minimal: one widget test verifies the logon shell renders.
 
 ### Relation to ProofLock manifesto (target architecture)
 
-The ingested **ProofLock** manifest ([[ProofLock_Architectural_Manifest]]) describes a **future bar** for market viability: **hardware enclave signing**, **Polygon anchoring**, **C2PA**, **`check_proof_status` RPC**, and a **`proof_ledger` / RPC-only courier** model. SnapSeal today implements **only a subset** (local hashing, encrypted vault, Supabase ledger insert, isolate discipline). A concrete gap analysis and phased effort estimate live in [[ProofLock_Refactor_Scope]].
+The ingested **ProofLock** manifest ([[ProofLock_Architectural_Manifest]]) describes a **future bar** for market viability: **hardware enclave signing**, **Polygon anchoring**, **C2PA**, **`check_proof_status` RPC**, and a **`proof_ledger` / RPC-only courier** model. SnapSeal today implements a **broader subset** than early refactor notes implied: `check_proof_status`, simulated chain (`simulate_chain_notarize`), `proof_ledger` writes, **`NativeEnclaveChannel` signing (currently simulated on device)**, backoff **`pending_sync`**, and compensating local file cleanup — but **not** production TEE signing, real Polygon, C2PA, or RPC-only courier tables. A concrete gap analysis and phased effort estimate live in [[ProofLock_Refactor_Scope]].
 
 ## Finished or Functionally Present
 
@@ -36,23 +36,28 @@ The ingested **ProofLock** manifest ([[ProofLock_Architectural_Manifest]]) descr
 - Local sealing pipeline: SHA-256 fingerprinting, AES-GCM encryption, thumbnail generation, SQLite metadata, secure local key storage, and temp capture cleanup.
 - Dashboard listing from SQLite using local thumbnails and pending-sync badges.
 - Local wallet burn operation that removes SQLite rows, vault files, and the secure vault key.
-- Courier extraction primitive that decrypts an original and re-verifies its SHA-256 fingerprint before returning bytes.
-- Supabase foundation schema for profiles, wallet IDs, active ledger rows, RLS, and new-user profile creation.
-- Supabase ledger insert path from Flutter for authenticated users.
+- Courier extraction primitive (`extractForCourier` + `CourierCrypto.decryptAndVerifyFingerprint`) that decrypts an original and re-verifies its SHA-256 fingerprint before returning bytes.
+- **ProofLock RPC surface** from Flutter: `check_proof_status`, `simulate_chain_notarize`, `proof_ledger` insert (via `SealLedgerRepository`).
+- **Native signing channel** (`NativeEnclaveChannel` / `com.snapseal.app/enclave`) with **simulated** `signHash` on iOS and Android (placeholders marked TODO for real enclave/Keystore).
+- **Pending-sync reconciliation**: periodic scheduler + dashboard hook + UI “Retry now”; `retryPendingRemoteSync` walks replica + proof path with backoff.
+- **Compensating local cleanup** if SQLite upsert fails after encrypted/thumbnail files are written.
+- **Certificate draft** dialog from vault grid (text draft via `CertificateExportService`; legal copy lives in `lib/core/legal/disclaimers.dart`).
+- Supabase foundation schema for profiles, wallet IDs, ledger tables (`seal_ledger`, repair-aligned `proof_ledger` / `simulated_chain_ledger`), RLS, and new-user profile creation.
+- User metadata editing (title/description) for archive rows from the vault UI.
 - Supabase local/remote pipeline script and CI migration validation workflow.
 
 ## Needs To Be Finished
 
-- Build pending-sync retry and reconciliation so offline ledger inserts can be retried after connectivity or auth returns.
-- Implement Polygon proof submission and persistence; `polygon_tx_hash` exists in the database but is not written by the app.
-- Add proof verification and lookup use cases beyond inserting active-wallet ledger rows.
-- Add UI around courier export/extraction; `extractForCourier` exists as a service primitive but is not user-facing.
+- Implement **real** Polygon (or other durable chain) submission in **`PolygonChainNotarizer`**; keep `USE_POLYGON_NOTARIZER=false` until then.
+- Wire **`REQUIRE_HARDWARE_ATTESTATION`** (and/or stricter gating) once native signing is production-grade.
+- Replace **simulated** `signHash` implementations with **hardware-backed** signing and appropriate attestation/error UX.
+- Add proof **verification** and outsider-facing lookup flows beyond owner session tooling.
+- Add user-facing **courier / package export** (e.g. `.plock`) atop `extractForCourier`; align with manifest **RPC-only** courier model when schema exists.
 - Add wallet unlink/delete flows that intentionally invoke the private unlink behavior; the migration defines `private.unlink_active_wallet` but the app does not call it.
-- Tighten Supabase Data API access validation, including any required role grants for `anon` and `authenticated` in the deployed project, especially while `seal_ledger` remains world-readable by policy.
-- Expand test coverage for auth controller behavior, vault sealing/extraction, pending-sync behavior, dashboard rendering, and Supabase repository edge cases.
-- Add failure handling around partial local writes in the vault pipeline; current storage/database steps are sequential and do not yet roll back written files if a later local step fails.
+- Continue Supabase Data API / role-grant review (`anon` vs `authenticated`), RPC privacy review, and production RLS verification.
+- Expand tests for auth transitions, full **`proofLockFile`** conflict paths (`ProofLockConflictException`), network fault injection, and Supabase repository edge cases (beyond current retry/dashboard/enclave/widget coverage).
 - Replace placeholder/simple UI metaphors with the intended final capture and digital wax seal experience.
-- **ProofLock viability track:** native Secure Enclave / Keystore signing path, C2PA FFI, and anti-injection capture strategy (see [[ProofLock_Refactor_Scope]]).
+- **ProofLock viability track:** C2PA, anti-injection capture strategy, and courier black-box schema (see [[ProofLock_Refactor_Scope]]).
 
 ## Working Functional Use Cases
 
@@ -70,11 +75,11 @@ When Supabase supplies a session through auth state changes, GoRouter redirects 
 
 ### Capture And Seal Media
 
-An authenticated user can open `/camera`, capture an image, and pass the captured file to `VaultService`. The service hashes the original bytes, encrypts them, creates a thumbnail, writes both artifacts locally, inserts SQLite metadata, attempts Supabase ledger sync, updates `pending_sync`, deletes the temporary camera file, and returns to the dashboard. **Baseline (2026-05):** this path is verified end-to-end on a correctly migrated Supabase project ([[SnapSeal_Product_Baseline_2026-05]]).
+An authenticated user can open `/camera`, capture media, and pass the captured file through **`VaultService.sealAndStoreCapture` → `proofLockFile`**. The pipeline runs isolate hashing, **`check_proof_status`** (when online), **simulated native `signHash`**, **simulated chain notarization**, local AES-GCM persistence + SQLite, **`proof_ledger`** insert when remote steps succeed, `pending_sync` + backoff when they do not, deletes the temporary capture file, and returns to **`/vault-dashboard`**. **Baseline:** verified on a correctly migrated hosted project ([[SnapSeal_Product_Baseline_2026-05]]). **Audit:** see [[Project_Audit_2026-05-11]] for simulation vs production caveats.
 
 ### View The Local Wallet
 
-The dashboard lists local archive items from SQLite in descending creation order. It renders thumbnails directly from disk and shows a shortened asset fingerprint, with a `(pending)` label when Supabase sync did not complete.
+The dashboard lists local archive items from SQLite in descending creation order. It renders thumbnails from disk, shows shortened fingerprints, **pending-sync** badges, a **banner** when any item is pending (with **Retry now**), and supports **certificate draft** / metadata actions from the grid.
 
 ### Burn The Local Wallet
 
@@ -90,12 +95,13 @@ Developers can run the Supabase helper script to start/reset/lint local Supabase
 
 ## Current Risk Register
 
-- The product's durable-proof promise is not complete until Polygon integration exists.
-- `pending_sync` can become a permanent state because no retry worker or manual retry action exists.
+- The product's durable on-chain proof story is not complete until a real **`PolygonChainNotarizer`** (or equivalent) exists; simulated RPC remains the default.
+- `pending_sync` can still linger when auth is missing or errors are non-recoverable; backoff and **silent** best-effort retries may need stronger user-visible diagnostics.
 - Ledger `SELECT` is wallet-scoped after `20260510120000_tighten_ledger_select_rls.sql`; continue to review grants (`anon` vs `authenticated`), RPC surfaces (`check_proof_status`), and privacy posture before production.
 - Local sealing does not yet provide an atomic transaction across file writes and SQLite metadata.
 - Test coverage is too thin to protect the capture, encryption, burn, and Supabase sync paths.
-- **ProofLock-class risk:** software-only capture + hash path does not prove physical sensor origin; enterprise spoofing scenarios remain out of scope until native TEE signing and capture hardening land ([[ProofLock_Refactor_Scope]]).
+- **Simulated signing risk:** software-only `signHash` responses are **not** ProofLock-grade hardware provenance; they are development placeholders on the path to Secure Enclave / Keystore.
+- **ProofLock-class risk:** software-delivered camera bytes + simulated signatures do not prove physical sensor origin; enterprise spoofing scenarios remain out of scope until native TEE signing and capture hardening land ([[ProofLock_Refactor_Scope]]).
 
 ## Provenance Tracking
 
@@ -105,7 +111,8 @@ Developers can run the Supabase helper script to start/reset/lint local Supabase
 * *Dashboard and local wallet behavior*: Derived from `snapseal_app/lib/ui/views/vault_dashboard_view.dart`, `snapseal_app/lib/ui/controllers/dashboard_controller.dart`, and `snapseal_app/lib/data/models/archive_item.dart` (2026-04-30; re-verified 2026-05-10)
 * *Supabase schema and pipeline*: Derived from `supabase/migrations/20260428013509_snapseal_foundation.sql`, `supabase/migrations/20260510120000_tighten_ledger_select_rls.sql`, `supabase/README.md`, `supabase/config.toml`, `scripts/snapseal_supabase_pipeline.sh`, and `.github/workflows/supabase.yml` (2026-04-30; RLS tighten 2026-05-10)
 * *ProofLock target architecture*: Derived from `raw/prooflock_architectural_manifest.md` via [[ProofLock_Architectural_Manifest]] (2026-05-03)
-* *Testing state*: Derived from `snapseal_app/test/widget_test.dart` (2026-05-03)
+* *Testing state*: Derived from `snapseal_app/test/widget_test.dart`, `snapseal_app/test/vault_service_retry_test.dart`, `snapseal_app/test/vault_dashboard_view_test.dart`, `snapseal_app/test/native_enclave_channel_test.dart` (2026-05-11)
+* *Post-May-10 reconciliation*: [[Project_Audit_2026-05-11]]
 * *Product baseline and hosted DB repairs*: Cross-checked with [[SnapSeal_Product_Baseline_2026-05]] (2026-05-09)
 
 ## Related Notes
@@ -115,3 +122,4 @@ Developers can run the Supabase helper script to start/reset/lint local Supabase
 * [[glossary]]
 * [[ProofLock_Architectural_Manifest]]
 * [[ProofLock_Refactor_Scope]]
+* [[Project_Audit_2026-05-11]]

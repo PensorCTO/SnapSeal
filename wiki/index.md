@@ -11,6 +11,7 @@ Read this page first when answering questions about the wiki.
 
 - [[Sample_Source]] - Bootstrap source describing the LLM Wiki workflow.
 - [[ProofLock_Architectural_Manifest]] - ProofLock viability manifest and target system architecture (ingested raw source summary).
+- [[Project_Audit_2026-05-11_Source]] - Immutable 2026-05-11 repo vs wiki audit (`raw/project_audit_2026-05-11.md`); see [[Project_Audit_2026-05-11]].
 
 ## Concepts
 
@@ -23,6 +24,7 @@ Read this page first when answering questions about the wiki.
 - [[ProofLock_Refactor_Scope]] - Gap analysis and phased effort from ProofLock manifesto to current SnapSeal implementation.
 - [[System_Context_Audit_2026-05-09]] - Archived stub (superseded by [[SnapSeal_Product_Baseline_2026-05]]).
 - [[Master_Context_10MAY2026]] - Comprehensive architecture breakdown snapshot for 2026-05-10.
+- [[Project_Audit_2026-05-11]] - Repo vs wiki reconciliation (seal pipeline, sync, native channel, tests, tooling).
 
 ## Maintenance
 
