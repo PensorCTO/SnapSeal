@@ -418,7 +418,7 @@ class VaultService {
     if (pendingRemote || chainTxHash == null) {
       await _database.markSyncDeferred(
         assetFingerprint: assetFingerprint,
-        nextRetryAt: _nextRetryAt(item.syncAttemptCount),
+        nextRetryAt: _nextRetryAt(item.syncAttemptCount + 1),
       );
       return false;
     }
@@ -439,7 +439,7 @@ class VaultService {
       if (_isRecoverableRemoteFailure(e)) {
         await _database.markSyncDeferred(
           assetFingerprint: assetFingerprint,
-          nextRetryAt: _nextRetryAt(item.syncAttemptCount),
+          nextRetryAt: _nextRetryAt(item.syncAttemptCount + 1),
         );
         return false;
       }
@@ -448,7 +448,7 @@ class VaultService {
       if (_isRecoverableRemoteFailure(e)) {
         await _database.markSyncDeferred(
           assetFingerprint: assetFingerprint,
-          nextRetryAt: _nextRetryAt(item.syncAttemptCount),
+          nextRetryAt: _nextRetryAt(item.syncAttemptCount + 1),
         );
         return false;
       }
@@ -456,9 +456,11 @@ class VaultService {
     }
   }
 
-  DateTime _nextRetryAt(int priorAttemptCount) {
+  /// Backoff from [syncAttemptCountAfterThisFailure] (matches `sync_attempt_count`
+  /// written by [VaultDatabase.markSyncDeferred], i.e. after incrementing for this deferral).
+  DateTime _nextRetryAt(int syncAttemptCountAfterThisFailure) {
     const maxBackoffMinutes = 60;
-    final exp = priorAttemptCount.clamp(0, 10);
+    final exp = syncAttemptCountAfterThisFailure.clamp(0, 10);
     final minutes = (1 << exp).clamp(1, maxBackoffMinutes);
     return DateTime.now().toUtc().add(Duration(minutes: minutes));
   }

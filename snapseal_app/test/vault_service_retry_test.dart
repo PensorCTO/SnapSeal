@@ -115,6 +115,44 @@ void main() {
     ).called(1);
   });
 
+  test(
+    'nextRetryAt matches post-increment sync_attempt_count (exponential backoff)',
+    () async {
+      final postponedItem = ArchiveItem(
+        assetFingerprint: assetFingerprint,
+        encryptedPath: '/tmp/a.seal',
+        thumbnailPath: '/tmp/a.jpg',
+        byteLength: 1,
+        createdAt: DateTime.utc(2026, 5, 11),
+        pendingSync: true,
+        syncAttemptCount: 2,
+      );
+      when(() => database.findArchiveItem(assetFingerprint))
+          .thenAnswer((_) async => postponedItem);
+      when(() => ledger.checkProofStatus(assetFingerprint)).thenAnswer((_) async => 'new');
+      when(() => native.signHash(assetFingerprint)).thenAnswer((_) async => 'sig');
+      when(() => chain.notarizeFileHash(fileHash: assetFingerprint, deviceSignature: 'sig'))
+          .thenThrow(const SocketException('network down'));
+
+      DateTime? capturedNextRetry;
+      when(
+        () => database.markSyncDeferred(
+          assetFingerprint: assetFingerprint,
+          nextRetryAt: any(named: 'nextRetryAt'),
+        ),
+      ).thenAnswer((invocation) async {
+        capturedNextRetry = invocation.namedArguments[#nextRetryAt]! as DateTime;
+      });
+
+      await service.retryPendingRemoteSync(assetFingerprint);
+
+      // Count becomes 3 in DB; backoff minutes = 2^3 = 8.
+      final delta =
+          capturedNextRetry!.difference(DateTime.now().toUtc()).inMinutes;
+      expect(delta, closeTo(8, 1));
+    },
+  );
+
   test('treats proof-ledger duplicate insert as successful idempotent sync', () async {
     when(() => ledger.checkProofStatus(assetFingerprint)).thenAnswer((_) async => 'new');
     when(() => native.signHash(assetFingerprint)).thenAnswer((_) async => 'sig');
