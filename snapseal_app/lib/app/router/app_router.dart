@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../ui/controllers/auth_controller.dart';
+import '../../ui/views/camera/acquisition_mode.dart';
 import '../../ui/views/camera/camera_view.dart';
 import '../../ui/views/vault_dashboard_view.dart';
 import '../../ui/views/logon_view.dart';
@@ -38,7 +39,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: CameraView.routePath,
-        builder: (context, state) => const CameraView(),
+        builder: (context, state) {
+          final mode = AcquisitionMode.parse(
+            state.uri.queryParameters['mode'],
+          );
+          return CameraView(mode: mode);
+        },
       ),
     ],
   );

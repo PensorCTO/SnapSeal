@@ -9,6 +9,7 @@ import '../../domain/export/certificate_export_service.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/dashboard_controller.dart';
 import 'archive_video_view.dart';
+import 'camera/acquisition_mode.dart';
 import 'camera/camera_view.dart';
 import 'logon_view.dart';
 
@@ -88,6 +89,7 @@ class _VaultDashboardViewState extends ConsumerState<VaultDashboardView> {
                   itemCount: items.length,
                   itemBuilder: (context, index) {
                     final item = items[index];
+                    final isVideo = item.mimeType?.startsWith('video/') ?? false;
                     return Card(
                       clipBehavior: Clip.antiAlias,
                       child: InkWell(
@@ -121,11 +123,28 @@ class _VaultDashboardViewState extends ConsumerState<VaultDashboardView> {
                               ),
                             ),
                           ),
-                          child: Image.file(
-                            File(item.thumbnailPath),
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.image_not_supported_outlined),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.file(
+                                File(item.thumbnailPath),
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    ColoredBox(
+                                  color: Colors.black26,
+                                  child: Icon(
+                                    isVideo
+                                        ? Icons.videocam_outlined
+                                        : Icons.image_not_supported_outlined,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                              ),
+                              if (isVideo)
+                                const Center(
+                                  child: _VideoBadge(),
+                                ),
+                            ],
                           ),
                         ),
                       ),
@@ -143,13 +162,23 @@ class _VaultDashboardViewState extends ConsumerState<VaultDashboardView> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          FloatingActionButton.extended(
-            heroTag: 'capture-fab',
-            onPressed: () async {
-              await context.push<bool>(CameraView.routePath);
-            },
-            icon: const Icon(Icons.camera_alt_outlined),
-            label: const Text('Capture'),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton.extended(
+                heroTag: 'capture-photo-fab',
+                onPressed: () => _openCamera(AcquisitionMode.photo),
+                icon: const Icon(Icons.camera_alt_outlined),
+                label: const Text('Photo'),
+              ),
+              const SizedBox(width: 12),
+              FloatingActionButton.extended(
+                heroTag: 'capture-video-fab',
+                onPressed: () => _openCamera(AcquisitionMode.video),
+                icon: const Icon(Icons.videocam_outlined),
+                label: const Text('Video'),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           FloatingActionButton.extended(
@@ -165,6 +194,14 @@ class _VaultDashboardViewState extends ConsumerState<VaultDashboardView> {
         ],
       ),
     );
+  }
+
+  Future<void> _openCamera(AcquisitionMode mode) async {
+    final location = Uri(
+      path: CameraView.routePath,
+      queryParameters: {'mode': mode.queryValue},
+    ).toString();
+    await context.push<bool>(location);
   }
 
   Future<void> _onArchiveItemTap(ArchiveItem item) async {
@@ -288,6 +325,27 @@ class _VaultDashboardViewState extends ConsumerState<VaultDashboardView> {
             child: const Text('Close'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _VideoBadge extends StatelessWidget {
+  const _VideoBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: const BoxDecoration(
+        color: Colors.black54,
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.play_arrow,
+        color: Colors.white,
+        size: 36,
       ),
     );
   }

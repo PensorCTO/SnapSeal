@@ -78,3 +78,12 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 - Added immutable `raw/project_audit_2026-05-11.md` and source summary `wiki/sources/Project_Audit_2026-05-11_Source.md`; marked `COMPILED` in `manifest.md` targeting [[Project_Audit_2026-05-11_Source]].
 - Linked `wiki/analyses/Project_Audit_2026-05-11.md` provenance to the raw source; indexed the source in `wiki/index.md` and `wiki/overview.md`.
 - Re-ran `python3 scripts/wiki_ingest.py --validate`.
+
+## [2026-05-11] feature | Phase 2 dual-mode capture (photo + video)
+
+- Added `AcquisitionMode` enum (`snapseal_app/lib/ui/views/camera/acquisition_mode.dart`) and threaded `mode` as a `/camera?mode=...` query parameter through `app_router.dart`.
+- Reworked `CameraView` to accept `AcquisitionMode`: photo retains single-tap shutter; video toggles `startVideoRecording` / `stopVideoRecording` with REC indicator and red shutter, then routes the resulting `XFile` through the existing `VaultService.sealAndStoreCapture` ProofLock pipeline.
+- Replaced the single dashboard "Capture" FAB with side-by-side **Photo** and **Video** extended FABs in `VaultDashboardView`; added a play-arrow badge overlay on `video/*` grid items and a video-aware error fallback.
+- Updated `VaultService._inferMimeType` to map `.mov`/`.mp4`/`.m4v`/`.webm` to their `video/*` MIME types so dashboards, video playback, and certificate drafts can branch on media kind.
+- Permissions: added `NSMicrophoneUsageDescription` (`snapseal_app/ios/Runner/Info.plist`) and `android.permission.RECORD_AUDIO` (`snapseal_app/android/app/src/main/AndroidManifest.xml`).
+- Tests: added a `vault_dashboard_view_test.dart` assertion for the Photo + Video FABs and updated `widget_test.dart` to tap "Photo" rather than the retired "Capture". `flutter analyze` and `flutter test` are green (13 tests).

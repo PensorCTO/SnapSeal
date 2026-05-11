@@ -487,6 +487,18 @@ class VaultService {
     if (lower.endsWith('.heic') || lower.endsWith('.heif')) {
       return 'image/heic';
     }
+    if (lower.endsWith('.mov')) {
+      return 'video/quicktime';
+    }
+    if (lower.endsWith('.mp4') || lower.endsWith('.m4v')) {
+      return 'video/mp4';
+    }
+    if (lower.endsWith('.webm')) {
+      return 'video/webm';
+    }
+    if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
+      return 'image/jpeg';
+    }
     return 'image/jpeg';
   }
 

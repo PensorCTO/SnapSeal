@@ -36,6 +36,23 @@ void main() {
     expect(find.text('Evidence vault'), findsOneWidget);
   });
 
+  testWidgets('exposes Photo and Video capture FABs side by side', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          dashboardControllerProvider.overrideWith(
+            _EmptyVaultDashboardController.new,
+          ),
+        ],
+        child: const MaterialApp(home: VaultDashboardView()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(FloatingActionButton, 'Photo'), findsOneWidget);
+    expect(find.widgetWithText(FloatingActionButton, 'Video'), findsOneWidget);
+  });
+
   testWidgets(
     'tapping a thumbnail shows video and metadata actions',
     (tester) async {

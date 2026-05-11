@@ -6,9 +6,12 @@ import '../../../core/services/haptic_service.dart';
 import '../../../data/supabase/auth_repository.dart';
 import '../../../domain/services/vault_service.dart';
 import '../../controllers/dashboard_controller.dart';
+import 'acquisition_mode.dart';
 
 class CameraView extends ConsumerStatefulWidget {
-  const CameraView({super.key});
+  const CameraView({super.key, this.mode = AcquisitionMode.photo});
+
+  final AcquisitionMode mode;
 
   static const routePath = '/camera';
 
@@ -20,6 +23,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
   CameraController? _controller;
   bool _isInitializing = true;
   bool _isSealing = false;
+  bool _isRecording = false;
   String? _errorMessage;
 
   @override
@@ -41,7 +45,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
       final controller = CameraController(
         preferred,
         ResolutionPreset.high,
-        enableAudio: false,
+        enableAudio: widget.mode == AcquisitionMode.video,
       );
       await controller.initialize();
       if (!mounted) {
@@ -61,7 +65,19 @@ class _CameraViewState extends ConsumerState<CameraView> {
     }
   }
 
-  Future<void> _capture() async {
+  Future<void> _onShutterPressed() async {
+    if (widget.mode == AcquisitionMode.video) {
+      if (_isRecording) {
+        await _stopAndSealVideo();
+      } else {
+        await _startVideoRecording();
+      }
+    } else {
+      await _capturePhoto();
+    }
+  }
+
+  Future<void> _capturePhoto() async {
     final controller = _controller;
     if (controller == null || !controller.value.isInitialized || _isSealing) {
       return;
@@ -76,6 +92,72 @@ class _CameraViewState extends ConsumerState<CameraView> {
 
     try {
       final xfile = await controller.takePicture();
+      await _sealCapturedFile(xfile);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = error.toString();
+        _isSealing = false;
+      });
+    }
+  }
+
+  Future<void> _startVideoRecording() async {
+    final controller = _controller;
+    if (controller == null ||
+        !controller.value.isInitialized ||
+        _isSealing ||
+        _isRecording) {
+      return;
+    }
+
+    await ref.read(hapticServiceProvider).selectionClick();
+
+    try {
+      await controller.startVideoRecording();
+      if (!mounted) return;
+      setState(() {
+        _isRecording = true;
+        _errorMessage = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = error.toString();
+        _isRecording = false;
+      });
+    }
+  }
+
+  Future<void> _stopAndSealVideo() async {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) {
+      return;
+    }
+
+    setState(() {
+      _isSealing = true;
+    });
+
+    try {
+      final xfile = await controller.stopVideoRecording();
+      if (!mounted) return;
+      setState(() {
+        _isRecording = false;
+      });
+      await _sealCapturedFile(xfile);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = error.toString();
+        _isRecording = false;
+        _isSealing = false;
+      });
+    }
+  }
+
+  Future<void> _sealCapturedFile(XFile xfile) async {
+    try {
       final userId = ref.read(supabaseClientProvider)?.auth.currentUser?.id ?? '';
       final result = await ref
           .read(vaultServiceProvider)
@@ -98,20 +180,37 @@ class _CameraViewState extends ConsumerState<CameraView> {
 
   @override
   void dispose() {
-    _controller?.dispose();
+    final controller = _controller;
+    if (controller != null) {
+      // Best-effort: stop a still-running recording before disposal so the
+      // platform encoder doesn't leak the temp file.
+      if (_isRecording && controller.value.isInitialized) {
+        controller.stopVideoRecording().catchError((_) => XFile(''));
+      }
+      controller.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isVideo = widget.mode == AcquisitionMode.video;
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(title: const Text('Capture')),
+      appBar: AppBar(
+        title: Text(isVideo ? 'Capture video' : 'Capture'),
+      ),
       body: Stack(
         children: [
           Positioned.fill(child: _buildCameraLayer(theme)),
+          if (_isRecording)
+            const Positioned(
+              top: 16,
+              left: 16,
+              child: _RecordingIndicator(),
+            ),
           if (_isSealing)
             const Positioned.fill(
               child: RepaintBoundary(child: _SealingOverlay()),
@@ -132,11 +231,17 @@ class _CameraViewState extends ConsumerState<CameraView> {
         ],
       ),
       floatingActionButton: FloatingActionButton.large(
-        onPressed: _isInitializing || _isSealing ? null : _capture,
-        child: const Icon(Icons.camera_alt),
+        onPressed: _isInitializing || _isSealing ? null : _onShutterPressed,
+        backgroundColor: _isRecording ? Colors.redAccent : null,
+        child: Icon(_shutterIcon(isVideo: isVideo, recording: _isRecording)),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
+  }
+
+  IconData _shutterIcon({required bool isVideo, required bool recording}) {
+    if (!isVideo) return Icons.camera_alt;
+    return recording ? Icons.stop : Icons.fiber_manual_record;
   }
 
   Widget _buildCameraLayer(ThemeData theme) {
@@ -159,6 +264,37 @@ class _CameraViewState extends ConsumerState<CameraView> {
       return const ColoredBox(color: Colors.black);
     }
     return RepaintBoundary(child: CameraPreview(_controller!));
+  }
+}
+
+class _RecordingIndicator extends StatelessWidget {
+  const _RecordingIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.black54,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          Icon(Icons.fiber_manual_record, color: Colors.redAccent, size: 14),
+          SizedBox(width: 6),
+          Text(
+            'REC',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

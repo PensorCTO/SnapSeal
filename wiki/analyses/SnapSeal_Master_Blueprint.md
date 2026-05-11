@@ -32,7 +32,7 @@ The ingested **ProofLock** manifest ([[ProofLock_Architectural_Manifest]]) descr
 - Email OTP send + 6-digit verify flow with configured/unconfigured UI states.
 - Supabase auth-state listener that drives authenticated routing.
 - Sign-out path that burns local wallet state before Supabase sign-out.
-- Camera capture screen with rear-camera preference, no-audio capture, sealing state, and error display.
+- Camera capture screen with rear-camera preference, **dual `AcquisitionMode` (photo / video)** driven by side-by-side dashboard FABs (`Photo` / `Video`); video mode enables audio, starts/stops via the shutter, and reuses the same seal pipeline. Sealing state and error display are shared across modes.
 - Local sealing pipeline: SHA-256 fingerprinting, AES-GCM encryption, thumbnail generation, SQLite metadata, secure local key storage, and temp capture cleanup.
 - Dashboard listing from SQLite using local thumbnails and pending-sync badges.
 - Local wallet burn operation that removes SQLite rows, vault files, and the secure vault key.
@@ -75,11 +75,11 @@ When Supabase supplies a session through auth state changes, GoRouter redirects 
 
 ### Capture And Seal Media
 
-An authenticated user can open `/camera`, capture media, and pass the captured file through **`VaultService.sealAndStoreCapture` → `proofLockFile`**. The pipeline runs isolate hashing, **`check_proof_status`** (when online), **simulated native `signHash`**, **simulated chain notarization**, local AES-GCM persistence + SQLite, **`proof_ledger`** insert when remote steps succeed, `pending_sync` + backoff when they do not, deletes the temporary capture file, and returns to **`/vault-dashboard`**. **Baseline:** verified on a correctly migrated hosted project ([[SnapSeal_Product_Baseline_2026-05]]). **Audit:** see [[Project_Audit_2026-05-11]] for simulation vs production caveats.
+An authenticated user picks a capture mode from the **Photo / Video** dual FAB on the vault dashboard, which routes to `/camera?mode=<photo|video>`. The shared `CameraView` then either takes a single picture or toggles `startVideoRecording` / `stopVideoRecording`, and passes the resulting `XFile` through **`VaultService.sealAndStoreCapture` → `proofLockFile`**. The pipeline runs isolate hashing, **`check_proof_status`** (when online), **simulated native `signHash`**, **simulated chain notarization**, local AES-GCM persistence + SQLite (MIME inferred for `image/*` and `video/*`), **`proof_ledger`** insert when remote steps succeed, `pending_sync` + backoff when they do not, deletes the temporary capture file, and returns to **`/vault-dashboard`**. **Baseline:** verified on a correctly migrated hosted project ([[SnapSeal_Product_Baseline_2026-05]]). **Audit:** see [[Project_Audit_2026-05-11]] for simulation vs production caveats.
 
 ### View The Local Wallet
 
-The dashboard lists local archive items from SQLite in descending creation order. It renders thumbnails from disk, shows shortened fingerprints, **pending-sync** badges, a **banner** when any item is pending (with **Retry now**), and supports **certificate draft** / metadata actions from the grid.
+The dashboard lists local archive items from SQLite in descending creation order. It renders thumbnails from disk, shows shortened fingerprints, **pending-sync** badges, a **banner** when any item is pending (with **Retry now**), and supports **certificate draft** / metadata actions from the grid. `video/*` items render a play-arrow overlay badge and fall back to a `videocam_outlined` placeholder when the thumbnail cannot be decoded as an image. Tapping a video row opens `ArchiveVideoView`, which uses the courier extract path (`VaultService.extractForCourier`) to decrypt + verify the fingerprint before playback in a temp file.
 
 ### Burn The Local Wallet
 

@@ -47,5 +47,7 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>SnapSeal uses the camera to capture media for sealing.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>SnapSeal records audio with video captures so the sealed clip preserves its original soundtrack.</string>
 </dict>
 </plist>
