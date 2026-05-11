@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -181,15 +183,31 @@ class _CameraViewState extends ConsumerState<CameraView> {
   @override
   void dispose() {
     final controller = _controller;
+    final wasRecording = _isRecording;
+    _controller = null;
     if (controller != null) {
-      // Best-effort: stop a still-running recording before disposal so the
-      // platform encoder doesn't leak the temp file.
-      if (_isRecording && controller.value.isInitialized) {
-        controller.stopVideoRecording().catchError((_) => XFile(''));
-      }
-      controller.dispose();
+      // State.dispose() must stay synchronous, so finalize the platform encoder
+      // and the controller asynchronously in a chained future. The order
+      // `stopVideoRecording` -> `controller.dispose()` is preserved so the
+      // encoder flushes its temp file before the session tears down.
+      unawaited(_teardownCamera(controller, wasRecording: wasRecording));
     }
     super.dispose();
+  }
+
+  static Future<void> _teardownCamera(
+    CameraController controller, {
+    required bool wasRecording,
+  }) async {
+    if (wasRecording && controller.value.isInitialized) {
+      try {
+        await controller.stopVideoRecording();
+      } catch (_) {
+        // Best-effort: the encoder may already be unwinding; we still want to
+        // proceed with controller disposal below.
+      }
+    }
+    await controller.dispose();
   }
 
   @override
