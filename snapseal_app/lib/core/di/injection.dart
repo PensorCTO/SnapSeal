@@ -6,9 +6,11 @@ import '../../data/supabase/auth_repository.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
 import '../../data/supabase/supabase_client_handle.dart';
 import '../crypto/vault_encryption_handler.dart';
+import '../../domain/export/certificate_export_service.dart';
 import '../../domain/blockchain/chain_notarizer.dart';
 import '../../domain/services/vault_service.dart';
 import '../ghost_key/native_enclave_channel.dart';
+import '../config/app_config.dart';
 import 'locator.dart';
 
 var _diConfigured = false;
@@ -46,7 +48,13 @@ Future<void> configureDependencies() async {
   );
 
   getIt.registerLazySingleton<ChainNotarizer>(
-    () => SimulatedChainNotarizer(getIt<SealLedgerRepository>()),
+    () => AppConfig.usePolygonNotarizer
+        ? PolygonChainNotarizer()
+        : SimulatedChainNotarizer(getIt<SealLedgerRepository>()),
+  );
+
+  getIt.registerLazySingleton<CertificateExportService>(
+    CertificateExportService.new,
   );
 
   getIt.registerLazySingleton<VaultService>(

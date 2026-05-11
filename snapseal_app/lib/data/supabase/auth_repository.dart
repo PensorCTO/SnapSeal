@@ -21,6 +21,7 @@ class AuthRepository {
   bool get isConfigured => _handle.client != null;
 
   Session? get currentSession => _handle.client?.auth.currentSession;
+  String? get currentUserId => currentSession?.user.id;
 
   Future<void> signOut() async {
     await _handle.client?.auth.signOut();

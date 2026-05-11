@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../data/models/archive_item.dart';
+import '../../domain/export/certificate_export_service.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/dashboard_controller.dart';
 import 'archive_video_view.dart';
@@ -53,63 +54,86 @@ class _VaultDashboardViewState extends ConsumerState<VaultDashboardView> {
       ),
       body: archive.when(
         data: (items) {
+          final pendingCount = items.where((item) => item.pendingSync).length;
           if (items.isEmpty) {
             return const _EmptyVault();
           }
 
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 220,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-            ),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return Card(
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: () => _onArchiveItemTap(item),
-                  child: GridTile(
-                    footer: ColoredBox(
-                      color: Colors.black54,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (item.title != null && item.title!.isNotEmpty)
-                              Text(
-                                item.title!,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
+          return Column(
+            children: [
+              if (pendingCount > 0)
+                MaterialBanner(
+                  content: Text(
+                    '$pendingCount item(s) pending sync. We will keep retrying in the background.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        ref
+                            .read(dashboardControllerProvider.notifier)
+                            .syncPendingInBackground();
+                      },
+                      child: const Text('Retry now'),
+                    ),
+                  ],
+                ),
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 220,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    return Card(
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: () => _onArchiveItemTap(item),
+                        child: GridTile(
+                          footer: ColoredBox(
+                            color: Colors.black54,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (item.title != null && item.title!.isNotEmpty)
+                                    Text(
+                                      item.title!,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  Text(
+                                    item.pendingSync
+                                        ? '${item.assetFingerprint.substring(0, 12)} (pending)'
+                                        : item.assetFingerprint.substring(0, 12),
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ],
                               ),
-                            Text(
-                              item.pendingSync
-                                  ? '${item.assetFingerprint.substring(0, 12)} (pending)'
-                                  : item.assetFingerprint.substring(0, 12),
-                              style: const TextStyle(color: Colors.white),
                             ),
-                          ],
+                          ),
+                          child: Image.file(
+                            File(item.thumbnailPath),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.image_not_supported_outlined),
+                          ),
                         ),
                       ),
-                    ),
-                    child: Image.file(
-                      File(item.thumbnailPath),
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.image_not_supported_outlined),
-                    ),
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
+              ),
+            ],
           );
         },
         error: (error, stackTrace) => Center(child: Text(error.toString())),
@@ -168,6 +192,17 @@ class _VaultDashboardViewState extends ConsumerState<VaultDashboardView> {
                     );
                   },
                 ),
+              ListTile(
+                leading: const Icon(Icons.picture_as_pdf_outlined),
+                title: const Text('Certificate draft'),
+                subtitle: const Text(
+                  'Includes legal disclosure text for future PDF export.',
+                ),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  await _showCertificateDraft(item);
+                },
+              ),
               ListTile(
                 leading: const Icon(Icons.edit_note_outlined),
                 title: const Text('Manage title and description'),
@@ -236,6 +271,25 @@ class _VaultDashboardViewState extends ConsumerState<VaultDashboardView> {
       titleController.dispose();
       descriptionController.dispose();
     }
+  }
+
+  Future<void> _showCertificateDraft(ArchiveItem item) async {
+    final draft = ref
+        .read(certificateExportServiceProvider)
+        .buildCertificateDraft(item);
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Certificate draft'),
+        content: SingleChildScrollView(child: SelectableText(draft)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 }
 

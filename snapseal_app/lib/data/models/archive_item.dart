@@ -9,6 +9,9 @@ class ArchiveItem {
     this.mimeType,
     this.title,
     this.description,
+    this.syncAttemptCount = 0,
+    this.lastSyncAttemptAt,
+    this.nextRetryAt,
   });
 
   final String assetFingerprint;
@@ -20,6 +23,9 @@ class ArchiveItem {
   final String? mimeType;
   final String? title;
   final String? description;
+  final int syncAttemptCount;
+  final DateTime? lastSyncAttemptAt;
+  final DateTime? nextRetryAt;
 
   ArchiveItem copyWith({
     String? assetFingerprint,
@@ -31,6 +37,9 @@ class ArchiveItem {
     String? mimeType,
     String? title,
     String? description,
+    int? syncAttemptCount,
+    DateTime? lastSyncAttemptAt,
+    DateTime? nextRetryAt,
   }) => ArchiveItem(
     assetFingerprint: assetFingerprint ?? this.assetFingerprint,
     encryptedPath: encryptedPath ?? this.encryptedPath,
@@ -41,6 +50,9 @@ class ArchiveItem {
     mimeType: mimeType ?? this.mimeType,
     title: title ?? this.title,
     description: description ?? this.description,
+    syncAttemptCount: syncAttemptCount ?? this.syncAttemptCount,
+    lastSyncAttemptAt: lastSyncAttemptAt ?? this.lastSyncAttemptAt,
+    nextRetryAt: nextRetryAt ?? this.nextRetryAt,
   );
 
   Map<String, Object?> toDatabase() => {
@@ -53,6 +65,9 @@ class ArchiveItem {
     'pending_sync': pendingSync ? 1 : 0,
     'title': title,
     'description': description,
+    'sync_attempt_count': syncAttemptCount,
+    'last_sync_attempt_at': lastSyncAttemptAt?.toIso8601String(),
+    'next_retry_at': nextRetryAt?.toIso8601String(),
   };
 
   factory ArchiveItem.fromDatabase(Map<String, Object?> row) => ArchiveItem(
@@ -65,5 +80,12 @@ class ArchiveItem {
     pendingSync: ((row['pending_sync'] as int?) ?? 0) == 1,
     title: row['title'] as String?,
     description: row['description'] as String?,
+    syncAttemptCount: (row['sync_attempt_count'] as int?) ?? 0,
+    lastSyncAttemptAt: (row['last_sync_attempt_at'] as String?) == null
+        ? null
+        : DateTime.parse(row['last_sync_attempt_at']! as String),
+    nextRetryAt: (row['next_retry_at'] as String?) == null
+        ? null
+        : DateTime.parse(row['next_retry_at']! as String),
   );
 }

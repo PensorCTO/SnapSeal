@@ -33,3 +33,16 @@ class SimulatedChainNotarizer implements ChainNotarizer {
     );
   }
 }
+
+class PolygonChainNotarizer implements ChainNotarizer {
+  @override
+  Future<String> notarizeFileHash({
+    required String fileHash,
+    required String deviceSignature,
+  }) {
+    throw UnsupportedError(
+      'Polygon notarization is not wired yet. Keep USE_POLYGON_NOTARIZER=false '
+      'until the on-chain adapter is implemented.',
+    );
+  }
+}

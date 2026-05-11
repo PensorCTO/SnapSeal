@@ -246,6 +246,9 @@ class VaultService {
           pendingSync: true,
           title: null,
           description: null,
+          syncAttemptCount: 0,
+          lastSyncAttemptAt: null,
+          nextRetryAt: null,
         ),
       );
     } catch (_) {
@@ -306,6 +309,9 @@ class VaultService {
         mimeType: item.mimeType,
         title: item.title,
         description: item.description,
+        syncAttemptCount: item.syncAttemptCount,
+        lastSyncAttemptAt: item.lastSyncAttemptAt,
+        nextRetryAt: item.nextRetryAt,
       );
     } catch (_) {
       return item;
@@ -362,7 +368,7 @@ class VaultService {
     if (!_sealLedgerRepository.isConfigured) {
       return false;
     }
-    final userId = _authRepository.currentSession?.user.id;
+    final userId = _authRepository.currentUserId;
     if (userId == null || userId.isEmpty) {
       return false;
     }
@@ -380,10 +386,7 @@ class VaultService {
         return false;
       }
       if (status == 'owned_by_me') {
-        await _database.setPendingSync(
-          assetFingerprint: assetFingerprint,
-          pendingSync: false,
-        );
+        await _database.markSyncSucceeded(assetFingerprint: assetFingerprint);
         return true;
       }
     } catch (e) {
@@ -413,6 +416,10 @@ class VaultService {
     }
 
     if (pendingRemote || chainTxHash == null) {
+      await _database.markSyncDeferred(
+        assetFingerprint: assetFingerprint,
+        nextRetryAt: _nextRetryAt(item.syncAttemptCount),
+      );
       return false;
     }
 
@@ -422,29 +429,38 @@ class VaultService {
         deviceSignature: deviceSignature,
         chainTxHash: chainTxHash,
       );
-      await _database.setPendingSync(
-        assetFingerprint: assetFingerprint,
-        pendingSync: false,
-      );
+      await _database.markSyncSucceeded(assetFingerprint: assetFingerprint);
       return true;
     } on PostgrestException catch (e) {
       if (e.code == '23505') {
-        await _database.setPendingSync(
-          assetFingerprint: assetFingerprint,
-          pendingSync: false,
-        );
+        await _database.markSyncSucceeded(assetFingerprint: assetFingerprint);
         return true;
       }
       if (_isRecoverableRemoteFailure(e)) {
+        await _database.markSyncDeferred(
+          assetFingerprint: assetFingerprint,
+          nextRetryAt: _nextRetryAt(item.syncAttemptCount),
+        );
         return false;
       }
       rethrow;
     } catch (e) {
       if (_isRecoverableRemoteFailure(e)) {
+        await _database.markSyncDeferred(
+          assetFingerprint: assetFingerprint,
+          nextRetryAt: _nextRetryAt(item.syncAttemptCount),
+        );
         return false;
       }
       return false;
     }
+  }
+
+  DateTime _nextRetryAt(int priorAttemptCount) {
+    const maxBackoffMinutes = 60;
+    final exp = priorAttemptCount.clamp(0, 10);
+    final minutes = (1 << exp).clamp(1, maxBackoffMinutes);
+    return DateTime.now().toUtc().add(Duration(minutes: minutes));
   }
 
   Future<Uint8List> _loadOrCreateKeyBytes() async {

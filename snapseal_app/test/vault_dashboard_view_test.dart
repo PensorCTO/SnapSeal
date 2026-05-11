@@ -58,6 +58,23 @@ void main() {
       expect(find.text('Manage title and description'), findsOneWidget);
     },
   );
+
+  testWidgets('shows pending sync banner and retry action', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          dashboardControllerProvider.overrideWith(
+            _PendingArchiveDashboardController.new,
+          ),
+        ],
+        child: const MaterialApp(home: VaultDashboardView()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('pending sync'), findsOneWidget);
+    expect(find.text('Retry now'), findsOneWidget);
+  });
 }
 
 class _EmptyVaultDashboardController extends DashboardController {
@@ -81,6 +98,24 @@ class _VideoArchiveDashboardController extends DashboardController {
       pendingSync: false,
       title: 'Evidence clip',
       description: 'A short verification clip.',
+    ),
+  ];
+
+  @override
+  Future<void> syncPendingInBackground() async {}
+}
+
+class _PendingArchiveDashboardController extends DashboardController {
+  @override
+  Future<List<ArchiveItem>> build() async => [
+    ArchiveItem(
+      assetFingerprint: 'abc123456789pending',
+      encryptedPath: '/tmp/fake.seal',
+      thumbnailPath: '/tmp/fake.jpg',
+      byteLength: 42,
+      createdAt: DateTime.utc(2026, 5, 10),
+      mimeType: 'image/jpeg',
+      pendingSync: true,
     ),
   ];
 

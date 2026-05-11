@@ -49,6 +49,9 @@ class LocalVaultStorage {
       mimeType: item.mimeType,
       title: item.title,
       description: item.description,
+      syncAttemptCount: item.syncAttemptCount,
+      lastSyncAttemptAt: item.lastSyncAttemptAt,
+      nextRetryAt: item.nextRetryAt,
     );
   }
 
