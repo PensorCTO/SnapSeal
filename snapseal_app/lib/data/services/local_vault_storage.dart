@@ -19,10 +19,8 @@ class LocalVaultStorage {
   /// canonical vault layout. Prefer existing files at stored paths; otherwise fall
   /// back to `{vault}/thumbnails/{fingerprint}.jpg` and `{vault}/originals/{fingerprint}.seal`.
   Future<ArchiveItem> resolveArchivePaths(ArchiveItem item) async {
-    final canonicalThumb =
-        await _canonicalThumbnailPath(item.assetFingerprint);
-    final canonicalEnc =
-        await _canonicalEncryptedPath(item.assetFingerprint);
+    final canonicalThumb = await _canonicalThumbnailPath(item.assetFingerprint);
+    final canonicalEnc = await _canonicalEncryptedPath(item.assetFingerprint);
 
     var thumbnailPath = item.thumbnailPath;
     if (!_pathExists(thumbnailPath) && _pathExists(canonicalThumb)) {

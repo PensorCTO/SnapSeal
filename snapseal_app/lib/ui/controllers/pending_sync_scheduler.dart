@@ -34,7 +34,9 @@ class PendingSyncScheduler {
 
   Future<void> _run() async {
     try {
-      await _ref.read(dashboardControllerProvider.notifier).syncPendingInBackground();
+      await _ref
+          .read(dashboardControllerProvider.notifier)
+          .syncPendingInBackground();
     } catch (_) {
       // Best-effort scheduler: retry on next interval.
     }

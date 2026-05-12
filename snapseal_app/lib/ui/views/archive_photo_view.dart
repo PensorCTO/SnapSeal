@@ -12,9 +12,7 @@ class ArchivePhotoView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(item.title ?? 'Photo'),
-      ),
+      appBar: AppBar(title: Text(item.title ?? 'Photo')),
       backgroundColor: Colors.black,
       body: FutureBuilder(
         future: ref

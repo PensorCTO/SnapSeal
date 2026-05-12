@@ -57,9 +57,7 @@ class ArchiveItem {
     mimeType: identical(mimeType, _archiveCopyUnset)
         ? this.mimeType
         : mimeType as String?,
-    title: identical(title, _archiveCopyUnset)
-        ? this.title
-        : title as String?,
+    title: identical(title, _archiveCopyUnset) ? this.title : title as String?,
     description: identical(description, _archiveCopyUnset)
         ? this.description
         : description as String?,

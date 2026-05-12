@@ -17,7 +17,8 @@ void main() {
   testWidgets('TelemetryOverlay shows GPS placeholder and abbreviated hash', (
     tester,
   ) async {
-    const hash = 'abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789';
+    const hash =
+        'abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789';
 
     await tester.pumpWidget(
       const MaterialApp(

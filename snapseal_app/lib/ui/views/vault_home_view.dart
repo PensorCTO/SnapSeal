@@ -102,7 +102,10 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
                 ),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   children: [
                     Text(
                       'Choose an action',
@@ -186,10 +189,7 @@ class _HubTile extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.bodySmall,
-                      ),
+                      Text(subtitle, style: theme.textTheme.bodySmall),
                     ],
                   ),
                 ),

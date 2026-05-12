@@ -6,7 +6,9 @@ import 'package:sqflite/sqflite.dart';
 import '../../core/di/locator.dart';
 import '../models/archive_item.dart';
 
-final vaultDatabaseProvider = Provider<VaultDatabase>((ref) => getIt<VaultDatabase>());
+final vaultDatabaseProvider = Provider<VaultDatabase>(
+  (ref) => getIt<VaultDatabase>(),
+);
 
 class VaultDatabase {
   Database? _database;
@@ -134,9 +136,7 @@ class VaultDatabase {
     );
   }
 
-  Future<void> markSyncSucceeded({
-    required String assetFingerprint,
-  }) async {
+  Future<void> markSyncSucceeded({required String assetFingerprint}) async {
     final db = await _db;
     final nowIso = DateTime.now().toUtc().toIso8601String();
     await db.update(

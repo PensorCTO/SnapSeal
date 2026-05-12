@@ -16,11 +16,7 @@ void main() {
   });
 
   testWidgets('renders the SnapSeal logon shell', (tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: SnapSealApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: SnapSealApp()));
 
     expect(find.text('SnapSeal'), findsOneWidget);
     expect(find.text('Send Magic Number'), findsOneWidget);

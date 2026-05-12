@@ -107,3 +107,9 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 - Updated `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md`, `wiki/analyses/SnapSeal_Master_Blueprint.md`, and `wiki/analyses/Master_Context_11MAY2026.md` for the post-login `/vault-home` hub, `/archive` Photos/Videos tabs, legacy `/vault-dashboard` redirect, and shared `/camera?mode=photo|video` capture flow.
 - Documented archive behavior changes: native video-frame thumbnails, zero-byte thumbnail regeneration, owner-side full-size photo viewing (`ArchivePhotoView`), verified video playback (`ArchiveVideoView`), and per-item local delete that leaves remote proof rows intact.
 - Updated `wiki/index.md`, `wiki/overview.md`, and `wiki/glossary.md` to include the four-panel UX, local archive delete, and owner-side verified viewing terminology.
+
+## [2026-05-11] maintenance | Shutter painter wiki refresh
+
+- Reviewed wiki health with `python3 scripts/wiki_ingest.py --status` and `python3 scripts/wiki_ingest.py --validate` before edits: 15 wiki pages, 0 pending manifest rows, 0 broken wiki links.
+- Updated `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md`, `wiki/analyses/SnapSeal_Master_Blueprint.md`, `wiki/analyses/Master_Context_11MAY2026.md`, and `wiki/overview.md` for the custom `ShutterButtonPainter`: transparent-at-rest center, 150 ms white photo tap-down snap, and Kinetic Green fill while video recording.
+- Added `ShutterButtonPainter` to `wiki/glossary.md` and refreshed test status to `flutter analyze` + `flutter test` green (21 tests).

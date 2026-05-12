@@ -25,17 +25,49 @@ class ReticlePainter extends CustomPainter {
       ..strokeCap = StrokeCap.square;
 
     // Top-left
-    canvas.drawLine(const Offset(_inset, _inset), Offset(_inset + _arm, _inset), cornerPaint);
-    canvas.drawLine(const Offset(_inset, _inset), Offset(_inset, _inset + _arm), cornerPaint);
+    canvas.drawLine(
+      const Offset(_inset, _inset),
+      Offset(_inset + _arm, _inset),
+      cornerPaint,
+    );
+    canvas.drawLine(
+      const Offset(_inset, _inset),
+      Offset(_inset, _inset + _arm),
+      cornerPaint,
+    );
     // Top-right
-    canvas.drawLine(Offset(w - _inset, _inset), Offset(w - _inset - _arm, _inset), cornerPaint);
-    canvas.drawLine(Offset(w - _inset, _inset), Offset(w - _inset, _inset + _arm), cornerPaint);
+    canvas.drawLine(
+      Offset(w - _inset, _inset),
+      Offset(w - _inset - _arm, _inset),
+      cornerPaint,
+    );
+    canvas.drawLine(
+      Offset(w - _inset, _inset),
+      Offset(w - _inset, _inset + _arm),
+      cornerPaint,
+    );
     // Bottom-left
-    canvas.drawLine(Offset(_inset, h - _inset), Offset(_inset + _arm, h - _inset), cornerPaint);
-    canvas.drawLine(Offset(_inset, h - _inset), Offset(_inset, h - _inset - _arm), cornerPaint);
+    canvas.drawLine(
+      Offset(_inset, h - _inset),
+      Offset(_inset + _arm, h - _inset),
+      cornerPaint,
+    );
+    canvas.drawLine(
+      Offset(_inset, h - _inset),
+      Offset(_inset, h - _inset - _arm),
+      cornerPaint,
+    );
     // Bottom-right
-    canvas.drawLine(Offset(w - _inset, h - _inset), Offset(w - _inset - _arm, h - _inset), cornerPaint);
-    canvas.drawLine(Offset(w - _inset, h - _inset), Offset(w - _inset, h - _inset - _arm), cornerPaint);
+    canvas.drawLine(
+      Offset(w - _inset, h - _inset),
+      Offset(w - _inset - _arm, h - _inset),
+      cornerPaint,
+    );
+    canvas.drawLine(
+      Offset(w - _inset, h - _inset),
+      Offset(w - _inset, h - _inset - _arm),
+      cornerPaint,
+    );
 
     final crossPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.3)
@@ -44,14 +76,22 @@ class ReticlePainter extends CustomPainter {
     const crossHalf = 18.0;
     final cx = w / 2;
     final cy = h / 2;
-    canvas.drawLine(Offset(cx - crossHalf, cy), Offset(cx + crossHalf, cy), crossPaint);
-    canvas.drawLine(Offset(cx, cy - crossHalf), Offset(cx, cy + crossHalf), crossPaint);
+    canvas.drawLine(
+      Offset(cx - crossHalf, cy),
+      Offset(cx + crossHalf, cy),
+      crossPaint,
+    );
+    canvas.drawLine(
+      Offset(cx, cy - crossHalf),
+      Offset(cx, cy + crossHalf),
+      crossPaint,
+    );
 
     if (guideAspectRatio > 0 && w > 0 && h > 0) {
       final guidePaint = Paint()
-          ..color = Colors.white.withValues(alpha: 0.22)
-          ..strokeWidth = 1
-          ..style = PaintingStyle.stroke;
+        ..color = Colors.white.withValues(alpha: 0.22)
+        ..strokeWidth = 1
+        ..style = PaintingStyle.stroke;
 
       final canvasAspect = w / h;
       late double boxW;

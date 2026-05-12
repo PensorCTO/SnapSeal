@@ -47,6 +47,7 @@ dependencies:
   video_player: ^2.10.0
   google_fonts: ^8.1.0
   video_thumbnail: ^0.5.6
+  riverpod_annotation: ^4.0.2
 
 dev_dependencies:
   flutter_test:
@@ -59,6 +60,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   mocktail: ^1.0.4
+  build_runner: 2.4.15
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

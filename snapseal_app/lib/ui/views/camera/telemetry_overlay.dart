@@ -83,10 +83,10 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
   }
 
   TextStyle _mono() => GoogleFonts.robotoMono(
-        fontSize: 10.5,
-        color: Colors.white.withValues(alpha: 0.8),
-        height: 1.25,
-      );
+    fontSize: 10.5,
+    color: Colors.white.withValues(alpha: 0.8),
+    height: 1.25,
+  );
 
   String _formatUtc(DateTime dt) {
     final y = dt.year.toString().padLeft(4, '0');
@@ -129,7 +129,8 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
     final ts = _formatUtc(now);
     final mono = _mono();
 
-    final previewLine = widget.previewWidth != null && widget.previewHeight != null
+    final previewLine =
+        widget.previewWidth != null && widget.previewHeight != null
         ? '${widget.previewWidth}×${widget.previewHeight} · — Hz'
         : 'preview —×— · — Hz';
 
@@ -160,8 +161,9 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
                               active ? '[REC]' : '[${_modeTag()}]',
                               style: mono.copyWith(
                                 color: active
-                                    ? const Color(0xFF00D26A)
-                                        .withValues(alpha: 0.85)
+                                    ? const Color(
+                                        0xFF00D26A,
+                                      ).withValues(alpha: 0.85)
                                     : mono.color,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -177,16 +179,8 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
-                        _gpsLine(),
-                        style: mono,
-                        textAlign: TextAlign.right,
-                      ),
-                      Text(
-                        ts,
-                        style: mono,
-                        textAlign: TextAlign.right,
-                      ),
+                      Text(_gpsLine(), style: mono, textAlign: TextAlign.right),
+                      Text(ts, style: mono, textAlign: TextAlign.right),
                     ],
                   ),
                 ),

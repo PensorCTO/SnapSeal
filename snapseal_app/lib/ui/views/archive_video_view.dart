@@ -94,68 +94,62 @@ class _ArchiveVideoViewState extends ConsumerState<ArchiveVideoView> {
   Widget build(BuildContext context) {
     final controller = _controller;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.item.title ?? 'Video'),
-      ),
+      appBar: AppBar(title: Text(widget.item.title ?? 'Video')),
       body: Center(
         child: _isLoading
             ? const CircularProgressIndicator()
             : _error != null
-                ? Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(_error!),
-                  )
-                : controller == null
-                    ? const Text('Video unavailable')
-                    : SafeArea(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    final aspect =
-                                        controller.value.aspectRatio <= 0
-                                            ? 16 / 9
-                                            : controller.value.aspectRatio;
-                                    var width = constraints.maxWidth;
-                                    var height = width / aspect;
-                                    if (height > constraints.maxHeight) {
-                                      height = constraints.maxHeight;
-                                      width = height * aspect;
-                                    }
+            ? Padding(padding: const EdgeInsets.all(24), child: Text(_error!))
+            : controller == null
+            ? const Text('Video unavailable')
+            : SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final aspect = controller.value.aspectRatio <= 0
+                                ? 16 / 9
+                                : controller.value.aspectRatio;
+                            var width = constraints.maxWidth;
+                            var height = width / aspect;
+                            if (height > constraints.maxHeight) {
+                              height = constraints.maxHeight;
+                              width = height * aspect;
+                            }
 
-                                    return Center(
-                                      child: SizedBox(
-                                        width: width,
-                                        height: height,
-                                        child: VideoPlayer(controller),
-                                      ),
-                                    );
-                                  },
-                                ),
+                            return Center(
+                              child: SizedBox(
+                                width: width,
+                                height: height,
+                                child: VideoPlayer(controller),
                               ),
-                              const SizedBox(height: 12),
-                              IconButton.filled(
-                                onPressed: () {
-                                  if (controller.value.isPlaying) {
-                                    controller.pause();
-                                  } else {
-                                    controller.play();
-                                  }
-                                  setState(() {});
-                                },
-                                icon: Icon(
-                                  controller.value.isPlaying
-                                      ? Icons.pause
-                                      : Icons.play_arrow,
-                                ),
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      IconButton.filled(
+                        onPressed: () {
+                          if (controller.value.isPlaying) {
+                            controller.pause();
+                          } else {
+                            controller.play();
+                          }
+                          setState(() {});
+                        },
+                        icon: Icon(
+                          controller.value.isPlaying
+                              ? Icons.pause
+                              : Icons.play_arrow,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
       ),
     );
   }

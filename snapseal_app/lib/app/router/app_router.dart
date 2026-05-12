@@ -49,9 +49,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: CameraView.routePath,
         builder: (context, state) {
-          final mode = AcquisitionMode.parse(
-            state.uri.queryParameters['mode'],
-          );
+          final mode = AcquisitionMode.parse(state.uri.queryParameters['mode']);
           return CameraView(mode: mode);
         },
       ),

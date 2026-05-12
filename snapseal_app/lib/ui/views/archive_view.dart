@@ -47,7 +47,9 @@ class _ArchiveViewState extends ConsumerState<ArchiveView>
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.canPop() ? context.pop() : context.go(VaultHomeView.routePath),
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.go(VaultHomeView.routePath),
         ),
         title: const Text('Archive'),
         bottom: TabBar(
@@ -151,70 +153,75 @@ class _ArchiveGrid extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        return Card(
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: () => onOpenItem(item),
-            child: GridTile(
-              footer: ColoredBox(
-                color: Colors.black54,
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (item.title != null && item.title!.isNotEmpty)
-                        Text(
-                          item.title!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
+        return RepaintBoundary(
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () => onOpenItem(item),
+              child: GridTile(
+                footer: ColoredBox(
+                  color: Colors.black54,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (item.title != null && item.title!.isNotEmpty)
+                          Text(
+                            item.title!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
+                        Text(
+                          item.pendingSync
+                              ? '${item.assetFingerprint.substring(0, 12)} (pending)'
+                              : item.assetFingerprint.substring(0, 12),
+                          style: const TextStyle(color: Colors.white),
                         ),
-                      Text(
-                        item.pendingSync
-                            ? '${item.assetFingerprint.substring(0, 12)} (pending)'
-                            : item.assetFingerprint.substring(0, 12),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.file(
-                    File(item.thumbnailPath),
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => ColoredBox(
-                      color: Colors.black26,
-                      child: Icon(
-                        showVideoBadge
-                            ? Icons.videocam_outlined
-                            : Icons.image_not_supported_outlined,
-                        color: Colors.white70,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.file(
+                      File(item.thumbnailPath),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => ColoredBox(
+                        color: Colors.black26,
+                        child: Icon(
+                          showVideoBadge
+                              ? Icons.videocam_outlined
+                              : Icons.image_not_supported_outlined,
+                          color: Colors.white70,
+                        ),
                       ),
                     ),
-                  ),
-                  if (showVideoBadge) const Center(child: _VideoBadge()),
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: Material(
-                      color: Colors.black45,
-                      shape: const CircleBorder(),
-                      child: IconButton(
-                        icon: const Icon(Icons.more_horiz, color: Colors.white),
-                        tooltip: 'Actions',
-                        onPressed: () => onOpenItem(item),
+                    if (showVideoBadge) const Center(child: _VideoBadge()),
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Material(
+                        color: Colors.black45,
+                        shape: const CircleBorder(),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.more_horiz,
+                            color: Colors.white,
+                          ),
+                          tooltip: 'Actions',
+                          onPressed: () => onOpenItem(item),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -236,11 +243,7 @@ class _VideoBadge extends StatelessWidget {
         color: Colors.black54,
         shape: BoxShape.circle,
       ),
-      child: const Icon(
-        Icons.play_arrow,
-        color: Colors.white,
-        size: 36,
-      ),
+      child: const Icon(Icons.play_arrow, color: Colors.white, size: 36),
     );
   }
 }

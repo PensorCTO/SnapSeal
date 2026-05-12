@@ -34,10 +34,7 @@ class CameraChromeFrame extends StatelessWidget {
       padding: const EdgeInsets.all(3.5),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
-        child: ColoredBox(
-          color: Colors.black,
-          child: child,
-        ),
+        child: ColoredBox(color: Colors.black, child: child),
       ),
     );
   }

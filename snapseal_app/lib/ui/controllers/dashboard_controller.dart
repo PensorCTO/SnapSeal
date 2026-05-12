@@ -80,8 +80,9 @@ class DashboardController extends AsyncNotifier<List<ArchiveItem>> {
   Future<void> syncPendingInBackground() async {
     final coordinator = ref.read(pendingSyncCoordinatorProvider);
     await coordinator.run(() async {
-      final pending =
-          await ref.read(vaultDatabaseProvider).listPendingArchiveItems();
+      final pending = await ref
+          .read(vaultDatabaseProvider)
+          .listPendingArchiveItems();
       if (pending.isEmpty) {
         return;
       }
@@ -90,7 +91,9 @@ class DashboardController extends AsyncNotifier<List<ArchiveItem>> {
       var changed = false;
       for (final item in pending) {
         try {
-          final cleared = await vault.retryPendingRemoteSync(item.assetFingerprint);
+          final cleared = await vault.retryPendingRemoteSync(
+            item.assetFingerprint,
+          );
           if (cleared) {
             changed = true;
           }
@@ -147,8 +150,9 @@ class DashboardController extends AsyncNotifier<List<ArchiveItem>> {
     }
 
     final refreshed = current
-        .map((item) =>
-            item.assetFingerprint == assetFingerprint ? updated : item)
+        .map(
+          (item) => item.assetFingerprint == assetFingerprint ? updated : item,
+        )
         .toList(growable: false);
     state = AsyncData(refreshed);
   }

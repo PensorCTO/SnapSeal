@@ -25,6 +25,7 @@ summary: "Terminology reference for the LLM Wiki."
 | dart_defines.json (SnapSeal) | Filtered JSON from `scripts/write_flutter_dart_defines.py` / `scripts/sync_flutter_dart_defines.sh` for `flutter run --dart-define-from-file` (typically `SUPABASE_URL` + `SUPABASE_ANON_KEY` only). | [[SnapSeal_Product_Baseline_2026-05]], `snapseal_app/README.md` |
 | Pending sync scheduler | `PendingSyncScheduler` (~3 minute interval) triggers `DashboardController.syncPendingInBackground`. | [[Project_Audit_2026-05-11]], [[SnapSeal_Master_Blueprint]] |
 | AcquisitionMode | Dart enum (`snapseal_app/lib/ui/views/camera/acquisition_mode.dart`) that distinguishes photo vs video capture intent; threaded through `/camera?mode=photo\|video` and consumed by `CameraView` to toggle audio + recording shutter behavior. | [[Master_Context_11MAY2026]], [[SnapSeal_Master_Blueprint]] |
+| ShutterButtonPainter | Custom Flutter painter for the camera shutter: white 2 px stroked outer ring, transparent center at rest, 150 ms white photo snap, and Kinetic Green fill while video recording. | [[Master_Context_11MAY2026]], [[SnapSeal_Master_Blueprint]] |
 | Four-panel vault UX | Authenticated UI split into `/vault-home` hub (Archive / Picture / Video), `/archive` Photos/Videos tabs, photo camera, and video camera; replaces the prior mixed `/vault-dashboard` grid. | [[Master_Context_11MAY2026]], [[SnapSeal_Master_Blueprint]] |
 | Dual-mode capture (Photo + Video) | **Picture** and **Video** hub actions both flow through the same `VaultService.proofLockFile` seal pipeline, with `video/*` rows rendering native frame thumbnails and a play-arrow badge overlay in the archive. | [[Master_Context_11MAY2026]], [[SnapSeal_Product_Baseline_2026-05]] |
 | Archive delete (local) | Per-item archive action that deletes the local SQLite row plus encrypted/thumbnail files from the device; it does not erase remote `proof_ledger` rows. | [[SnapSeal_Master_Blueprint]], [[Master_Context_11MAY2026]] |
@@ -34,7 +35,7 @@ summary: "Terminology reference for the LLM Wiki."
 ## Provenance Tracking
 
 * *Initial terminology*: Derived from `raw/sample_llm_wiki_source.md` (2026-04-26)
-* *SnapSeal application terminology*: Derived from `wiki/analyses/SnapSeal_Master_Blueprint.md` and `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md` (2026-04-30; updated 2026-05-09; tamper-evident framing 2026-05-10; audit terms 2026-05-11 via [[Project_Audit_2026-05-11]]; dual-mode capture + cold-build defines added 2026-05-11 via [[Master_Context_11MAY2026]]; four-panel vault UX, archive delete, and owner-side verified viewing added 2026-05-11)
+* *SnapSeal application terminology*: Derived from `wiki/analyses/SnapSeal_Master_Blueprint.md` and `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md` (2026-04-30; updated 2026-05-09; tamper-evident framing 2026-05-10; audit terms 2026-05-11 via [[Project_Audit_2026-05-11]]; dual-mode capture + cold-build defines added 2026-05-11 via [[Master_Context_11MAY2026]]; four-panel vault UX, archive delete, owner-side verified viewing, and `ShutterButtonPainter` added 2026-05-11)
 * *ProofLock terminology*: Derived from `wiki/sources/ProofLock_Architectural_Manifest.md` and `wiki/analyses/ProofLock_Refactor_Scope.md` (2026-05-03)
 
 ## Related Notes

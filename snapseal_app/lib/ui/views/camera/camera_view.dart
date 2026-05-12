@@ -328,6 +328,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
 
 class CameraShutterButton extends StatefulWidget {
   const CameraShutterButton({
+    super.key,
     required this.enabled,
     required this.isVideo,
     required this.isRecording,
