@@ -73,47 +73,148 @@ void main() {
       authRepository: auth,
     );
 
-    when(() => database.findArchiveItem(assetFingerprint)).thenAnswer((_) async => item);
+    when(
+      () => database.findArchiveItem(assetFingerprint),
+    ).thenAnswer((_) async => item);
     when(() => ledger.isConfigured).thenReturn(true);
     when(() => auth.currentUserId).thenReturn('user-1');
-    when(() => ledger.syncAssetFingerprint(assetFingerprint)).thenAnswer(
-      (_) async => SealLedgerSyncStatus.synced,
-    );
+    when(
+      () => ledger.syncAssetFingerprint(assetFingerprint),
+    ).thenAnswer((_) async => SealLedgerSyncStatus.synced);
   });
 
   test('clears pending sync when proof status is owned_by_me', () async {
-    when(() => ledger.checkProofStatus(assetFingerprint)).thenAnswer((_) async => 'owned_by_me');
-    when(() => database.markSyncSucceeded(assetFingerprint: assetFingerprint))
-        .thenAnswer((_) async {});
-
-    final result = await service.retryPendingRemoteSync(assetFingerprint);
-
-    expect(result, isTrue);
-    verify(() => database.markSyncSucceeded(assetFingerprint: assetFingerprint)).called(1);
-  });
-
-  test('defers retry when chain notarization fails with recoverable error', () async {
-    when(() => ledger.checkProofStatus(assetFingerprint)).thenAnswer((_) async => 'new');
-    when(() => native.signHash(assetFingerprint)).thenAnswer((_) async => 'sig');
-    when(() => chain.notarizeFileHash(fileHash: assetFingerprint, deviceSignature: 'sig'))
-        .thenThrow(const SocketException('network down'));
     when(
-      () => database.markSyncDeferred(
-        assetFingerprint: assetFingerprint,
-        nextRetryAt: any(named: 'nextRetryAt'),
-      ),
+      () => ledger.checkProofStatus(assetFingerprint),
+    ).thenAnswer((_) async => 'owned_by_me');
+    when(
+      () => database.markSyncSucceeded(assetFingerprint: assetFingerprint),
     ).thenAnswer((_) async {});
 
     final result = await service.retryPendingRemoteSync(assetFingerprint);
 
-    expect(result, isFalse);
+    expect(result, isTrue);
     verify(
-      () => database.markSyncDeferred(
-        assetFingerprint: assetFingerprint,
-        nextRetryAt: any(named: 'nextRetryAt'),
-      ),
+      () => database.markSyncSucceeded(assetFingerprint: assetFingerprint),
     ).called(1);
   });
+
+  test(
+    'returns false without signing when proof status is anonymous',
+    () async {
+      when(
+        () => ledger.checkProofStatus(assetFingerprint),
+      ).thenAnswer((_) async => 'anonymous');
+
+      final result = await service.retryPendingRemoteSync(assetFingerprint);
+
+      expect(result, isFalse);
+      verifyNever(() => native.signHash(any()));
+      verifyNever(
+        () => chain.notarizeFileHash(
+          fileHash: any(named: 'fileHash'),
+          deviceSignature: any(named: 'deviceSignature'),
+        ),
+      );
+      verifyNever(
+        () => ledger.insertProofLedgerRow(
+          assetHash: any(named: 'assetHash'),
+          deviceSignature: any(named: 'deviceSignature'),
+          chainTxHash: any(named: 'chainTxHash'),
+        ),
+      );
+    },
+  );
+
+  test(
+    'defers retry when chain notarization fails with recoverable error',
+    () async {
+      when(
+        () => ledger.checkProofStatus(assetFingerprint),
+      ).thenAnswer((_) async => 'new');
+      when(
+        () => native.signHash(assetFingerprint),
+      ).thenAnswer((_) async => 'sig');
+      when(
+        () => chain.notarizeFileHash(
+          fileHash: assetFingerprint,
+          deviceSignature: 'sig',
+        ),
+      ).thenThrow(const SocketException('network down'));
+      when(
+        () => database.markSyncDeferred(
+          assetFingerprint: assetFingerprint,
+          nextRetryAt: any(named: 'nextRetryAt'),
+        ),
+      ).thenAnswer((_) async {});
+
+      final result = await service.retryPendingRemoteSync(assetFingerprint);
+
+      expect(result, isFalse);
+      verify(
+        () => database.markSyncDeferred(
+          assetFingerprint: assetFingerprint,
+          nextRetryAt: any(named: 'nextRetryAt'),
+        ),
+      ).called(1);
+    },
+  );
+
+  test(
+    'defers retry when native signHash fails with recoverable error',
+    () async {
+      when(
+        () => ledger.checkProofStatus(assetFingerprint),
+      ).thenAnswer((_) async => 'new');
+      when(
+        () => native.signHash(assetFingerprint),
+      ).thenThrow(const SocketException('failed'));
+      when(
+        () => database.markSyncDeferred(
+          assetFingerprint: assetFingerprint,
+          nextRetryAt: any(named: 'nextRetryAt'),
+        ),
+      ).thenAnswer((_) async {});
+
+      final result = await service.retryPendingRemoteSync(assetFingerprint);
+
+      expect(result, isFalse);
+      verify(
+        () => database.markSyncDeferred(
+          assetFingerprint: assetFingerprint,
+          nextRetryAt: any(named: 'nextRetryAt'),
+        ),
+      ).called(1);
+      verifyNever(
+        () => chain.notarizeFileHash(
+          fileHash: any(named: 'fileHash'),
+          deviceSignature: any(named: 'deviceSignature'),
+        ),
+      );
+    },
+  );
+
+  test(
+    'returns false without throwing when signHash fails with non-recoverable error',
+    () async {
+      when(
+        () => ledger.checkProofStatus(assetFingerprint),
+      ).thenAnswer((_) async => 'new');
+      when(
+        () => native.signHash(assetFingerprint),
+      ).thenThrow(const FormatException('bad enclave'));
+
+      final result = await service.retryPendingRemoteSync(assetFingerprint);
+
+      expect(result, isFalse);
+      verifyNever(
+        () => database.markSyncDeferred(
+          assetFingerprint: any(named: 'assetFingerprint'),
+          nextRetryAt: any(named: 'nextRetryAt'),
+        ),
+      );
+    },
+  );
 
   test(
     'nextRetryAt matches post-increment sync_attempt_count (exponential backoff)',
@@ -127,12 +228,21 @@ void main() {
         pendingSync: true,
         syncAttemptCount: 2,
       );
-      when(() => database.findArchiveItem(assetFingerprint))
-          .thenAnswer((_) async => postponedItem);
-      when(() => ledger.checkProofStatus(assetFingerprint)).thenAnswer((_) async => 'new');
-      when(() => native.signHash(assetFingerprint)).thenAnswer((_) async => 'sig');
-      when(() => chain.notarizeFileHash(fileHash: assetFingerprint, deviceSignature: 'sig'))
-          .thenThrow(const SocketException('network down'));
+      when(
+        () => database.findArchiveItem(assetFingerprint),
+      ).thenAnswer((_) async => postponedItem);
+      when(
+        () => ledger.checkProofStatus(assetFingerprint),
+      ).thenAnswer((_) async => 'new');
+      when(
+        () => native.signHash(assetFingerprint),
+      ).thenAnswer((_) async => 'sig');
+      when(
+        () => chain.notarizeFileHash(
+          fileHash: assetFingerprint,
+          deviceSignature: 'sig',
+        ),
+      ).thenThrow(const SocketException('network down'));
 
       DateTime? capturedNextRetry;
       when(
@@ -141,47 +251,61 @@ void main() {
           nextRetryAt: any(named: 'nextRetryAt'),
         ),
       ).thenAnswer((invocation) async {
-        capturedNextRetry = invocation.namedArguments[#nextRetryAt]! as DateTime;
+        capturedNextRetry =
+            invocation.namedArguments[#nextRetryAt]! as DateTime;
       });
 
       await service.retryPendingRemoteSync(assetFingerprint);
 
       // Count becomes 3 in DB; backoff minutes = 2^3 = 8.
-      final delta =
-          capturedNextRetry!.difference(DateTime.now().toUtc()).inMinutes;
+      final delta = capturedNextRetry!
+          .difference(DateTime.now().toUtc())
+          .inMinutes;
       expect(delta, closeTo(8, 1));
     },
   );
 
-  test('treats proof-ledger duplicate insert as successful idempotent sync', () async {
-    when(() => ledger.checkProofStatus(assetFingerprint)).thenAnswer((_) async => 'new');
-    when(() => native.signHash(assetFingerprint)).thenAnswer((_) async => 'sig');
-    when(() => chain.notarizeFileHash(fileHash: assetFingerprint, deviceSignature: 'sig'))
-        .thenAnswer((_) async => 'tx-hash');
-    when(
-      () => ledger.insertProofLedgerRow(
-        assetHash: assetFingerprint,
-        deviceSignature: 'sig',
-        chainTxHash: 'tx-hash',
-      ),
-    ).thenThrow(
-      const PostgrestException(
-        message: 'duplicate key',
-        code: '23505',
-      ),
-    );
-    when(() => database.markSyncSucceeded(assetFingerprint: assetFingerprint))
-        .thenAnswer((_) async {});
+  test(
+    'treats proof-ledger duplicate insert as successful idempotent sync',
+    () async {
+      when(
+        () => ledger.checkProofStatus(assetFingerprint),
+      ).thenAnswer((_) async => 'new');
+      when(
+        () => native.signHash(assetFingerprint),
+      ).thenAnswer((_) async => 'sig');
+      when(
+        () => chain.notarizeFileHash(
+          fileHash: assetFingerprint,
+          deviceSignature: 'sig',
+        ),
+      ).thenAnswer((_) async => 'tx-hash');
+      when(
+        () => ledger.insertProofLedgerRow(
+          assetHash: assetFingerprint,
+          deviceSignature: 'sig',
+          chainTxHash: 'tx-hash',
+        ),
+      ).thenThrow(
+        const PostgrestException(message: 'duplicate key', code: '23505'),
+      );
+      when(
+        () => database.markSyncSucceeded(assetFingerprint: assetFingerprint),
+      ).thenAnswer((_) async {});
 
-    final result = await service.retryPendingRemoteSync(assetFingerprint);
+      final result = await service.retryPendingRemoteSync(assetFingerprint);
 
-    expect(result, isTrue);
-    verify(() => database.markSyncSucceeded(assetFingerprint: assetFingerprint)).called(1);
-  });
+      expect(result, isTrue);
+      verify(
+        () => database.markSyncSucceeded(assetFingerprint: assetFingerprint),
+      ).called(1);
+    },
+  );
 
   test('returns false when asset is missing or no longer pending', () async {
-    when(() => database.findArchiveItem(assetFingerprint))
-        .thenAnswer((_) async => item.copyWith(pendingSync: false));
+    when(
+      () => database.findArchiveItem(assetFingerprint),
+    ).thenAnswer((_) async => item.copyWith(pendingSync: false));
 
     final result = await service.retryPendingRemoteSync(assetFingerprint);
 

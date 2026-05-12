@@ -16,15 +16,15 @@ Read this page first when answering questions about the wiki.
 ## Concepts
 
 - [[LLM_Wiki_Pattern]] - The source-to-wiki compilation model.
-- [[SnapSeal_Product_Baseline_2026-05]] - Verified primary workflow and compressed Supabase baseline (start here for SnapSeal status).
+- [[SnapSeal_Product_Baseline_2026-05]] - Verified hub/archive/capture workflow and compressed Supabase baseline (start here for SnapSeal status).
 
 ## Analyses
 
-- [[SnapSeal_Master_Blueprint]] - Current-state application blueprint covering completed capabilities, unfinished work, and working use cases.
+- [[SnapSeal_Master_Blueprint]] - Current-state application blueprint covering completed capabilities, four-panel vault UX, unfinished work, and working use cases.
 - [[ProofLock_Refactor_Scope]] - Gap analysis and phased effort from ProofLock manifesto to current SnapSeal implementation.
 - [[System_Context_Audit_2026-05-09]] - Archived stub (superseded by [[SnapSeal_Product_Baseline_2026-05]]).
 - [[Master_Context_10MAY2026]] - Archived comprehensive snapshot for 2026-05-10 (superseded by [[Master_Context_11MAY2026]]).
-- [[Master_Context_11MAY2026]] - **Current** comprehensive architecture snapshot (Phase 2 dual-mode capture, ProofLock-shaped seal, pending-sync reconciliation).
+- [[Master_Context_11MAY2026]] - **Current** comprehensive architecture snapshot (four-panel vault UX, Phase 2 dual-mode capture, ProofLock-shaped seal, pending-sync reconciliation).
 - [[Project_Audit_2026-05-11]] - Repo vs wiki reconciliation (seal pipeline, sync, native channel, tests, tooling).
 
 ## Maintenance

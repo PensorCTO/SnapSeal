@@ -101,3 +101,9 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 - Marked `[[Master_Context_10MAY2026]]` as archived snapshot in `wiki/index.md`.
 - Extended `wiki/glossary.md` with `AcquisitionMode`, **Dual-mode capture (Photo + Video)**, and the **Cold-build dart-defines rule** (operational lesson from the 2026-05-11 Supabase-config QA recovery: `--dart-define` values only refresh on a cold Flutter build).
 - Re-ran `python3 scripts/wiki_ingest.py --validate`.
+
+## [2026-05-11] maintenance | Four-panel vault UX wiki refresh
+
+- Updated `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md`, `wiki/analyses/SnapSeal_Master_Blueprint.md`, and `wiki/analyses/Master_Context_11MAY2026.md` for the post-login `/vault-home` hub, `/archive` Photos/Videos tabs, legacy `/vault-dashboard` redirect, and shared `/camera?mode=photo|video` capture flow.
+- Documented archive behavior changes: native video-frame thumbnails, zero-byte thumbnail regeneration, owner-side full-size photo viewing (`ArchivePhotoView`), verified video playback (`ArchiveVideoView`), and per-item local delete that leaves remote proof rows intact.
+- Updated `wiki/index.md`, `wiki/overview.md`, and `wiki/glossary.md` to include the four-panel UX, local archive delete, and owner-side verified viewing terminology.

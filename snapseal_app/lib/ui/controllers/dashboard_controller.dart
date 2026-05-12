@@ -12,8 +12,11 @@ final dashboardControllerProvider =
       DashboardController.new,
     );
 
+/// Single process-wide coordinator so all callers serialize through one mutex.
+final PendingSyncCoordinator _pendingSyncCoordinator = PendingSyncCoordinator();
+
 final pendingSyncCoordinatorProvider = Provider<PendingSyncCoordinator>(
-  (ref) => PendingSyncCoordinator(),
+  (ref) => _pendingSyncCoordinator,
 );
 
 class PendingSyncCoordinator {

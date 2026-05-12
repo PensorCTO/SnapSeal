@@ -9,6 +9,8 @@ summary: "Repository audit as of 2026-05-11: reconciles LLM Wiki claims with Flu
 
 This audit cross-checked `snapseal_app/`, `supabase/`, `scripts/`, and key wiki pages ([[SnapSeal_Product_Baseline_2026-05]], [[SnapSeal_Master_Blueprint]], [[ProofLock_Refactor_Scope]], [[Master_Context_10MAY2026]]). Several pages written through **2026-05-10** were **stale** relative to the current tree: capture now runs a **ProofLock-shaped** Dart pipeline (`VaultService.proofLockFile`), the Supabase client exposes **`check_proof_status`** and **`simulate_chain_notarize`**, **`proof_ledger`** rows are inserted on the happy remote path, **pending remote sync** is retried on a **3-minute timer** plus **dashboard lifecycle** and a **“Retry now”** banner, partial local seal failure triggers **compensating file deletion**, and **native `MethodChannel` signing exists but is deliberately simulated** on iOS/Android (TODO comments for Secure Enclave / Keystore). **Polygon** remains unwired: `USE_POLYGON_NOTARIZER=true` selects `PolygonChainNotarizer`, which still throws `UnsupportedError`. `REQUIRE_HARDWARE_ATTESTATION` is defined in `AppConfig` but **not referenced** elsewhere yet.
 
+**Historical note:** this audit records the repo state at ingest time. Later 2026-05-11 UI work split the authenticated surface into `/vault-home` and `/archive`, added local per-item delete, full-size photo viewing, native video-frame thumbnails, and a metallic forensic viewfinder; see [[Master_Context_11MAY2026]] and [[SnapSeal_Master_Blueprint]] for current behavior.
+
 Developer ergonomics improved: **`scripts/write_flutter_dart_defines.py`** emits filtered **`snapseal_app/dart_defines.json`** (only `SUPABASE_URL` / `SUPABASE_ANON_KEY` by default), **`scripts/sync_flutter_dart_defines.sh`** and **VS Code/Cursor launch** run sync before debug. Tests now include **`vault_service_retry_test.dart`**, **`vault_dashboard_view_test.dart`**, and **`native_enclave_channel_test.dart`** in addition to **`widget_test.dart`**.
 
 ### Findings vs prior wiki claims
@@ -43,5 +45,6 @@ Developer ergonomics improved: **`scripts/write_flutter_dart_defines.py`** emits
 * [[SnapSeal_Master_Blueprint]]
 * [[ProofLock_Refactor_Scope]]
 * [[Master_Context_10MAY2026]]
+* [[Master_Context_11MAY2026]]
 * [[overview]]
 * [[log]]

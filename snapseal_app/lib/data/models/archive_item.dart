@@ -1,3 +1,10 @@
+/// Sentinel for [ArchiveItem.copyWith]: distinguishes "omit argument" from "set null".
+class _ArchiveCopyUnset {
+  const _ArchiveCopyUnset();
+}
+
+const _archiveCopyUnset = _ArchiveCopyUnset();
+
 class ArchiveItem {
   const ArchiveItem({
     required this.assetFingerprint,
@@ -34,12 +41,12 @@ class ArchiveItem {
     int? byteLength,
     DateTime? createdAt,
     bool? pendingSync,
-    String? mimeType,
-    String? title,
-    String? description,
+    Object? mimeType = _archiveCopyUnset,
+    Object? title = _archiveCopyUnset,
+    Object? description = _archiveCopyUnset,
     int? syncAttemptCount,
-    DateTime? lastSyncAttemptAt,
-    DateTime? nextRetryAt,
+    Object? lastSyncAttemptAt = _archiveCopyUnset,
+    Object? nextRetryAt = _archiveCopyUnset,
   }) => ArchiveItem(
     assetFingerprint: assetFingerprint ?? this.assetFingerprint,
     encryptedPath: encryptedPath ?? this.encryptedPath,
@@ -47,12 +54,22 @@ class ArchiveItem {
     byteLength: byteLength ?? this.byteLength,
     createdAt: createdAt ?? this.createdAt,
     pendingSync: pendingSync ?? this.pendingSync,
-    mimeType: mimeType ?? this.mimeType,
-    title: title ?? this.title,
-    description: description ?? this.description,
+    mimeType: identical(mimeType, _archiveCopyUnset)
+        ? this.mimeType
+        : mimeType as String?,
+    title: identical(title, _archiveCopyUnset)
+        ? this.title
+        : title as String?,
+    description: identical(description, _archiveCopyUnset)
+        ? this.description
+        : description as String?,
     syncAttemptCount: syncAttemptCount ?? this.syncAttemptCount,
-    lastSyncAttemptAt: lastSyncAttemptAt ?? this.lastSyncAttemptAt,
-    nextRetryAt: nextRetryAt ?? this.nextRetryAt,
+    lastSyncAttemptAt: identical(lastSyncAttemptAt, _archiveCopyUnset)
+        ? this.lastSyncAttemptAt
+        : lastSyncAttemptAt as DateTime?,
+    nextRetryAt: identical(nextRetryAt, _archiveCopyUnset)
+        ? this.nextRetryAt
+        : nextRetryAt as DateTime?,
   );
 
   Map<String, Object?> toDatabase() => {

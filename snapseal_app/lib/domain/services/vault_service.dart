@@ -78,7 +78,10 @@ class VaultService {
 
   /// ProofLock pipeline: isolate hash → preflight RPC → TEE sign → simulated chain
   /// → AES-GCM local vault → `proof_ledger` → burn source.
-  Future<SealCaptureResult> proofLockFile(File sourceFile, String userId) async {
+  Future<SealCaptureResult> proofLockFile(
+    File sourceFile,
+    String userId,
+  ) async {
     final path = sourceFile.path;
     final mimeType = _inferMimeType(path);
 
@@ -282,14 +285,16 @@ class VaultService {
 
     try {
       final keyBytes = await _loadOrCreateKeyBytes();
-      final encryptedBytes =
-          await _storage.readEncryptedOriginal(item.encryptedPath);
+      final encryptedBytes = await _storage.readEncryptedOriginal(
+        item.encryptedPath,
+      );
       final clearBytes = await _vaultEncryption.decrypt(
         encryptedPayload: encryptedBytes,
         keyBytes: keyBytes,
       );
-      final verifiedFingerprint =
-          await _vaultEncryption.generateHash(clearBytes);
+      final verifiedFingerprint = await _vaultEncryption.generateHash(
+        clearBytes,
+      );
       if (verifiedFingerprint != item.assetFingerprint) {
         return item;
       }
@@ -349,7 +354,10 @@ class VaultService {
     String? sourcePath,
   }) async {
     if (mimeType?.startsWith('video/') ?? false) {
-      return _generateVideoThumbnailBytes(rawMediaBytes, sourcePath: sourcePath);
+      return _generateVideoThumbnailBytes(
+        rawMediaBytes,
+        sourcePath: sourcePath,
+      );
     }
     return _vaultEncryption.generateThumbnail(rawMediaBytes);
   }
@@ -369,7 +377,9 @@ class VaultService {
       return bytes ?? Uint8List(0);
     }
 
-    final tempDir = await Directory.systemTemp.createTemp('snapseal_video_thumb_');
+    final tempDir = await Directory.systemTemp.createTemp(
+      'snapseal_video_thumb_',
+    );
     final tempFile = File('${tempDir.path}/source.mp4');
     try {
       await tempFile.writeAsBytes(rawMediaBytes, flush: true);
@@ -457,8 +467,10 @@ class VaultService {
 
     var pendingRemote = false;
     try {
-      final status = await _sealLedgerRepository.checkProofStatus(assetFingerprint);
-      if (status == 'owned_by_other') {
+      final status = await _sealLedgerRepository.checkProofStatus(
+        assetFingerprint,
+      );
+      if (status == 'owned_by_other' || status == 'anonymous') {
         return false;
       }
       if (status == 'owned_by_me') {
@@ -473,14 +485,23 @@ class VaultService {
       }
     }
 
-    final deviceSignature = await _nativeEnclave.signHash(assetFingerprint);
+    String? deviceSignature;
+    try {
+      deviceSignature = await _nativeEnclave.signHash(assetFingerprint);
+    } catch (e) {
+      if (_isRecoverableRemoteFailure(e)) {
+        pendingRemote = true;
+      } else {
+        return false;
+      }
+    }
 
     String? chainTxHash;
     if (!pendingRemote) {
       try {
         chainTxHash = await _chainNotarizer.notarizeFileHash(
           fileHash: assetFingerprint,
-          deviceSignature: deviceSignature,
+          deviceSignature: deviceSignature!,
         );
       } catch (e) {
         if (_isRecoverableRemoteFailure(e)) {
@@ -502,7 +523,7 @@ class VaultService {
     try {
       await _sealLedgerRepository.insertProofLedgerRow(
         assetHash: assetFingerprint,
-        deviceSignature: deviceSignature,
+        deviceSignature: deviceSignature!,
         chainTxHash: chainTxHash,
       );
       await _database.markSyncSucceeded(assetFingerprint: assetFingerprint);
