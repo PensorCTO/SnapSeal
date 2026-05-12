@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/haptic_service.dart';
 import '../../../core/ui/painters/reticle_painter.dart';
+import '../../../core/ui/painters/shutter_button_painter.dart';
 import '../../../data/supabase/auth_repository.dart';
 import '../../../domain/services/vault_service.dart';
 import '../../controllers/dashboard_controller.dart';
@@ -169,7 +170,8 @@ class _CameraViewState extends ConsumerState<CameraView> {
 
   Future<void> _sealCapturedFile(XFile xfile) async {
     try {
-      final userId = ref.read(supabaseClientProvider)?.auth.currentUser?.id ?? '';
+      final userId =
+          ref.read(supabaseClientProvider)?.auth.currentUser?.id ?? '';
       final result = await ref
           .read(vaultServiceProvider)
           .sealAndStoreCapture(xfile, userId: userId);
@@ -231,9 +233,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: Text(isVideo ? 'Capture video' : 'Capture'),
-      ),
+      appBar: AppBar(title: Text(isVideo ? 'Capture video' : 'Capture')),
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -286,18 +286,14 @@ class _CameraViewState extends ConsumerState<CameraView> {
             ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.large(
-        onPressed: _isInitializing || _isSealing ? null : _onShutterPressed,
-        backgroundColor: _isRecording ? Colors.redAccent : null,
-        child: Icon(_shutterIcon(isVideo: isVideo, recording: _isRecording)),
+      floatingActionButton: _ShutterButton(
+        enabled: !_isInitializing && !_isSealing,
+        isVideo: isVideo,
+        isRecording: _isRecording,
+        onPressed: _onShutterPressed,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
-  }
-
-  IconData _shutterIcon({required bool isVideo, required bool recording}) {
-    if (!isVideo) return Icons.camera_alt;
-    return recording ? Icons.stop : Icons.fiber_manual_record;
   }
 
   bool get _showViewfinder {
@@ -327,6 +323,170 @@ class _CameraViewState extends ConsumerState<CameraView> {
       return const ColoredBox(color: Colors.black);
     }
     return CameraPreview(_controller!);
+  }
+}
+
+class _ShutterButton extends StatefulWidget {
+  const _ShutterButton({
+    required this.enabled,
+    required this.isVideo,
+    required this.isRecording,
+    required this.onPressed,
+  });
+
+  final bool enabled;
+  final bool isVideo;
+  final bool isRecording;
+  final Future<void> Function() onPressed;
+
+  @override
+  State<_ShutterButton> createState() => _ShutterButtonState();
+}
+
+class _ShutterButtonState extends State<_ShutterButton>
+    with SingleTickerProviderStateMixin {
+  static const _snapDuration = Duration(milliseconds: 150);
+  static const _kineticGreen = Color(0xFF00D26A);
+
+  late final AnimationController _fillController;
+  late final Animation<double> _fillProgress;
+  Color? _fillColor;
+
+  @override
+  void initState() {
+    super.initState();
+    _fillController = AnimationController(
+      vsync: this,
+      duration: _snapDuration,
+      reverseDuration: const Duration(milliseconds: 90),
+    );
+    _fillProgress = CurvedAnimation(
+      parent: _fillController,
+      curve: Curves.easeOutExpo,
+      reverseCurve: Curves.easeOut,
+    );
+    _syncRecordingFill();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ShutterButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isRecording != widget.isRecording ||
+        oldWidget.isVideo != widget.isVideo ||
+        oldWidget.enabled != widget.enabled) {
+      _syncRecordingFill();
+    }
+  }
+
+  @override
+  void dispose() {
+    _fillController.dispose();
+    super.dispose();
+  }
+
+  void _syncRecordingFill() {
+    if (!widget.enabled) {
+      _fillColor = null;
+      _fillController.reverse();
+      return;
+    }
+    if (widget.isVideo && widget.isRecording) {
+      _fillColor = _kineticGreen;
+      _fillController.forward();
+    } else if (_fillColor == _kineticGreen) {
+      _fillController.reverse().whenComplete(() {
+        if (mounted && !widget.isRecording) {
+          setState(() {
+            _fillColor = null;
+          });
+        }
+      });
+    }
+  }
+
+  void _handleTapDown(TapDownDetails details) {
+    if (!widget.enabled || widget.isVideo) return;
+    setState(() {
+      _fillColor = Colors.white;
+    });
+    _fillController.forward(from: 0);
+  }
+
+  void _handleTapCancel() {
+    if (!widget.enabled || widget.isVideo) return;
+    _releasePhotoFill();
+  }
+
+  void _handleTap() {
+    if (!widget.enabled) return;
+    if (!widget.isVideo) {
+      unawaited(widget.onPressed());
+      _releasePhotoFill();
+      return;
+    }
+    if (widget.isRecording) {
+      unawaited(widget.onPressed());
+    }
+  }
+
+  void _handleLongPress() {
+    if (!widget.enabled || !widget.isVideo) return;
+    if (widget.isRecording) {
+      unawaited(widget.onPressed());
+      return;
+    }
+    setState(() {
+      _fillColor = _kineticGreen;
+    });
+    _fillController.forward(from: 0);
+    unawaited(widget.onPressed());
+  }
+
+  void _releasePhotoFill() {
+    _fillController.reverse().whenComplete(() {
+      if (mounted && !widget.isRecording) {
+        setState(() {
+          _fillColor = null;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      enabled: widget.enabled,
+      label: widget.isVideo
+          ? (widget.isRecording ? 'Stop recording' : 'Start recording')
+          : 'Capture photo',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: widget.enabled ? _handleTapDown : null,
+        onTapCancel: widget.enabled ? _handleTapCancel : null,
+        onTap: widget.enabled ? _handleTap : null,
+        onLongPress: widget.enabled ? _handleLongPress : null,
+        child: Opacity(
+          opacity: widget.enabled ? 1 : 0.45,
+          child: SizedBox.square(
+            dimension: 72,
+            child: RepaintBoundary(
+              child: AnimatedBuilder(
+                animation: _fillProgress,
+                builder: (context, child) {
+                  return CustomPaint(
+                    painter: ShutterButtonPainter(
+                      fillColor: _fillColor,
+                      fillProgress: _fillProgress.value,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,64 +21,89 @@ class ArchiveItemActions {
     if (!context.mounted) return;
     await showModalBottomSheet<void>(
       context: context,
+      backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         final isVideo = item.mimeType?.startsWith('video/') ?? false;
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Icon(
-                  isVideo
-                      ? Icons.play_circle_outline
-                      : Icons.open_in_full_outlined,
+        return ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0x26121212),
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.white.withOpacity(0.1),
+                    width: 1.0,
+                  ),
                 ),
-                title: Text(isVideo ? 'Play video' : 'View full-size photo'),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => isVideo
-                          ? ArchiveVideoView(item: item)
-                          : ArchivePhotoView(item: item),
+              ),
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: Icon(
+                        isVideo
+                            ? Icons.play_circle_outline
+                            : Icons.open_in_full_outlined,
+                      ),
+                      title: Text(
+                        isVideo ? 'Play video' : 'View full-size photo',
+                      ),
+                      onTap: () {
+                        Navigator.of(sheetContext).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => isVideo
+                                ? ArchiveVideoView(item: item)
+                                : ArchivePhotoView(item: item),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.picture_as_pdf_outlined),
-                title: const Text('Certificate draft'),
-                subtitle: const Text(
-                  'Includes legal disclosure text for future PDF export.',
+                    ListTile(
+                      leading: const Icon(Icons.picture_as_pdf_outlined),
+                      title: const Text('Certificate draft'),
+                      subtitle: const Text(
+                        'Includes legal disclosure text for future PDF export.',
+                      ),
+                      onTap: () async {
+                        Navigator.of(sheetContext).pop();
+                        await _showCertificateDraft(context, ref, item);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.edit_note_outlined),
+                      title: const Text('Manage title and description'),
+                      onTap: () async {
+                        Navigator.of(sheetContext).pop();
+                        await _showMetadataDialog(context, ref, item);
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.delete_outline,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      title: Text(
+                        'Delete from this device',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        'Removes local files and metadata. Remote ledger rows are not removed.',
+                      ),
+                      onTap: () async {
+                        Navigator.of(sheetContext).pop();
+                        await confirmAndDelete(context, ref, item);
+                      },
+                    ),
+                  ],
                 ),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await _showCertificateDraft(context, ref, item);
-                },
               ),
-              ListTile(
-                leading: const Icon(Icons.edit_note_outlined),
-                title: const Text('Manage title and description'),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await _showMetadataDialog(context, ref, item);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
-                title: Text(
-                  'Delete from this device',
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-                subtitle: const Text(
-                  'Removes local files and metadata. Remote ledger rows are not removed.',
-                ),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await confirmAndDelete(context, ref, item);
-                },
-              ),
-            ],
+            ),
           ),
         );
       },
@@ -121,8 +148,9 @@ class ArchiveItemActions {
     ArchiveItem item,
   ) async {
     final titleController = TextEditingController(text: item.title ?? '');
-    final descriptionController =
-        TextEditingController(text: item.description ?? '');
+    final descriptionController = TextEditingController(
+      text: item.description ?? '',
+    );
     try {
       final shouldSave = await showDialog<bool>(
         context: context,
@@ -133,17 +161,13 @@ class ArchiveItemActions {
             children: [
               TextField(
                 controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                ),
+                decoration: const InputDecoration(labelText: 'Title'),
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                ),
+                decoration: const InputDecoration(labelText: 'Description'),
                 maxLines: 3,
               ),
             ],
@@ -162,7 +186,9 @@ class ArchiveItemActions {
       );
 
       if (shouldSave == true && context.mounted) {
-        await ref.read(dashboardControllerProvider.notifier).updateArchiveMetadata(
+        await ref
+            .read(dashboardControllerProvider.notifier)
+            .updateArchiveMetadata(
               assetFingerprint: item.assetFingerprint,
               title: titleController.text,
               description: descriptionController.text,
