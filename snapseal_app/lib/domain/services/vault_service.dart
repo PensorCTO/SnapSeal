@@ -110,9 +110,20 @@ class VaultService {
       }
     }
 
-    final deviceSignature = await _nativeEnclave.signHash(fileHash);
-
+    String? deviceSignature;
     if (!pendingRemoteSync) {
+      try {
+        deviceSignature = await _nativeEnclave.signHash(fileHash);
+      } catch (e) {
+        if (_isRecoverableRemoteFailure(e)) {
+          pendingRemoteSync = true;
+        } else {
+          rethrow;
+        }
+      }
+    }
+
+    if (!pendingRemoteSync && deviceSignature != null) {
       try {
         chainTxHash = await _chainNotarizer.notarizeFileHash(
           fileHash: fileHash,
@@ -137,7 +148,7 @@ class VaultService {
 
     var pendingSync = true;
 
-    if (!pendingRemoteSync && chainTxHash != null) {
+    if (!pendingRemoteSync && deviceSignature != null && chainTxHash != null) {
       try {
         await _sealLedgerRepository.insertProofLedgerRow(
           assetHash: fileHash,

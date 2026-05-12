@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -52,6 +54,19 @@ void main() {
     syncAttemptCount: 0,
   );
 
+  setUpAll(() {
+    registerFallbackValue(
+      ArchiveItem(
+        assetFingerprint: 'fallback',
+        encryptedPath: '/tmp/fallback.seal',
+        thumbnailPath: '/tmp/fallback.jpg',
+        byteLength: 0,
+        createdAt: DateTime.utc(2026, 5, 11),
+        pendingSync: true,
+      ),
+    );
+  });
+
   setUp(() {
     database = _MockVaultDatabase();
     storage = _MockLocalVaultStorage();
@@ -98,6 +113,96 @@ void main() {
       () => database.markSyncSucceeded(assetFingerprint: assetFingerprint),
     ).called(1);
   });
+
+  test(
+    'proofLockFile marks capture pending when native signing has recoverable error',
+    () async {
+      final tempDir = await Directory.systemTemp.createTemp(
+        'snapseal_proof_lock_test_',
+      );
+      final source = File('${tempDir.path}/capture.jpg');
+      final rawBytes = Uint8List.fromList([1, 2, 3, 4]);
+      final assetHash = crypto.sha256.convert(rawBytes).toString();
+      final keyBytes = Uint8List.fromList(List<int>.filled(32, 1));
+      final encryptedBytes = Uint8List.fromList([9, 8, 7]);
+      final thumbnailBytes = Uint8List.fromList([6, 5, 4]);
+
+      try {
+        await source.writeAsBytes(rawBytes, flush: true);
+        when(
+          () => ledger.checkProofStatus(assetHash),
+        ).thenAnswer((_) async => 'new');
+        when(
+          () => native.signHash(assetHash),
+        ).thenThrow(const SocketException('connection reset'));
+        when(
+          () => secureStorage.read(key: any(named: 'key')),
+        ).thenAnswer((_) async => null);
+        when(() => vaultEncryption.generateKeyBytes()).thenReturn(keyBytes);
+        when(() => vaultEncryption.encodeKey(keyBytes)).thenReturn('encoded');
+        when(
+          () => secureStorage.write(
+            key: any(named: 'key'),
+            value: any(named: 'value'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => vaultEncryption.encrypt(bytes: rawBytes, keyBytes: keyBytes),
+        ).thenAnswer((_) async => encryptedBytes);
+        when(
+          () => vaultEncryption.generateThumbnail(rawBytes),
+        ).thenAnswer((_) async => thumbnailBytes);
+        when(
+          () => storage.writeEncryptedOriginal(
+            assetFingerprint: assetHash,
+            bytes: encryptedBytes,
+          ),
+        ).thenAnswer((_) async => '/tmp/$assetHash.seal');
+        when(
+          () => storage.writeThumbnail(
+            assetFingerprint: assetHash,
+            bytes: thumbnailBytes,
+          ),
+        ).thenAnswer((_) async => '/tmp/$assetHash.jpg');
+        when(() => database.upsertArchiveItem(any())).thenAnswer((_) async {});
+        when(
+          () => database.setPendingSync(
+            assetFingerprint: assetHash,
+            pendingSync: true,
+          ),
+        ).thenAnswer((_) async {});
+
+        final result = await service.proofLockFile(source, 'user-1');
+
+        expect(result.assetFingerprint, assetHash);
+        expect(result.pendingSync, isTrue);
+        expect(result.chainTxHash, isNull);
+        verify(
+          () => database.setPendingSync(
+            assetFingerprint: assetHash,
+            pendingSync: true,
+          ),
+        ).called(1);
+        verifyNever(
+          () => chain.notarizeFileHash(
+            fileHash: any(named: 'fileHash'),
+            deviceSignature: any(named: 'deviceSignature'),
+          ),
+        );
+        verifyNever(
+          () => ledger.insertProofLedgerRow(
+            assetHash: any(named: 'assetHash'),
+            deviceSignature: any(named: 'deviceSignature'),
+            chainTxHash: any(named: 'chainTxHash'),
+          ),
+        );
+      } finally {
+        if (tempDir.existsSync()) {
+          await tempDir.delete(recursive: true);
+        }
+      }
+    },
+  );
 
   test(
     'returns false without signing when proof status is anonymous',

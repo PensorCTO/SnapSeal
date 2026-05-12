@@ -286,7 +286,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
             ),
         ],
       ),
-      floatingActionButton: _ShutterButton(
+      floatingActionButton: CameraShutterButton(
         enabled: !_isInitializing && !_isSealing,
         isVideo: isVideo,
         isRecording: _isRecording,
@@ -326,8 +326,8 @@ class _CameraViewState extends ConsumerState<CameraView> {
   }
 }
 
-class _ShutterButton extends StatefulWidget {
-  const _ShutterButton({
+class CameraShutterButton extends StatefulWidget {
+  const CameraShutterButton({
     required this.enabled,
     required this.isVideo,
     required this.isRecording,
@@ -340,10 +340,10 @@ class _ShutterButton extends StatefulWidget {
   final Future<void> Function() onPressed;
 
   @override
-  State<_ShutterButton> createState() => _ShutterButtonState();
+  State<CameraShutterButton> createState() => _ShutterButtonState();
 }
 
-class _ShutterButtonState extends State<_ShutterButton>
+class _ShutterButtonState extends State<CameraShutterButton>
     with SingleTickerProviderStateMixin {
   static const _snapDuration = Duration(milliseconds: 150);
   static const _kineticGreen = Color(0xFF00D26A);
@@ -369,7 +369,7 @@ class _ShutterButtonState extends State<_ShutterButton>
   }
 
   @override
-  void didUpdateWidget(covariant _ShutterButton oldWidget) {
+  void didUpdateWidget(covariant CameraShutterButton oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.isRecording != widget.isRecording ||
         oldWidget.isVideo != widget.isVideo ||
@@ -424,9 +424,7 @@ class _ShutterButtonState extends State<_ShutterButton>
       _releasePhotoFill();
       return;
     }
-    if (widget.isRecording) {
-      unawaited(widget.onPressed());
-    }
+    unawaited(widget.onPressed());
   }
 
   void _handleLongPress() {
