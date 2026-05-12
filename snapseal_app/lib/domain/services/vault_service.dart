@@ -8,6 +8,7 @@ import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:postgrest/postgrest.dart';
+import 'package:video_thumbnail/video_thumbnail.dart' as video_thumbnail;
 
 import '../../core/crypto/courier_crypto.dart';
 import '../../core/crypto/vault_encryption_handler.dart';
@@ -128,6 +129,7 @@ class VaultService {
       rawMediaBytes,
       mimeType: mimeType,
       assetFingerprint: fileHash,
+      sourcePath: path,
     );
 
     var pendingSync = true;
@@ -216,14 +218,18 @@ class VaultService {
     Uint8List rawMediaBytes, {
     required String? mimeType,
     required String assetFingerprint,
+    String? sourcePath,
   }) async {
     final keyBytes = await _loadOrCreateKeyBytes();
     final encryptedBytes = await _vaultEncryption.encrypt(
       bytes: rawMediaBytes,
       keyBytes: keyBytes,
     );
-    final thumbnailBytes =
-        await _vaultEncryption.generateThumbnail(rawMediaBytes);
+    final thumbnailBytes = await _generateThumbnailBytes(
+      rawMediaBytes,
+      mimeType: mimeType,
+      sourcePath: sourcePath,
+    );
 
     final encryptedPath = await _storage.writeEncryptedOriginal(
       assetFingerprint: assetFingerprint,
@@ -262,12 +268,12 @@ class VaultService {
   }
 
   /// If the thumbnail file is missing but the encrypted original exists, decrypt,
-  /// verify the SHA-256 fingerprint, regenerate a JPEG thumbnail (image media), and
+  /// verify the SHA-256 fingerprint, regenerate a JPEG thumbnail, and
   /// write it under the vault. Returns [item] unchanged if the thumb exists,
   /// the original is missing, verification fails, or decode/thumbnail generation fails
-  /// (e.g. non-image sealed payload).
+  /// (e.g. unsupported media payload).
   Future<ArchiveItem> regenerateMissingThumbnail(ArchiveItem item) async {
-    if (_localFileExists(item.thumbnailPath)) {
+    if (_thumbnailFileExists(item.thumbnailPath)) {
       return item;
     }
     if (!_localFileExists(item.encryptedPath)) {
@@ -288,8 +294,10 @@ class VaultService {
         return item;
       }
 
-      final thumbnailBytes =
-          await _vaultEncryption.generateThumbnail(clearBytes);
+      final thumbnailBytes = await _generateThumbnailBytes(
+        clearBytes,
+        mimeType: item.mimeType,
+      );
       if (thumbnailBytes.isEmpty) {
         return item;
       }
@@ -326,6 +334,57 @@ class VaultService {
     }
   }
 
+  bool _thumbnailFileExists(String path) {
+    try {
+      final file = File(path);
+      return file.existsSync() && file.lengthSync() > 0;
+    } on FileSystemException {
+      return false;
+    }
+  }
+
+  Future<Uint8List> _generateThumbnailBytes(
+    Uint8List rawMediaBytes, {
+    required String? mimeType,
+    String? sourcePath,
+  }) async {
+    if (mimeType?.startsWith('video/') ?? false) {
+      return _generateVideoThumbnailBytes(rawMediaBytes, sourcePath: sourcePath);
+    }
+    return _vaultEncryption.generateThumbnail(rawMediaBytes);
+  }
+
+  Future<Uint8List> _generateVideoThumbnailBytes(
+    Uint8List rawMediaBytes, {
+    String? sourcePath,
+  }) async {
+    final existingPath = sourcePath;
+    if (existingPath != null && _localFileExists(existingPath)) {
+      final bytes = await video_thumbnail.VideoThumbnail.thumbnailData(
+        video: existingPath,
+        imageFormat: video_thumbnail.ImageFormat.JPEG,
+        maxWidth: 320,
+        quality: 72,
+      );
+      return bytes ?? Uint8List(0);
+    }
+
+    final tempDir = await Directory.systemTemp.createTemp('snapseal_video_thumb_');
+    final tempFile = File('${tempDir.path}/source.mp4');
+    try {
+      await tempFile.writeAsBytes(rawMediaBytes, flush: true);
+      final bytes = await video_thumbnail.VideoThumbnail.thumbnailData(
+        video: tempFile.path,
+        imageFormat: video_thumbnail.ImageFormat.JPEG,
+        maxWidth: 320,
+        quality: 72,
+      );
+      return bytes ?? Uint8List(0);
+    } finally {
+      await tempDir.delete(recursive: true);
+    }
+  }
+
   Future<SealedAsset> extractForCourier(String assetFingerprint) async {
     final item = await _database.findArchiveItem(assetFingerprint);
     if (item == null) {
@@ -356,6 +415,23 @@ class VaultService {
     await _database.deleteAll();
     await _storage.deleteAll();
     await _secureStorage.delete(key: _vaultKeyName);
+  }
+
+  /// Removes the local SQLite row and encrypted + thumbnail files for one asset.
+  ///
+  /// Does **not** delete remote `proof_ledger` / chain artifacts; those may
+  /// remain as historical records on Supabase.
+  Future<void> deleteArchiveItem(String assetFingerprint) async {
+    final item = await _database.findArchiveItem(assetFingerprint);
+    if (item == null) {
+      return;
+    }
+    final resolved = await _storage.resolveArchivePaths(item);
+    await _storage.deleteAssetFiles(
+      encryptedPath: resolved.encryptedPath,
+      thumbnailPath: resolved.thumbnailPath,
+    );
+    await _database.deleteArchiveItem(assetFingerprint);
   }
 
   /// Background-friendly: `seal_ledger` active-wallet row + proof ledger completion.

@@ -5,10 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/haptic_service.dart';
+import '../../../core/ui/painters/reticle_painter.dart';
 import '../../../data/supabase/auth_repository.dart';
 import '../../../domain/services/vault_service.dart';
 import '../../controllers/dashboard_controller.dart';
 import 'acquisition_mode.dart';
+import 'camera_chrome_frame.dart';
+import 'telemetry_overlay.dart';
 
 class CameraView extends ConsumerStatefulWidget {
   const CameraView({super.key, this.mode = AcquisitionMode.photo});
@@ -34,6 +37,11 @@ class _CameraViewState extends ConsumerState<CameraView> {
     _initializeCamera();
   }
 
+  void _onCameraValueChanged() {
+    if (!mounted) return;
+    setState(() {});
+  }
+
   Future<void> _initializeCamera() async {
     try {
       final cameras = await availableCameras();
@@ -54,6 +62,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
         await controller.dispose();
         return;
       }
+      controller.addListener(_onCameraValueChanged);
       setState(() {
         _controller = controller;
         _isInitializing = false;
@@ -184,6 +193,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
   void dispose() {
     final controller = _controller;
     final wasRecording = _isRecording;
+    controller?.removeListener(_onCameraValueChanged);
     _controller = null;
     if (controller != null) {
       // State.dispose() must stay synchronous, so finalize the platform encoder
@@ -214,6 +224,10 @@ class _CameraViewState extends ConsumerState<CameraView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isVideo = widget.mode == AcquisitionMode.video;
+    final controller = _controller;
+    final preview = controller?.value.previewSize;
+    final previewW = preview?.width.round();
+    final previewH = preview?.height.round();
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -221,18 +235,42 @@ class _CameraViewState extends ConsumerState<CameraView> {
         title: Text(isVideo ? 'Capture video' : 'Capture'),
       ),
       body: Stack(
+        fit: StackFit.expand,
         children: [
-          Positioned.fill(child: _buildCameraLayer(theme)),
-          if (_isRecording)
-            const Positioned(
-              top: 16,
-              left: 16,
-              child: _RecordingIndicator(),
+          Positioned.fill(
+            child: CameraChromeFrame(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Positioned.fill(child: _buildCameraLayer(theme)),
+                  if (_showViewfinder)
+                    Positioned.fill(
+                      child: RepaintBoundary(
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            CustomPaint(
+                              painter: ReticlePainter(
+                                guideAspectRatio: isVideo ? 2.35 : 16 / 9,
+                              ),
+                            ),
+                            TelemetryOverlay(
+                              acquisitionMode: widget.mode,
+                              isRecording: _isRecording,
+                              isSealing: _isSealing,
+                              previewWidth: previewW,
+                              previewHeight: previewH,
+                            ),
+                            if (_isSealing)
+                              const Positioned.fill(child: _SealingOverlay()),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          if (_isSealing)
-            const Positioned.fill(
-              child: RepaintBoundary(child: _SealingOverlay()),
-            ),
+          ),
           if (_errorMessage != null)
             Positioned(
               left: 16,
@@ -262,6 +300,13 @@ class _CameraViewState extends ConsumerState<CameraView> {
     return recording ? Icons.stop : Icons.fiber_manual_record;
   }
 
+  bool get _showViewfinder {
+    if (_isInitializing) return false;
+    final c = _controller;
+    if (c == null) return false;
+    return c.value.isInitialized;
+  }
+
   Widget _buildCameraLayer(ThemeData theme) {
     if (_isInitializing) {
       return const Center(child: CircularProgressIndicator());
@@ -281,38 +326,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
     if (_isSealing) {
       return const ColoredBox(color: Colors.black);
     }
-    return RepaintBoundary(child: CameraPreview(_controller!));
-  }
-}
-
-class _RecordingIndicator extends StatelessWidget {
-  const _RecordingIndicator();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.black54,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(Icons.fiber_manual_record, color: Colors.redAccent, size: 14),
-          SizedBox(width: 6),
-          Text(
-            'REC',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
-            ),
-          ),
-        ],
-      ),
-    );
+    return CameraPreview(_controller!);
   }
 }
 

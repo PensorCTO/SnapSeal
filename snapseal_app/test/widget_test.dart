@@ -7,7 +7,7 @@ import 'package:snapseal/data/models/archive_item.dart';
 import 'package:snapseal/core/di/injection.dart';
 import 'package:snapseal/ui/controllers/dashboard_controller.dart';
 import 'package:snapseal/ui/views/camera/camera_view.dart';
-import 'package:snapseal/ui/views/vault_dashboard_view.dart';
+import 'package:snapseal/ui/views/vault_home_view.dart';
 
 void main() {
   setUpAll(() async {
@@ -32,11 +32,11 @@ void main() {
     (tester) async {
       final buildCounter = ValueNotifier<int>(0);
       final router = GoRouter(
-        initialLocation: VaultDashboardView.routePath,
+        initialLocation: VaultHomeView.routePath,
         routes: [
           GoRoute(
-            path: VaultDashboardView.routePath,
-            builder: (context, state) => const VaultDashboardView(),
+            path: VaultHomeView.routePath,
+            builder: (context, state) => const VaultHomeView(),
           ),
           GoRoute(
             path: CameraView.routePath,
@@ -59,7 +59,7 @@ void main() {
 
       expect(buildCounter.value, 1);
 
-      await tester.tap(find.text('Photo'));
+      await tester.tap(find.text('Picture'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Dismiss camera'));
       await tester.pumpAndSettle();

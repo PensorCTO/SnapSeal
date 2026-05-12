@@ -189,4 +189,14 @@ class VaultDatabase {
     final db = await _db;
     await db.delete('archive_items');
   }
+
+  /// Deletes the archive row only (callers should remove files via storage).
+  Future<int> deleteArchiveItem(String assetFingerprint) async {
+    final db = await _db;
+    return db.delete(
+      'archive_items',
+      where: 'asset_fingerprint = ?',
+      whereArgs: [assetFingerprint],
+    );
+  }
 }

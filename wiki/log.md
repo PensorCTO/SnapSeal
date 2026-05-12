@@ -87,3 +87,17 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 - Updated `VaultService._inferMimeType` to map `.mov`/`.mp4`/`.m4v`/`.webm` to their `video/*` MIME types so dashboards, video playback, and certificate drafts can branch on media kind.
 - Permissions: added `NSMicrophoneUsageDescription` (`snapseal_app/ios/Runner/Info.plist`) and `android.permission.RECORD_AUDIO` (`snapseal_app/android/app/src/main/AndroidManifest.xml`).
 - Tests: added a `vault_dashboard_view_test.dart` assertion for the Photo + Video FABs and updated `widget_test.dart` to tap "Photo" rather than the retired "Capture". `flutter analyze` and `flutter test` are green (13 tests).
+
+## [2026-05-11] fix | Camera dispose race for video recording
+
+- `CameraView.dispose()` previously called `controller.stopVideoRecording()` without awaiting it before `controller.dispose()`, creating a race that could leak the platform encoder (`snapseal_app/lib/ui/views/camera/camera_view.dart`).
+- Extracted a static `_teardownCamera` helper that awaits `stopVideoRecording` (when recording) before `controller.dispose()`, and explicitly `unawaited(...)` the future from synchronous `State.dispose()` to preserve the framework contract.
+- `flutter analyze` and `flutter test` remain clean after the fix.
+
+## [2026-05-11] maintenance | Master Context (11 MAY 2026) + wiki cleanup
+
+- Added `MASTER_CONTEXT11MAY2026.md` (repo root) as the current comprehensive architecture snapshot superseding `Master_Context10MAY2026.md`.
+- Added `wiki/analyses/Master_Context_11MAY2026.md` as the schema-compliant wiki twin (frontmatter, Core Synthesis, Provenance Tracking, Related Notes); indexed in `wiki/index.md` and `wiki/overview.md`.
+- Marked `[[Master_Context_10MAY2026]]` as archived snapshot in `wiki/index.md`.
+- Extended `wiki/glossary.md` with `AcquisitionMode`, **Dual-mode capture (Photo + Video)**, and the **Cold-build dart-defines rule** (operational lesson from the 2026-05-11 Supabase-config QA recovery: `--dart-define` values only refresh on a cold Flutter build).
+- Re-ran `python3 scripts/wiki_ingest.py --validate`.

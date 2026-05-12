@@ -2,10 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../ui/controllers/auth_controller.dart';
+import '../../ui/views/archive_view.dart';
 import '../../ui/views/camera/acquisition_mode.dart';
 import '../../ui/views/camera/camera_view.dart';
-import '../../ui/views/vault_dashboard_view.dart';
 import '../../ui/views/logon_view.dart';
+import '../../ui/views/vault_home_view.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -18,7 +19,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isOnLogon = state.matchedLocation == LogonView.routePath;
 
       if (isAuthenticated && isOnLogon) {
-        return VaultDashboardView.routePath;
+        return VaultHomeView.routePath;
       }
 
       if (!isAuthenticated && !isOnLogon) {
@@ -34,8 +35,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const LogonView(),
       ),
       GoRoute(
-        path: VaultDashboardView.routePath,
-        builder: (context, state) => const VaultDashboardView(),
+        path: '/vault-dashboard',
+        redirect: (_, _) => VaultHomeView.routePath,
+      ),
+      GoRoute(
+        path: VaultHomeView.routePath,
+        builder: (context, state) => const VaultHomeView(),
+      ),
+      GoRoute(
+        path: ArchiveView.routePath,
+        builder: (context, state) => const ArchiveView(),
       ),
       GoRoute(
         path: CameraView.routePath,

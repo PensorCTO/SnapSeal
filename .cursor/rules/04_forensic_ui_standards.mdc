@@ -1,0 +1,13 @@
+---<rule>
+  <name>Forensic UI & Viewfinder Performance</name>
+  <description>Enforces the Technical/Forensic design language and protects camera frame rates.</description>
+  <action>
+    - REQUIRE typography for all HUD and telemetry elements to use a monospaced technical font (e.g., `GoogleFonts.robotoMono` or `GoogleFonts.spaceMono`).
+    - FORBID thick borders, solid containers, or drop shadows over the camera feed. Use stark, thin lines (`strokeWidth: 1.0` or `1.5`) and high contrast.
+    - REQUIRE the use of `CustomPaint` for camera frames, reticles, and crosshairs to minimize the widget tree depth.
+    - REQUIRE all UI overlays operating on top of the live camera feed to be wrapped in `RepaintBoundary`.
+    - COLOR PALETTE: Primary UI elements must use Stark White (`0xFFFFFFFF`), background panels use Deep Charcoal (`0xCC121212` with blur), and "Locked/Verified" states use Kinetic Green (`0xFF00D26A`).
+  </action>
+</rule>
+alwaysApply: true
+---

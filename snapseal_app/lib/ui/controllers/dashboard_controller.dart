@@ -108,6 +108,11 @@ class DashboardController extends AsyncNotifier<List<ArchiveItem>> {
     state = const AsyncData([]);
   }
 
+  Future<void> deleteArchiveItem(String assetFingerprint) async {
+    await ref.read(vaultServiceProvider).deleteArchiveItem(assetFingerprint);
+    state = AsyncData(await _loadResolvedArchive());
+  }
+
   Future<void> updateArchiveMetadata({
     required String assetFingerprint,
     required String? title,

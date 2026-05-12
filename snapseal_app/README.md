@@ -51,8 +51,8 @@ template. No native deep-link callback is required.
 2. Enter an email and tap `Send Magic Number`.
 3. Confirm `Check your email for the 6-digit Magic Number.` appears.
 4. Type the 6-digit code from the email and tap `Verify Magic Number`.
-5. Verify the app redirects to `/vault-dashboard`.
-6. Tap sign out and verify the app returns to `/logon` after local burn.
+5. Verify the app redirects to `/vault-home` (hub: Archive, Picture, Video).
+6. From the hub, open **Archive** to browse photos and videos separately; use **Picture** / **Video** to capture. Tap sign out and verify the app returns to `/logon` after local burn.
 
 ## Foundation
 
