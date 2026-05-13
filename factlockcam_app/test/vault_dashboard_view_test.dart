@@ -38,9 +38,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('FactLockCam'), findsOneWidget);
-    expect(find.text('Archive'), findsOneWidget);
-    expect(find.text('Picture'), findsOneWidget);
-    expect(find.text('Video'), findsOneWidget);
+    expect(find.text('ARCHIVE'), findsOneWidget);
+    expect(find.text('PICTURE'), findsOneWidget);
+    expect(find.text('VIDEO'), findsOneWidget);
   });
 
   testWidgets('archive view shows Photos and Videos tabs', (tester) async {

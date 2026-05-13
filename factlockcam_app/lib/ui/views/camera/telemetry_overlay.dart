@@ -1,19 +1,21 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
+import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_typography.dart';
 import 'acquisition_mode.dart';
 
 /// Forensic HUD: sensor/resolution, UTC clock, GPS placeholder, optional live hash.
 ///
-/// Typography uses [GoogleFonts.robotoMono] per forensic UI standards.
+/// Typography uses [AppTextStyles.monoSm] per forensic UI standards.
 class TelemetryOverlay extends StatefulWidget {
   const TelemetryOverlay({
     super.key,
     required this.acquisitionMode,
     required this.isRecording,
     required this.isSealing,
+    this.verifiedFlashTrigger = 0,
     this.previewWidth,
     this.previewHeight,
     this.latitude,
@@ -24,6 +26,7 @@ class TelemetryOverlay extends StatefulWidget {
   final AcquisitionMode acquisitionMode;
   final bool isRecording;
   final bool isSealing;
+  final int verifiedFlashTrigger;
   final int? previewWidth;
   final int? previewHeight;
   final double? latitude;
@@ -39,7 +42,9 @@ class TelemetryOverlay extends StatefulWidget {
 class _TelemetryOverlayState extends State<TelemetryOverlay>
     with SingleTickerProviderStateMixin {
   Timer? _clockTimer;
+  Timer? _sealedTimer;
   late final AnimationController _blinkController;
+  bool _showSealed = false;
 
   @override
   void initState() {
@@ -62,6 +67,9 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
     if (oldActive != newActive) {
       _syncBlink();
     }
+    if (oldWidget.verifiedFlashTrigger != widget.verifiedFlashTrigger) {
+      _showSealedGlyph();
+    }
   }
 
   void _syncBlink() {
@@ -78,15 +86,26 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
   @override
   void dispose() {
     _clockTimer?.cancel();
+    _sealedTimer?.cancel();
     _blinkController.dispose();
     super.dispose();
   }
 
-  TextStyle _mono() => GoogleFonts.robotoMono(
-    fontSize: 10.5,
-    color: Colors.white.withValues(alpha: 0.8),
-    height: 1.25,
-  );
+  void _showSealedGlyph() {
+    _sealedTimer?.cancel();
+    setState(() {
+      _showSealed = true;
+    });
+    _sealedTimer = Timer(const Duration(milliseconds: 600), () {
+      if (mounted) {
+        setState(() {
+          _showSealed = false;
+        });
+      }
+    });
+  }
+
+  TextStyle _mono() => AppTextStyles.monoSm();
 
   String _formatUtc(DateTime dt) {
     final y = dt.year.toString().padLeft(4, '0');
@@ -157,16 +176,29 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
                               : 1.0;
                           return Opacity(
                             opacity: t,
-                            child: Text(
-                              active ? '[REC]' : '[${_modeTag()}]',
-                              style: mono.copyWith(
-                                color: active
-                                    ? const Color(
-                                        0xFF00D26A,
-                                      ).withValues(alpha: 0.85)
-                                    : mono.color,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            child: Wrap(
+                              spacing: 8,
+                              children: [
+                                Text(
+                                  active ? '[REC]' : '[${_modeTag()}]',
+                                  style: mono.copyWith(
+                                    color: active
+                                        ? AppColors.kineticGreen.withValues(
+                                            alpha: 0.85,
+                                          )
+                                        : mono.color,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (_showSealed)
+                                  Text(
+                                    '[SEALED]',
+                                    style: mono.copyWith(
+                                      color: AppColors.verifiedNeon,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                              ],
                             ),
                           );
                         },

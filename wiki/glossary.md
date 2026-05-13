@@ -25,7 +25,11 @@ summary: "Terminology reference for the LLM Wiki."
 | dart_defines.json (FactLockCam) | Filtered JSON from `scripts/write_flutter_dart_defines.py` / `scripts/sync_flutter_dart_defines.sh` for `flutter run --dart-define-from-file` (typically `SUPABASE_URL` + `SUPABASE_ANON_KEY` only). | [[FactLockCam_Product_Baseline_2026-05]], `factlockcam_app/README.md` |
 | Pending sync scheduler | `PendingSyncScheduler` (~3 minute interval) triggers `DashboardController.syncPendingInBackground`. | [[Project_Audit_2026-05-11]], [[FactLockCam_Master_Blueprint]] |
 | AcquisitionMode | Dart enum (`factlockcam_app/lib/ui/views/camera/acquisition_mode.dart`) that distinguishes photo vs video capture intent; threaded through `/camera?mode=photo\|video` and consumed by `CameraView` to toggle audio + recording shutter behavior. | [[Master_Context_11MAY2026]], [[FactLockCam_Master_Blueprint]] |
-| ShutterButtonPainter | Custom Flutter painter for the camera shutter: white 2 px stroked outer ring, transparent center at rest, 150 ms white photo snap, and Kinetic Green fill while video recording. | [[Master_Context_11MAY2026]], [[FactLockCam_Master_Blueprint]] |
+| Shutter Iris | Mechanical iris capture control rendered by `ShutterIrisPainter`: titanium outer ring, six animated aperture blades, Kinetic Green active recording fill, and Verified Neon seal-complete flash. | [[Heavy_Metal_Design_System]] |
+| Titanium Deep | Primary heavy-metal UI background token (`#121212`) used to avoid pure-black flatness while keeping the app visually industrial and high contrast. | [[Heavy_Metal_Design_System]] |
+| Verified Neon | Completed locked/verified green token (`#39FF14`), reserved for successful verification, locked states, and primary trust calls to action. | [[Heavy_Metal_Design_System]] |
+| Kinetic Green | Active/in-progress green token (`#00D26A`) used for recording, active lock motion, and other live process states. | [[Heavy_Metal_Design_System]], [[Master_Context_11MAY2026]] |
+| ShutterButtonPainter | Legacy name for the original custom camera shutter painter: white 2 px stroked outer ring, transparent center at rest, 150 ms white photo snap, and Kinetic Green fill while video recording. Superseded by the Heavy Metal `ShutterIrisPainter`. | [[Master_Context_11MAY2026]], [[FactLockCam_Master_Blueprint]], [[Heavy_Metal_Design_System]] |
 | Four-panel vault UX | Authenticated UI split into `/vault-home` hub (Archive / Picture / Video), `/archive` Photos/Videos tabs, photo camera, and video camera; replaces the prior mixed `/vault-dashboard` grid. | [[Master_Context_11MAY2026]], [[FactLockCam_Master_Blueprint]] |
 | Dual-mode capture (Photo + Video) | **Picture** and **Video** hub actions both flow through the same `VaultService.proofLockFile` seal pipeline, with `video/*` rows rendering native frame thumbnails and a play-arrow badge overlay in the archive. | [[Master_Context_11MAY2026]], [[FactLockCam_Product_Baseline_2026-05]] |
 | Archive delete (local) | Per-item archive action that deletes the local SQLite row plus encrypted/thumbnail files from the device; it does not erase remote `proof_ledger` rows. | [[FactLockCam_Master_Blueprint]], [[Master_Context_11MAY2026]] |
@@ -38,7 +42,7 @@ summary: "Terminology reference for the LLM Wiki."
 ## Provenance Tracking
 
 * *Initial terminology*: Derived from `raw/sample_llm_wiki_source.md` (2026-04-26)
-* *FactLockCam application terminology*: Derived from `wiki/analyses/FactLockCam_Master_Blueprint.md` and `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md` (2026-04-30; updated 2026-05-09; tamper-evident framing 2026-05-10; audit terms 2026-05-11 via [[Project_Audit_2026-05-11]]; dual-mode capture + cold-build defines added 2026-05-11 via [[Master_Context_11MAY2026]]; four-panel vault UX, archive delete, owner-side verified viewing, and `ShutterButtonPainter` added 2026-05-11; Domain Interaction Contract and MIME-aware video thumbnail fallback added 2026-05-12)
+* *FactLockCam application terminology*: Derived from `wiki/analyses/FactLockCam_Master_Blueprint.md` and `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md` (2026-04-30; updated 2026-05-09; tamper-evident framing 2026-05-10; audit terms 2026-05-11 via [[Project_Audit_2026-05-11]]; dual-mode capture + cold-build defines added 2026-05-11 via [[Master_Context_11MAY2026]]; four-panel vault UX, archive delete, owner-side verified viewing, and `ShutterButtonPainter` added 2026-05-11; Domain Interaction Contract and MIME-aware video thumbnail fallback added 2026-05-12; Heavy Metal UI terms added 2026-05-13 via [[Heavy_Metal_Design_System]])
 * *ProofLock terminology*: Derived from `wiki/sources/ProofLock_Architectural_Manifest.md` and `wiki/analyses/ProofLock_Refactor_Scope.md` (2026-05-03)
 
 ## Related Notes
@@ -51,3 +55,4 @@ summary: "Terminology reference for the LLM Wiki."
 * [[Project_Audit_2026-05-11]]
 * [[Project_Audit_2026-05-11_Source]]
 * [[Master_Context_11MAY2026]]
+* [[Heavy_Metal_Design_System]]

@@ -133,3 +133,9 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 - Renamed the Flutter runtime directory to `factlockcam_app/`, updated package imports to `package:factlockcam/`, and refreshed native identifiers to `com.factlockcam.app`.
 - Renamed active product wiki anchors to [[FactLockCam_Product_Baseline_2026-05]] and [[FactLockCam_Master_Blueprint]]; updated current wiki navigation, overview, glossary, and master-context references.
 - Preserved local vault persistence identifiers (`snapseal_vault.db`, `snapseal_vault`, `snapseal:vault_key`) to avoid an on-device data migration.
+
+## [2026-05-13] feature | Heavy Metal UI Framework
+
+- Added [[Heavy_Metal_Design_System]] to document the titanium surface palette, Inter/Space Mono typography split, Kinetic Green vs Verified Neon semantics, mechanical iris shutter motif, and heavy haptic lock interaction.
+- Updated `wiki/index.md` and `wiki/glossary.md` with the new concept and terms: Titanium Deep, Verified Neon, Kinetic Green, and Shutter Iris.
+- Implemented the Flutter-side design system under `factlockcam_app/lib/app/theme/`, `CameraView`, `TelemetryOverlay`, `VaultHomeView`, and `ShutterIrisPainter`.

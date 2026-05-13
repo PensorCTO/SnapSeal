@@ -17,6 +17,7 @@ class FactLockCamApp extends ConsumerWidget {
       title: 'FactLockCam',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.dark,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );

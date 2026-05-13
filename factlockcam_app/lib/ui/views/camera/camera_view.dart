@@ -4,6 +4,8 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_typography.dart';
 import '../../../core/services/haptic_service.dart';
 import '../../../core/ui/painters/reticle_painter.dart';
 import '../../../core/ui/painters/shutter_button_painter.dart';
@@ -30,6 +32,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
   bool _isInitializing = true;
   bool _isSealing = false;
   bool _isRecording = false;
+  int _verifiedFlashTrigger = 0;
   String? _errorMessage;
 
   @override
@@ -95,8 +98,6 @@ class _CameraViewState extends ConsumerState<CameraView> {
       return;
     }
 
-    await ref.read(hapticServiceProvider).selectionClick();
-
     setState(() {
       _isSealing = true;
       _errorMessage = null;
@@ -122,8 +123,6 @@ class _CameraViewState extends ConsumerState<CameraView> {
         _isRecording) {
       return;
     }
-
-    await ref.read(hapticServiceProvider).selectionClick();
 
     try {
       await controller.startVideoRecording();
@@ -177,7 +176,12 @@ class _CameraViewState extends ConsumerState<CameraView> {
           .sealAndStoreCapture(xfile, userId: userId);
       if (!mounted) return;
       if (!result.pendingSync) {
-        await ref.read(hapticServiceProvider).heavyImpact();
+        setState(() {
+          _verifiedFlashTrigger += 1;
+        });
+        await ref.read(hapticServiceProvider).lock();
+        if (!mounted) return;
+        await Future<void>.delayed(const Duration(milliseconds: 420));
         if (!mounted) return;
       }
       ref.invalidate(dashboardControllerProvider);
@@ -259,6 +263,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
                               acquisitionMode: widget.mode,
                               isRecording: _isRecording,
                               isSealing: _isSealing,
+                              verifiedFlashTrigger: _verifiedFlashTrigger,
                               previewWidth: previewW,
                               previewHeight: previewH,
                             ),
@@ -291,6 +296,8 @@ class _CameraViewState extends ConsumerState<CameraView> {
         enabled: !_isInitializing && !_isSealing,
         isVideo: isVideo,
         isRecording: _isRecording,
+        verifiedFlashTrigger: _verifiedFlashTrigger,
+        onEngageHaptic: () => ref.read(hapticServiceProvider).lock(),
         onPressed: _onShutterPressed,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -321,7 +328,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
       );
     }
     if (_isSealing) {
-      return const ColoredBox(color: Colors.black);
+      return const ColoredBox(color: AppColors.titaniumDeep);
     }
     return CameraPreview(_controller!);
   }
@@ -334,11 +341,15 @@ class CameraShutterButton extends StatefulWidget {
     required this.isVideo,
     required this.isRecording,
     required this.onPressed,
+    this.verifiedFlashTrigger = 0,
+    this.onEngageHaptic,
   });
 
   final bool enabled;
   final bool isVideo;
   final bool isRecording;
+  final int verifiedFlashTrigger;
+  final Future<void> Function()? onEngageHaptic;
   final Future<void> Function() onPressed;
 
   @override
@@ -346,28 +357,49 @@ class CameraShutterButton extends StatefulWidget {
 }
 
 class _ShutterButtonState extends State<CameraShutterButton>
-    with SingleTickerProviderStateMixin {
-  static const _snapDuration = Duration(milliseconds: 150);
-  static const _kineticGreen = Color(0xFF00D26A);
+    with TickerProviderStateMixin {
+  static const _snapDuration = Duration(milliseconds: 170);
+  static const _verifiedFlashDuration = Duration(milliseconds: 600);
 
-  late final AnimationController _fillController;
-  late final Animation<double> _fillProgress;
-  Color? _fillColor;
+  late final AnimationController _irisController;
+  late final AnimationController _recordController;
+  late final AnimationController _verifiedController;
+  late final Animation<double> _irisProgress;
+  late final Animation<double> _recordFill;
+  late final Animation<double> _verifiedFlash;
 
   @override
   void initState() {
     super.initState();
-    _fillController = AnimationController(
+    _irisController = AnimationController(
       vsync: this,
       duration: _snapDuration,
       reverseDuration: const Duration(milliseconds: 90),
     );
-    _fillProgress = CurvedAnimation(
-      parent: _fillController,
+    _recordController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 180),
+      reverseDuration: const Duration(milliseconds: 140),
+    );
+    _verifiedController = AnimationController(
+      vsync: this,
+      duration: _verifiedFlashDuration,
+    );
+    _irisProgress = CurvedAnimation(
+      parent: _irisController,
       curve: Curves.easeOutExpo,
       reverseCurve: Curves.easeOut,
     );
-    _syncRecordingFill();
+    _recordFill = CurvedAnimation(
+      parent: _recordController,
+      curve: Curves.easeOutExpo,
+      reverseCurve: Curves.easeOut,
+    );
+    _verifiedFlash = CurvedAnimation(
+      parent: _verifiedController,
+      curve: Curves.easeOut,
+    );
+    _syncRecordingState();
   }
 
   @override
@@ -376,56 +408,62 @@ class _ShutterButtonState extends State<CameraShutterButton>
     if (oldWidget.isRecording != widget.isRecording ||
         oldWidget.isVideo != widget.isVideo ||
         oldWidget.enabled != widget.enabled) {
-      _syncRecordingFill();
+      _syncRecordingState();
     }
-  }
-
-  @override
-  void dispose() {
-    _fillController.dispose();
-    super.dispose();
-  }
-
-  void _syncRecordingFill() {
-    if (!widget.enabled) {
-      _fillColor = null;
-      _fillController.reverse();
-      return;
-    }
-    if (widget.isVideo && widget.isRecording) {
-      _fillColor = _kineticGreen;
-      _fillController.forward();
-    } else if (_fillColor == _kineticGreen) {
-      _fillController.reverse().whenComplete(() {
-        if (mounted && !widget.isRecording) {
-          setState(() {
-            _fillColor = null;
-          });
+    if (oldWidget.verifiedFlashTrigger != widget.verifiedFlashTrigger) {
+      _verifiedController.forward(from: 0).whenComplete(() {
+        if (mounted) {
+          _verifiedController.reset();
         }
       });
     }
   }
 
-  void _handleTapDown(TapDownDetails details) {
+  @override
+  void dispose() {
+    _irisController.dispose();
+    _recordController.dispose();
+    _verifiedController.dispose();
+    super.dispose();
+  }
+
+  void _syncRecordingState() {
+    if (!widget.enabled) {
+      _irisController.reverse();
+      _recordController.reverse();
+      return;
+    }
+    if (widget.isVideo && widget.isRecording) {
+      _irisController.forward();
+      _recordController.forward();
+    } else {
+      _recordController.reverse();
+      if (!_irisController.isAnimating) {
+        _irisController.reverse();
+      }
+    }
+  }
+
+  void _engagePhotoIris() {
     if (!widget.enabled || widget.isVideo) return;
-    setState(() {
-      _fillColor = Colors.white;
-    });
-    _fillController.forward(from: 0);
+    _fireEngageHaptic();
+    _irisController.forward(from: 0);
   }
 
   void _handleTapCancel() {
     if (!widget.enabled || widget.isVideo) return;
-    _releasePhotoFill();
+    _releasePhotoIris();
   }
 
   void _handleTap() {
     if (!widget.enabled) return;
     if (!widget.isVideo) {
+      _engagePhotoIris();
       unawaited(widget.onPressed());
-      _releasePhotoFill();
+      _releasePhotoIris();
       return;
     }
+    _fireEngageHaptic();
     unawaited(widget.onPressed());
   }
 
@@ -435,21 +473,23 @@ class _ShutterButtonState extends State<CameraShutterButton>
       unawaited(widget.onPressed());
       return;
     }
-    setState(() {
-      _fillColor = _kineticGreen;
-    });
-    _fillController.forward(from: 0);
+    _fireEngageHaptic();
+    _irisController.forward(from: 0);
+    _recordController.forward(from: 0);
     unawaited(widget.onPressed());
   }
 
-  void _releasePhotoFill() {
-    _fillController.reverse().whenComplete(() {
-      if (mounted && !widget.isRecording) {
-        setState(() {
-          _fillColor = null;
-        });
-      }
-    });
+  void _releasePhotoIris() {
+    if (!widget.isRecording) {
+      _irisController.reverse();
+    }
+  }
+
+  void _fireEngageHaptic() {
+    final haptic = widget.onEngageHaptic;
+    if (haptic != null) {
+      unawaited(haptic());
+    }
   }
 
   @override
@@ -462,25 +502,35 @@ class _ShutterButtonState extends State<CameraShutterButton>
           : 'Capture photo',
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTapDown: widget.enabled ? _handleTapDown : null,
         onTapCancel: widget.enabled ? _handleTapCancel : null,
         onTap: widget.enabled ? _handleTap : null,
         onLongPress: widget.enabled ? _handleLongPress : null,
-        child: Opacity(
-          opacity: widget.enabled ? 1 : 0.45,
-          child: SizedBox.square(
-            dimension: 72,
-            child: RepaintBoundary(
-              child: AnimatedBuilder(
-                animation: _fillProgress,
-                builder: (context, child) {
-                  return CustomPaint(
-                    painter: ShutterButtonPainter(
-                      fillColor: _fillColor,
-                      fillProgress: _fillProgress.value,
-                    ),
-                  );
-                },
+        child: Listener(
+          behavior: HitTestBehavior.opaque,
+          onPointerDown: widget.enabled && !widget.isVideo
+              ? (_) => _engagePhotoIris()
+              : null,
+          child: Opacity(
+            opacity: widget.enabled ? 1 : 0.45,
+            child: SizedBox.square(
+              dimension: 72,
+              child: RepaintBoundary(
+                child: AnimatedBuilder(
+                  animation: Listenable.merge([
+                    _irisProgress,
+                    _recordFill,
+                    _verifiedFlash,
+                  ]),
+                  builder: (context, child) {
+                    return CustomPaint(
+                      painter: ShutterIrisPainter(
+                        closeProgress: _irisProgress.value,
+                        recordFill: _recordFill.value,
+                        verifiedFlash: _verifiedFlash.value,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -510,19 +560,15 @@ class _SealingOverlay extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 260),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.shield, color: Colors.amberAccent, size: 64),
-                SizedBox(height: 16),
+              children: [
+                const Icon(Icons.shield, color: AppColors.alertAmber, size: 64),
+                const SizedBox(height: 16),
                 Text(
                   'Sealing...',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.monoLg(color: AppColors.starkWhite),
                 ),
-                SizedBox(height: 16),
-                LinearProgressIndicator(minHeight: 8),
+                const SizedBox(height: 16),
+                const LinearProgressIndicator(minHeight: 8),
               ],
             ),
           ),

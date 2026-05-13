@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_typography.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/dashboard_controller.dart';
 import 'archive_view.dart';
@@ -86,8 +88,12 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
             children: [
               if (pendingCount > 0)
                 MaterialBanner(
+                  backgroundColor: AppColors.titaniumPanel,
                   content: Text(
                     '$pendingCount item(s) pending sync. We will keep retrying in the background.',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: AppColors.alertAmber,
+                    ),
                   ),
                   actions: [
                     TextButton(
@@ -109,7 +115,9 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
                   children: [
                     Text(
                       'Choose an action',
-                      style: theme.textTheme.titleMedium,
+                      style: AppTextStyles.monoMd(
+                        color: AppColors.starkWhite.withValues(alpha: 0.72),
+                      ),
                     ),
                     const SizedBox(height: 16),
                     _HubTile(
@@ -162,38 +170,50 @@ class _HubTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Material(
-      elevation: 2,
+      color: AppColors.titaniumPanel,
+      elevation: 0,
       borderRadius: BorderRadius.circular(16),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
+        splashColor: AppColors.verifiedNeon.withValues(alpha: 0.12),
+        highlightColor: AppColors.verifiedNeon.withValues(alpha: 0.06),
         onTap: onTap,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            border: Border.all(color: theme.colorScheme.outlineVariant),
+            color: AppColors.titaniumPanel,
+            border: Border.all(color: AppColors.titaniumEdge),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             child: Row(
               children: [
-                Icon(icon, size: 44, color: theme.colorScheme.primary),
+                Icon(icon, size: 44, color: AppColors.verifiedNeon),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        label,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
+                        label.toUpperCase(),
+                        style: AppTextStyles.monoMd(
+                          color: AppColors.starkWhite,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(subtitle, style: theme.textTheme.bodySmall),
+                      Text(
+                        subtitle,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: AppColors.starkWhite.withValues(alpha: 0.62),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: theme.colorScheme.outline),
+                const Icon(
+                  Icons.chevron_right,
+                  color: AppColors.titaniumHighlight,
+                ),
               ],
             ),
           ),

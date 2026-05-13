@@ -17,6 +17,7 @@ Read this page first when answering questions about the wiki.
 
 - [[LLM_Wiki_Pattern]] - The source-to-wiki compilation model.
 - [[FactLockCam_Product_Baseline_2026-05]] - Verified hub/archive/capture workflow and compressed Supabase baseline (start here for FactLockCam status).
+- [[Heavy_Metal_Design_System]] - FactLockCam titanium/mono/iris visual system for secure-hardware UI feel.
 
 ## Analyses
 

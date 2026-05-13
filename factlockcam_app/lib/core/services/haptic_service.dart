@@ -16,6 +16,10 @@ class HapticService {
     await HapticFeedback.heavyImpact();
   }
 
+  Future<void> lock() async {
+    await heavyImpact();
+  }
+
   Future<void> tap() async {
     await selectionClick();
   }

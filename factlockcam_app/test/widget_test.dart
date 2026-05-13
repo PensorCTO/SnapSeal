@@ -55,7 +55,7 @@ void main() {
 
       expect(buildCounter.value, 1);
 
-      await tester.tap(find.text('Picture'));
+      await tester.tap(find.text('PICTURE'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Dismiss camera'));
       await tester.pumpAndSettle();
