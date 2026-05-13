@@ -37,10 +37,33 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('FactLockCam'), findsOneWidget);
+    expect(find.text('FACTLOCKCAM'), findsOneWidget);
     expect(find.text('ARCHIVE'), findsOneWidget);
     expect(find.text('PICTURE'), findsOneWidget);
     expect(find.text('VIDEO'), findsOneWidget);
+  });
+
+  testWidgets('vault hub renders a Stack-based heavy-metal layout', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          dashboardControllerProvider.overrideWith(
+            _EmptyVaultDashboardController.new,
+          ),
+        ],
+        child: const MaterialApp(home: VaultHomeView()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final stacks = find.descendant(
+      of: find.byType(VaultHomeView),
+      matching: find.byType(Stack),
+    );
+    expect(stacks, findsWidgets);
+    expect(find.text('CHOOSE AN ACTION'), findsOneWidget);
   });
 
   testWidgets('archive view shows Photos and Videos tabs', (tester) async {

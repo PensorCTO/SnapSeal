@@ -18,9 +18,9 @@ void main() {
   testWidgets('renders the FactLockCam logon shell', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: FactLockCamApp()));
 
-    expect(find.text('FactLockCam'), findsOneWidget);
-    expect(find.text('Send Magic Number'), findsOneWidget);
-    expect(find.text('Tamper-evident media vault'), findsOneWidget);
+    expect(find.text('FACTLOCKCAM'), findsOneWidget);
+    expect(find.text('SEND MAGIC NUMBER'), findsOneWidget);
+    expect(find.text('TAMPER-EVIDENT MEDIA VAULT'), findsOneWidget);
   });
 
   testWidgets(

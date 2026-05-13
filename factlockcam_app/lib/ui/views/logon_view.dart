@@ -1,8 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_typography.dart';
 import '../../core/services/haptic_service.dart';
+import '../../core/ui/widgets/heavy_metal_backdrop.dart';
 import '../controllers/auth_controller.dart';
 
 class LogonView extends ConsumerStatefulWidget {
@@ -14,7 +20,8 @@ class LogonView extends ConsumerStatefulWidget {
   ConsumerState<LogonView> createState() => _LogonViewState();
 }
 
-class _LogonViewState extends ConsumerState<LogonView> {
+class _LogonViewState extends ConsumerState<LogonView>
+    with HeavyMetalBackdropMixin<LogonView> {
   final _emailController = TextEditingController();
   final _otpController = TextEditingController();
 
@@ -30,135 +37,160 @@ class _LogonViewState extends ConsumerState<LogonView> {
     final auth = ref.watch(authControllerProvider);
 
     return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(middle: Text('FactLockCam')),
-      child: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 440),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Text(
-                            'Tamper-evident media vault',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w700,
+      backgroundColor: Colors.transparent,
+      child: Column(
+        children: [
+          const HeavyMetalLogoBanner(),
+          Expanded(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                BackgroundVideoLayer(
+                  controller: backdropController,
+                  ready: backdropReady,
+                ),
+                const TitaniumOverlay(),
+                SafeArea(
+                  top: false,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: _buildFormChildren(auth),
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'Authenticate with a 6-digit Magic Number. Untouchable media remains local.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: CupertinoColors.secondaryLabel,
-                            ),
-                          ),
-                          const SizedBox(height: 28),
-                          if (!auth.isConfigured) const _ConfigNotice(),
-                          CupertinoTextField(
-                            controller: _emailController,
-                            enabled: !auth.isLoading,
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.done,
-                            autofillHints: const [AutofillHints.email],
-                            placeholder: 'Email',
-                            clearButtonMode: OverlayVisibilityMode.editing,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          CupertinoButton.filled(
-                            onPressed: auth.isLoading || !auth.isConfigured
-                                ? null
-                                : _sendOtp,
-                            child: auth.isLoading && !auth.otpSent
-                                ? const CupertinoActivityIndicator()
-                                : Text(
-                                    auth.otpSent
-                                        ? 'Resend Magic Number'
-                                        : 'Send Magic Number',
-                                  ),
-                          ),
-                          if (auth.otpSent) ...[
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Check your email for the 6-digit Magic Number.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: CupertinoColors.activeGreen,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            CupertinoTextField(
-                              controller: _otpController,
-                              enabled: !auth.isLoading,
-                              keyboardType: TextInputType.number,
-                              textInputAction: TextInputAction.done,
-                              autofillHints: const [AutofillHints.oneTimeCode],
-                              placeholder: '6-digit code',
-                              textAlign: TextAlign.center,
-                              maxLength: 6,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(6),
-                              ],
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 14,
-                              ),
-                              onSubmitted: (_) => _verifyOtp(),
-                            ),
-                            const SizedBox(height: 12),
-                            ValueListenableBuilder<TextEditingValue>(
-                              valueListenable: _otpController,
-                              builder: (context, otpValue, child) {
-                                final canVerify = _isSixDigitCode(
-                                  otpValue.text,
-                                );
-                                return CupertinoButton.filled(
-                                  onPressed: auth.isLoading || !canVerify
-                                      ? null
-                                      : _verifyOtp,
-                                  child: auth.isLoading
-                                      ? const CupertinoActivityIndicator()
-                                      : child!,
-                                );
-                              },
-                              child: const Text('Verify Magic Number'),
-                            ),
-                          ],
-                          if (auth.error != null) ...[
-                            const SizedBox(height: 12),
-                            Text(
-                              auth.error!,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: CupertinoColors.systemRed,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   ),
                 ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildFormChildren(AuthUiState auth) {
+    return [
+      Text(
+        'Authenticate with a 6-digit Magic Number. Untouchable media remains '
+        'local.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 15,
+          color: AppColors.starkWhite.withValues(alpha: 0.78),
+        ),
+      ),
+      const SizedBox(height: 20),
+      if (!auth.isConfigured) const _ConfigNotice(),
+      CupertinoTextField(
+        controller: _emailController,
+        enabled: !auth.isLoading,
+        keyboardType: TextInputType.emailAddress,
+        textInputAction: TextInputAction.done,
+        autofillHints: const [AutofillHints.email],
+        placeholder: 'Email',
+        placeholderStyle: TextStyle(
+          color: AppColors.starkWhite.withValues(alpha: 0.45),
+        ),
+        style: const TextStyle(color: AppColors.starkWhite),
+        cursorColor: AppColors.verifiedNeon,
+        clearButtonMode: OverlayVisibilityMode.editing,
+        decoration: _fieldDecoration(),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      ),
+      const SizedBox(height: 14),
+      CupertinoButton(
+        color: AppColors.verifiedNeon,
+        disabledColor: AppColors.titaniumPanel,
+        onPressed: auth.isLoading || !auth.isConfigured ? null : _sendOtp,
+        child: auth.isLoading && !auth.otpSent
+            ? const CupertinoActivityIndicator()
+            : Text(
+                auth.otpSent ? 'RESEND MAGIC NUMBER' : 'SEND MAGIC NUMBER',
+                style: AppTextStyles.monoMd(color: AppColors.titaniumDeep),
               ),
+      ),
+      if (auth.otpSent) ...[
+        const SizedBox(height: 12),
+        Text(
+          'Check your email for the 6-digit Magic Number.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: AppColors.kineticGreen),
+        ),
+        const SizedBox(height: 12),
+        CupertinoTextField(
+          controller: _otpController,
+          enabled: !auth.isLoading,
+          keyboardType: TextInputType.number,
+          textInputAction: TextInputAction.done,
+          autofillHints: const [AutofillHints.oneTimeCode],
+          placeholder: '6-digit code',
+          placeholderStyle: TextStyle(
+            color: AppColors.starkWhite.withValues(alpha: 0.45),
+          ),
+          style: AppTextStyles.monoLg(color: AppColors.starkWhite),
+          cursorColor: AppColors.verifiedNeon,
+          textAlign: TextAlign.center,
+          maxLength: 6,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(6),
+          ],
+          decoration: _fieldDecoration(),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          onSubmitted: (_) => _verifyOtp(),
+        ),
+        const SizedBox(height: 12),
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: _otpController,
+          builder: (context, otpValue, child) {
+            final canVerify = _isSixDigitCode(otpValue.text);
+            return CupertinoButton(
+              color: AppColors.verifiedNeon,
+              disabledColor: AppColors.titaniumPanel,
+              onPressed: auth.isLoading || !canVerify ? null : _verifyOtp,
+              child: auth.isLoading
+                  ? const CupertinoActivityIndicator()
+                  : child!,
             );
           },
+          child: Text(
+            'VERIFY MAGIC NUMBER',
+            style: AppTextStyles.monoMd(color: AppColors.titaniumDeep),
+          ),
         ),
+      ],
+      if (auth.error != null) ...[
+        const SizedBox(height: 12),
+        Text(
+          auth.error!,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: AppColors.alertAmber),
+        ),
+      ],
+    ];
+  }
+
+  BoxDecoration _fieldDecoration() {
+    return BoxDecoration(
+      color: AppColors.titaniumPanel.withValues(alpha: 0.7),
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(
+        color: AppColors.verifiedNeon.withValues(alpha: 0.4),
+        width: 1,
       ),
     );
   }
@@ -166,6 +198,7 @@ class _LogonViewState extends ConsumerState<LogonView> {
   Future<void> _sendOtp() async {
     final haptics = ref.read(hapticServiceProvider);
     await haptics.tap();
+    unawaited(playBackdropFromStart());
     _otpController.clear();
     final otpSent = await ref
         .read(authControllerProvider.notifier)
@@ -180,6 +213,7 @@ class _LogonViewState extends ConsumerState<LogonView> {
   Future<void> _verifyOtp() async {
     final haptics = ref.read(hapticServiceProvider);
     await haptics.tap();
+    unawaited(playBackdropFromStart());
     final verified = await ref
         .read(authControllerProvider.notifier)
         .verifyOtp(email: _emailController.text, token: _otpController.text);
@@ -200,8 +234,12 @@ class _ConfigNotice extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: CupertinoColors.systemYellow.withValues(alpha: 0.16),
+        color: AppColors.alertAmber.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.alertAmber.withValues(alpha: 0.55),
+          width: 1,
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -211,7 +249,10 @@ class _ConfigNotice extends StatelessWidget {
           'From the repo root run `bash scripts/factlockcam_supabase_pipeline.sh app-run`. '
           'If you are already in `scripts/`, run `./factlockcam_supabase_pipeline.sh app-run` '
           '(a bare filename is not on your PATH).',
-          style: const TextStyle(color: CupertinoColors.label, fontSize: 13),
+          style: TextStyle(
+            color: AppColors.starkWhite.withValues(alpha: 0.88),
+            fontSize: 13,
+          ),
         ),
       ),
     );
