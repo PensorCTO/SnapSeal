@@ -186,6 +186,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
       if (!mounted) return;
       setState(() {
         _errorMessage = error.toString();
+        _isRecording = false;
         _isSealing = false;
       });
     }

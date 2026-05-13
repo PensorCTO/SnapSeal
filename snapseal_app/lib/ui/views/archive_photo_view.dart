@@ -2,22 +2,48 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/archive_item.dart';
+import '../../data/models/sealed_asset.dart';
 import '../../domain/services/vault_service.dart';
 
-class ArchivePhotoView extends ConsumerWidget {
+class ArchivePhotoView extends ConsumerStatefulWidget {
   const ArchivePhotoView({super.key, required this.item});
 
   final ArchiveItem item;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ArchivePhotoView> createState() => _ArchivePhotoViewState();
+}
+
+class _ArchivePhotoViewState extends ConsumerState<ArchivePhotoView> {
+  late Future<SealedAsset> _sealedAssetFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _sealedAssetFuture = _loadSealedAsset();
+  }
+
+  @override
+  void didUpdateWidget(covariant ArchivePhotoView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item.assetFingerprint != widget.item.assetFingerprint) {
+      _sealedAssetFuture = _loadSealedAsset();
+    }
+  }
+
+  Future<SealedAsset> _loadSealedAsset() {
+    return ref
+        .read(vaultServiceProvider)
+        .extractForCourier(widget.item.assetFingerprint);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(item.title ?? 'Photo')),
+      appBar: AppBar(title: Text(widget.item.title ?? 'Photo')),
       backgroundColor: Colors.black,
-      body: FutureBuilder(
-        future: ref
-            .read(vaultServiceProvider)
-            .extractForCourier(item.assetFingerprint),
+      body: FutureBuilder<SealedAsset>(
+        future: _sealedAssetFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());

@@ -26,6 +26,29 @@ final vaultServiceProvider = Provider<VaultService>(
   (ref) => getIt<VaultService>(),
 );
 
+String videoThumbnailTempExtensionForMime(String? mimeType) {
+  final normalized = mimeType?.trim().toLowerCase();
+  switch (normalized) {
+    case 'video/quicktime':
+      return '.mov';
+    case 'video/webm':
+      return '.webm';
+    case 'video/3gpp':
+      return '.3gp';
+    case 'video/x-msvideo':
+      return '.avi';
+    case 'video/mpeg':
+      return '.mpeg';
+    case 'video/mp4':
+    case 'video/x-m4v':
+    case null:
+    case '':
+      return '.mp4';
+    default:
+      return '.mp4';
+  }
+}
+
 class ProofLockConflictException implements Exception {
   ProofLockConflictException(this.status);
   final String status;
@@ -367,6 +390,7 @@ class VaultService {
     if (mimeType?.startsWith('video/') ?? false) {
       return _generateVideoThumbnailBytes(
         rawMediaBytes,
+        mimeType: mimeType,
         sourcePath: sourcePath,
       );
     }
@@ -375,6 +399,7 @@ class VaultService {
 
   Future<Uint8List> _generateVideoThumbnailBytes(
     Uint8List rawMediaBytes, {
+    required String? mimeType,
     String? sourcePath,
   }) async {
     final existingPath = sourcePath;
@@ -391,7 +416,8 @@ class VaultService {
     final tempDir = await Directory.systemTemp.createTemp(
       'snapseal_video_thumb_',
     );
-    final tempFile = File('${tempDir.path}/source.mp4');
+    final extension = videoThumbnailTempExtensionForMime(mimeType);
+    final tempFile = File('${tempDir.path}/source$extension');
     try {
       await tempFile.writeAsBytes(rawMediaBytes, flush: true);
       final bytes = await video_thumbnail.VideoThumbnail.thumbnailData(
