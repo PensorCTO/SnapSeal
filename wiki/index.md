@@ -20,11 +20,12 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses
 
-- [[SnapSeal_Master_Blueprint]] - Current-state application blueprint covering completed capabilities, four-panel vault UX, unfinished work, and working use cases.
+- [[SnapSeal_Master_Blueprint]] - Current-state application blueprint covering completed capabilities, four-panel vault UX, media-type-driven archive actions, unfinished work, and working use cases.
 - [[ProofLock_Refactor_Scope]] - Gap analysis and phased effort from ProofLock manifesto to current SnapSeal implementation.
 - [[System_Context_Audit_2026-05-09]] - Archived stub (superseded by [[SnapSeal_Product_Baseline_2026-05]]).
 - [[Master_Context_10MAY2026]] - Archived comprehensive snapshot for 2026-05-10 (superseded by [[Master_Context_11MAY2026]]).
-- [[Master_Context_11MAY2026]] - **Current** comprehensive architecture snapshot (four-panel vault UX, Phase 2 dual-mode capture, ProofLock-shaped seal, pending-sync reconciliation).
+- [[Master_Context_11MAY2026]] - Comprehensive architecture snapshot for 2026-05-11 (superseded by [[MASTER_CONTEXT13MAY2026]]).
+- [[MASTER_CONTEXT13MAY2026]] - **Current** comprehensive architecture snapshot (2026-05-13; four-panel vault UX, Phase 2 dual-mode capture, ProofLock-shaped seal, pending-sync reconciliation, Domain Interaction Contract).
 - [[Project_Audit_2026-05-11]] - Repo vs wiki reconciliation (seal pipeline, sync, native channel, tests, tooling).
 
 ## Maintenance

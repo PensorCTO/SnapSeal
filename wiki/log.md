@@ -113,3 +113,17 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 - Reviewed wiki health with `python3 scripts/wiki_ingest.py --status` and `python3 scripts/wiki_ingest.py --validate` before edits: 15 wiki pages, 0 pending manifest rows, 0 broken wiki links.
 - Updated `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md`, `wiki/analyses/SnapSeal_Master_Blueprint.md`, `wiki/analyses/Master_Context_11MAY2026.md`, and `wiki/overview.md` for the custom `ShutterButtonPainter`: transparent-at-rest center, 150 ms white photo tap-down snap, and Kinetic Green fill while video recording.
 - Added `ShutterButtonPainter` to `wiki/glossary.md` and refreshed test status to `flutter analyze` + `flutter test` green (21 tests).
+
+## [2026-05-12] maintenance | Domain Interaction Contract + wiki cleanup
+
+- Reviewed wiki health with `python3 scripts/wiki_ingest.py --status` and `python3 scripts/wiki_ingest.py --validate`: 15 wiki pages, 0 pending manifest rows, 0 broken wiki links.
+- Updated `wiki/overview.md`, `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md`, `wiki/analyses/SnapSeal_Master_Blueprint.md`, `wiki/analyses/Master_Context_11MAY2026.md`, `wiki/analyses/ProofLock_Refactor_Scope.md`, and `wiki/analyses/Project_Audit_2026-05-11.md` for the media-type-driven archive action contract (`MediaActionType`, `AssetActionRegistry`, `AssetAction`, `UniversalAssetToolbar`).
+- Documented recent hardening: `ArchivePhotoView` caches verified extraction per asset fingerprint, `CameraView` clears stale REC state on sealing failures, and `VaultService` uses MIME-aware temp extensions when regenerating video thumbnails from decrypted bytes.
+- Added glossary entries for **Domain Interaction Contract**, **UniversalAssetToolbar**, and **MIME-aware video thumbnail fallback**; refreshed test status to `flutter analyze` + `flutter test` green (31 tests).
+
+## [2026-05-13] analysis | Master Context (13 MAY 2026)
+
+- Added `wiki/analyses/MASTER_CONTEXT13MAY2026.md` as the dated **current** comprehensive architecture snapshot; updated `wiki/index.md` (mark [[Master_Context_11MAY2026]] superseded), `wiki/overview.md` synthesis + provenance, and `wiki/analyses/Master_Context_11MAY2026.md` framing to reference the roll-forward.
+- Cross-checked `flutter test` in `snapseal_app/` (31 passing tests across nine test files).
+- Re-ran `python3 scripts/wiki_ingest.py --validate`.
+- Added repo-root `MASTER_CONTEXT13MAY2026.md` as a shortcut pointer into the wiki page.
