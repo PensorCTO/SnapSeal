@@ -6,15 +6,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:postgrest/postgrest.dart';
-import 'package:snapseal/core/crypto/vault_encryption_handler.dart';
-import 'package:snapseal/core/ghost_key/native_enclave_channel.dart';
-import 'package:snapseal/data/local/vault_database.dart';
-import 'package:snapseal/data/models/archive_item.dart';
-import 'package:snapseal/data/services/local_vault_storage.dart';
-import 'package:snapseal/data/supabase/auth_repository.dart';
-import 'package:snapseal/data/supabase/seal_ledger_repository.dart';
-import 'package:snapseal/domain/blockchain/chain_notarizer.dart';
-import 'package:snapseal/domain/services/vault_service.dart';
+import 'package:factlockcam/core/crypto/vault_encryption_handler.dart';
+import 'package:factlockcam/core/ghost_key/native_enclave_channel.dart';
+import 'package:factlockcam/data/local/vault_database.dart';
+import 'package:factlockcam/data/models/archive_item.dart';
+import 'package:factlockcam/data/services/local_vault_storage.dart';
+import 'package:factlockcam/data/supabase/auth_repository.dart';
+import 'package:factlockcam/data/supabase/seal_ledger_repository.dart';
+import 'package:factlockcam/domain/blockchain/chain_notarizer.dart';
+import 'package:factlockcam/domain/services/vault_service.dart';
 
 class _MockVaultDatabase extends Mock implements VaultDatabase {}
 
@@ -118,7 +118,7 @@ void main() {
     'proofLockFile marks capture pending when native signing has recoverable error',
     () async {
       final tempDir = await Directory.systemTemp.createTemp(
-        'snapseal_proof_lock_test_',
+        'factlockcam_retry_test_',
       );
       final source = File('${tempDir.path}/capture.jpg');
       final rawBytes = Uint8List.fromList([1, 2, 3, 4]);

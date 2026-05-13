@@ -1,6 +1,6 @@
-# SnapSeal Supabase Pipeline
+# FactLockCam Supabase Pipeline
 
-SnapSeal uses Supabase for OTP authentication, profile-to-wallet mapping, and
+FactLockCam uses Supabase for OTP authentication, profile-to-wallet mapping, and
 the active-wallet replica of Polygon proof rows. Polygon remains the durable
 proof layer.
 
@@ -18,7 +18,7 @@ cp .env.example .env.local
 
 Required values:
 
-- `SNAPSEAL_SUPABASE_PROJECT_REF`: project ref from the dashboard URL.
+- `FACTLOCKCAM_SUPABASE_PROJECT_REF`: project ref from the dashboard URL.
 - `SUPABASE_ACCESS_TOKEN`: personal access token for CLI login and CI.
 - `SUPABASE_DB_PASSWORD`: remote project database password.
 - `SUPABASE_URL`: project API URL for the Flutter app.
@@ -29,28 +29,28 @@ Required values:
 From the repo root:
 
 ```bash
-scripts/snapseal_supabase_pipeline.sh doctor
-scripts/snapseal_supabase_pipeline.sh start
-scripts/snapseal_supabase_pipeline.sh reset
-scripts/snapseal_supabase_pipeline.sh lint
+scripts/factlockcam_supabase_pipeline.sh doctor
+scripts/factlockcam_supabase_pipeline.sh start
+scripts/factlockcam_supabase_pipeline.sh reset
+scripts/factlockcam_supabase_pipeline.sh lint
 ```
 
-The local project id in `supabase/config.toml` is `snapseal`. Migrations live in
+The local project id in `supabase/config.toml` is `factlockcam`. Migrations live in
 `supabase/migrations/` and should be reviewed before they are pushed remotely.
 
 ## Remote Link
 
-The authenticated Supabase MCP account did not list a project named `SnapSeal`
+The authenticated Supabase MCP account did not list a project named `FactLockCam`
 when this pipeline was created, so remote link is driven by environment
 variables:
 
 ```bash
-scripts/snapseal_supabase_pipeline.sh login
-scripts/snapseal_supabase_pipeline.sh link
-scripts/snapseal_supabase_pipeline.sh migration-list
-scripts/snapseal_supabase_pipeline.sh push-dry-run
-scripts/snapseal_supabase_pipeline.sh push
-scripts/snapseal_supabase_pipeline.sh config-push
+scripts/factlockcam_supabase_pipeline.sh login
+scripts/factlockcam_supabase_pipeline.sh link
+scripts/factlockcam_supabase_pipeline.sh migration-list
+scripts/factlockcam_supabase_pipeline.sh push-dry-run
+scripts/factlockcam_supabase_pipeline.sh push
+scripts/factlockcam_supabase_pipeline.sh config-push
 ```
 
 Prefer these script commands over typing raw `supabase ...` in the shell: the
@@ -68,10 +68,10 @@ the remote project so the hosted Supabase project uses `auth.email.otp_length =
 
 ## Flutter App
 
-Run the app against the configured SnapSeal project:
+Run the app against the configured FactLockCam project:
 
 ```bash
-scripts/snapseal_supabase_pipeline.sh app-run
+scripts/factlockcam_supabase_pipeline.sh app-run
 ```
 
 The script passes `SUPABASE_URL` and `SUPABASE_ANON_KEY` as Dart defines.
@@ -83,5 +83,5 @@ migrations on pull requests. Manual deployment requires these repository
 secrets:
 
 - `SUPABASE_ACCESS_TOKEN`
-- `SNAPSEAL_SUPABASE_PROJECT_REF`
-- `SNAPSEAL_SUPABASE_DB_PASSWORD`
+- `FACTLOCKCAM_SUPABASE_PROJECT_REF`
+- `FACTLOCKCAM_SUPABASE_DB_PASSWORD`

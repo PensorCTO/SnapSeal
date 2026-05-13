@@ -30,7 +30,7 @@ class _LogonViewState extends ConsumerState<LogonView> {
     final auth = ref.watch(authControllerProvider);
 
     return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(middle: Text('SnapSeal')),
+      navigationBar: const CupertinoNavigationBar(middle: Text('FactLockCam')),
       child: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -208,8 +208,8 @@ class _ConfigNotice extends StatelessWidget {
         child: Text(
           'Supabase is not configured yet. The local wallet shell is usable; '
           'Magic Number auth requires SUPABASE_URL and SUPABASE_ANON_KEY. '
-          'From the repo root run `bash scripts/snapseal_supabase_pipeline.sh app-run`. '
-          'If you are already in `scripts/`, run `./snapseal_supabase_pipeline.sh app-run` '
+          'From the repo root run `bash scripts/factlockcam_supabase_pipeline.sh app-run`. '
+          'If you are already in `scripts/`, run `./factlockcam_supabase_pipeline.sh app-run` '
           '(a bare filename is not on your PATH).',
           style: const TextStyle(color: CupertinoColors.label, fontSize: 13),
         ),

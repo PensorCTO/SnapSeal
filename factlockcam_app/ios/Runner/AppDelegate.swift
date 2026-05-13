@@ -3,7 +3,7 @@ import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
-  private static let enclaveChannel = "com.snapseal.app/enclave"
+  private static let enclaveChannel = "com.factlockcam.app/enclave"
 
   override func application(
     _ application: UIApplication,
@@ -23,7 +23,7 @@ import UIKit
             )
             return
           }
-          // TODO(ProofLock): replace with Secure Enclave / CryptoKit signing.
+          // TODO: Replace with Secure Enclave / CryptoKit signing.
           let payload = "SIMULATED_DEV|\(hash)"
           let sig = Data(payload.utf8).base64EncodedString()
           result(sig)

@@ -7,11 +7,11 @@ summary: "Repository audit as of 2026-05-11: reconciles LLM Wiki claims with Flu
 
 ## Core Synthesis
 
-This audit cross-checked `snapseal_app/`, `supabase/`, `scripts/`, and key wiki pages ([[SnapSeal_Product_Baseline_2026-05]], [[SnapSeal_Master_Blueprint]], [[ProofLock_Refactor_Scope]], [[Master_Context_10MAY2026]]). Several pages written through **2026-05-10** were **stale** relative to the current tree: capture now runs a **ProofLock-shaped** Dart pipeline (`VaultService.proofLockFile`), the Supabase client exposes **`check_proof_status`** and **`simulate_chain_notarize`**, **`proof_ledger`** rows are inserted on the happy remote path, **pending remote sync** is retried on a **3-minute timer** plus **dashboard lifecycle** and a **“Retry now”** banner, partial local seal failure triggers **compensating file deletion**, and **native `MethodChannel` signing exists but is deliberately simulated** on iOS/Android (TODO comments for Secure Enclave / Keystore). **Polygon** remains unwired: `USE_POLYGON_NOTARIZER=true` selects `PolygonChainNotarizer`, which still throws `UnsupportedError`. `REQUIRE_HARDWARE_ATTESTATION` is defined in `AppConfig` but **not referenced** elsewhere yet.
+This audit cross-checked `factlockcam_app/`, `supabase/`, `scripts/`, and key wiki pages ([[FactLockCam_Product_Baseline_2026-05]], [[FactLockCam_Master_Blueprint]], [[ProofLock_Refactor_Scope]], [[Master_Context_10MAY2026]]). Several pages written through **2026-05-10** were **stale** relative to the current tree: capture now runs a **ProofLock-shaped** Dart pipeline (`VaultService.proofLockFile`), the Supabase client exposes **`check_proof_status`** and **`simulate_chain_notarize`**, **`proof_ledger`** rows are inserted on the happy remote path, **pending remote sync** is retried on a **3-minute timer** plus **dashboard lifecycle** and a **“Retry now”** banner, partial local seal failure triggers **compensating file deletion**, and **native `MethodChannel` signing exists but is deliberately simulated** on iOS/Android (TODO comments for Secure Enclave / Keystore). **Polygon** remains unwired: `USE_POLYGON_NOTARIZER=true` selects `PolygonChainNotarizer`, which still throws `UnsupportedError`. `REQUIRE_HARDWARE_ATTESTATION` is defined in `AppConfig` but **not referenced** elsewhere yet.
 
-**Historical note:** this audit records the repo state at ingest time. Later 2026-05-11 UI work split the authenticated surface into `/vault-home` and `/archive`, added local per-item delete, full-size photo viewing, native video-frame thumbnails, and a metallic forensic viewfinder. The 2026-05-12 cleanup added the Domain Interaction Contract, cached photo-view extraction, REC-state failure reset, and MIME-aware video-thumbnail fallback documentation; see [[Master_Context_11MAY2026]] and [[SnapSeal_Master_Blueprint]] for current behavior.
+**Historical note:** this audit records the repo state at ingest time. Later 2026-05-11 UI work split the authenticated surface into `/vault-home` and `/archive`, added local per-item delete, full-size photo viewing, native video-frame thumbnails, and a metallic forensic viewfinder. The 2026-05-12 cleanup added the Domain Interaction Contract, cached photo-view extraction, REC-state failure reset, and MIME-aware video-thumbnail fallback documentation; see [[Master_Context_11MAY2026]] and [[FactLockCam_Master_Blueprint]] for current behavior.
 
-Developer ergonomics improved: **`scripts/write_flutter_dart_defines.py`** emits filtered **`snapseal_app/dart_defines.json`** (only `SUPABASE_URL` / `SUPABASE_ANON_KEY` by default), **`scripts/sync_flutter_dart_defines.sh`** and **VS Code/Cursor launch** run sync before debug. Tests now include **`vault_service_retry_test.dart`**, **`vault_dashboard_view_test.dart`**, and **`native_enclave_channel_test.dart`** in addition to **`widget_test.dart`**.
+Developer ergonomics improved: **`scripts/write_flutter_dart_defines.py`** emits filtered **`factlockcam_app/dart_defines.json`** (only `SUPABASE_URL` / `SUPABASE_ANON_KEY` by default), **`scripts/sync_flutter_dart_defines.sh`** and **VS Code/Cursor launch** run sync before debug. Tests now include **`vault_service_retry_test.dart`**, **`vault_dashboard_view_test.dart`**, and **`native_enclave_channel_test.dart`** in addition to **`widget_test.dart`**.
 
 ### Findings vs prior wiki claims
 
@@ -36,13 +36,13 @@ Developer ergonomics improved: **`scripts/write_flutter_dart_defines.py`** emits
 ## Provenance Tracking
 
 * *Primary source*: Derived from `raw/project_audit_2026-05-11.md` via [[Project_Audit_2026-05-11_Source]] (2026-05-11 formal ingest)
-* *Audit methodology*: Read `wiki/index.md` → baseline/blueprint/refactor/master context → grep/read `snapseal_app/lib/domain/services/vault_service.dart`, `snapseal_app/lib/ui/controllers/pending_sync_scheduler.dart`, `snapseal_app/lib/ui/controllers/dashboard_controller.dart`, `snapseal_app/lib/ui/views/vault_dashboard_view.dart`, `snapseal_app/lib/data/supabase/seal_ledger_repository.dart`, `snapseal_app/ios/Runner/AppDelegate.swift`, `snapseal_app/android/app/src/main/kotlin/com/snapseal/snapseal/MainActivity.kt`, `scripts/write_flutter_dart_defines.py`, `snapseal_app/test/*.dart` (2026-05-11)
+* *Audit methodology*: Read `wiki/index.md` → baseline/blueprint/refactor/master context → grep/read `factlockcam_app/lib/domain/services/vault_service.dart`, `factlockcam_app/lib/ui/controllers/pending_sync_scheduler.dart`, `factlockcam_app/lib/ui/controllers/dashboard_controller.dart`, `factlockcam_app/lib/ui/views/vault_dashboard_view.dart`, `factlockcam_app/lib/data/supabase/seal_ledger_repository.dart`, `factlockcam_app/ios/Runner/AppDelegate.swift`, `factlockcam_app/android/app/src/main/kotlin/com/snapseal/snapseal/MainActivity.kt`, `scripts/write_flutter_dart_defines.py`, `factlockcam_app/test/*.dart` (2026-05-11)
 
 ## Related Notes
 
 * [[Project_Audit_2026-05-11_Source]]
-* [[SnapSeal_Product_Baseline_2026-05]]
-* [[SnapSeal_Master_Blueprint]]
+* [[FactLockCam_Product_Baseline_2026-05]]
+* [[FactLockCam_Master_Blueprint]]
 * [[ProofLock_Refactor_Scope]]
 * [[Master_Context_10MAY2026]]
 * [[Master_Context_11MAY2026]]

@@ -1,6 +1,6 @@
 ---
 name: mobile-cross
-description: Repo-specific mobile cross-platform skill for SnapSeal Flutter development in this workspace.
+description: Repo-specific mobile cross-platform skill for FactLockCam Flutter development in this workspace.
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 
@@ -11,7 +11,7 @@ Implement and maintain cross-platform mobile features for this repository's
 Flutter app with project-aware paths, constraints, and delivery expectations.
 
 ## Use this skill when
-- Building or refactoring features under `snapseal_app/`
+- Building or refactoring features under `factlockcam_app/`
 - Updating camera/capture, vault, sync, auth, or dashboard flows
 - Adding platform-channel integrations for iOS/Android capabilities
 - Improving performance, reliability, or test coverage in Flutter paths
@@ -21,11 +21,11 @@ Flutter app with project-aware paths, constraints, and delivery expectations.
 - Work is Supabase schema-only with no Flutter app touchpoints
 
 ## Project-specific paths
-- Flutter app source: `snapseal_app/lib/`
-- Flutter tests: `snapseal_app/test/`
-- iOS platform files: `snapseal_app/ios/`
-- Android platform files: `snapseal_app/android/`
-- Supabase support files: `supabase/` and `scripts/snapseal_supabase_pipeline.sh`
+- Flutter app source: `factlockcam_app/lib/`
+- Flutter tests: `factlockcam_app/test/`
+- iOS platform files: `factlockcam_app/ios/`
+- Android platform files: `factlockcam_app/android/`
+- Supabase support files: `supabase/` and `scripts/factlockcam_supabase_pipeline.sh`
 
 ## Repo-specific operating rules
 - Keep high-frequency camera/seal animations in repaint boundaries.
@@ -36,13 +36,13 @@ Flutter app with project-aware paths, constraints, and delivery expectations.
 
 ## Standard workflow
 1. Confirm feature scope and user-visible behavior changes.
-2. Locate affected app modules in `snapseal_app/lib/`.
+2. Locate affected app modules in `factlockcam_app/lib/`.
 3. Implement minimal, cohesive changes with clear error handling.
-4. Update/add tests in `snapseal_app/test/` where behavior changed.
+4. Update/add tests in `factlockcam_app/test/` where behavior changed.
 5. Verify formatting/analyzers/tests as appropriate.
 6. Summarize impact, risk, and follow-up work.
 
 ## Expected outputs
-- Code changes under the correct repo paths (primarily `snapseal_app/`)
+- Code changes under the correct repo paths (primarily `factlockcam_app/`)
 - Matching tests for changed behavior
 - Brief verification notes (what was run, what passed, known gaps)

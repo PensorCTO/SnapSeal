@@ -44,7 +44,7 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SnapSeal'),
+        title: const Text('FactLockCam'),
         actions: [
           PopupMenuButton<String>(
             tooltip: 'More',

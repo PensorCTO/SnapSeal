@@ -1,10 +1,10 @@
 ---
 description: Constraints for the Camera-to-Vault pipeline, ensuring media integrity and UI performance.
-globs: snapseal_app/lib/ui/views/camera/**, snapseal_app/lib/domain/services/vault_service.dart
+globs: factlockcam_app/lib/ui/views/camera/**, factlockcam_app/lib/domain/services/vault_service.dart
 alwaysApply: true
 ---
 
-# SnapSeal Capture Pipeline Rules
+# FactLockCam Capture Pipeline Rules
 
 ## 1. Zero-Jank Capture
 - **Rule**: High-frequency animations (scanning lasers, melting wax) must run in a `RepaintBoundary`.
@@ -17,4 +17,4 @@ alwaysApply: true
 
 ## 3. UI Metaphors
 - **Rule**: Use `HapticService.heavyImpact()` at the exact moment the "Digital Wax Seal" animation completes.
-- **Context Anchors**: `snapseal_app/lib/core/services/haptic_service.dart`, `snapseal_app/lib/ui/widgets/wax_seal_anim.dart`.
+- **Context Anchors**: `factlockcam_app/lib/core/services/haptic_service.dart`, `factlockcam_app/lib/ui/widgets/wax_seal_anim.dart`.

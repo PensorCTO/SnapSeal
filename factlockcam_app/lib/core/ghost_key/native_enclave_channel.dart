@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../di/locator.dart';
 
 /// Hardware-backed signing bridge (Secure Enclave / Android Keystore).
-/// Native handlers register `com.snapseal.app/enclave` and implement `signHash`.
+/// Native handlers register `com.factlockcam.app/enclave` and implement `signHash`.
 ///
 /// For widget/unit tests without a platform engine, pass [signHashForTests].
 class NativeEnclaveChannel {
   NativeEnclaveChannel({
     MethodChannel? channel,
     Future<String> Function(String hash)? signHashForTests,
-  }) : _channel = channel ?? const MethodChannel('com.snapseal.app/enclave'),
+  }) : _channel = channel ?? const MethodChannel('com.factlockcam.app/enclave'),
        _signHashForTests = signHashForTests;
 
   static const String _signMethod = 'signHash';

@@ -19,7 +19,7 @@ class CertificateExportService {
         : 'No description provided.';
 
     return '''
-SnapSeal Certificate Draft
+FactLockCam Certificate Draft
 
 Title: $title
 Asset Fingerprint: ${item.assetFingerprint}

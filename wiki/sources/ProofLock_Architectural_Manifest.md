@@ -11,7 +11,7 @@ This source is an architectural manifest for **ProofLock** viability and system 
 
 The target **C4-style flow** is: UI (Riverpod) feeds isolates for SHA-256 hashing, native TEE signs the hash, the client calls Supabase **RPC** for pre-flight and ledger writes, and the client anchors on **Polygon** then records the transaction back through RPC. The implementation spec sketches **Postgres** objects (`proof_ledger`, `courier_packages`), **indexes**, **RLS** (including **no direct SELECT** on courier tables—RPC-only reads via `SECURITY DEFINER`), and a **`check_proof_status`** RPC returning ownership states (`new`, `anonymous`, `owned_by_me`, `owned_by_other`). It also proposes a **layered Flutter tree** (`presentation/capture`, fingerprinting UI with `RepaintBoundary`, notarization, verification) and a **`proofLockFile`**-style pipeline: isolate hash → RPC pre-flight → hardware sign → Polygon notarize → encrypt to vault → insert ledger → delete cleartext original.
 
-**Note:** The manifest’s example vault encryption (“XOR + SHA256” / `VaultEncryptionHandler`) is a **spec-level placeholder** and does **not** match the current SnapSeal implementation (AES-GCM + local secure storage). The wiki treats that line as manifesto intent, not as current repo fact—see [[ProofLock_Refactor_Scope]].
+**Note:** The manifest’s example vault encryption (“XOR + SHA256” / `VaultEncryptionHandler`) is a **spec-level placeholder** and does **not** match the current FactLockCam implementation (AES-GCM + local secure storage). The wiki treats that line as manifesto intent, not as current repo fact—see [[ProofLock_Refactor_Scope]].
 
 ## Provenance Tracking
 
@@ -20,6 +20,6 @@ The target **C4-style flow** is: UI (Riverpod) feeds isolates for SHA-256 hashin
 ## Related Notes
 
 * [[ProofLock_Refactor_Scope]]
-* [[SnapSeal_Master_Blueprint]]
+* [[FactLockCam_Master_Blueprint]]
 * [[overview]]
 * [[glossary]]

@@ -1,23 +1,23 @@
 # Master Context — 11 MAY 2026
 
-This is the comprehensive architecture snapshot of `ProofLockCleanup` as of 11 MAY 2026. It supersedes `Master_Context10MAY2026.md` (which is preserved verbatim as a frozen snapshot). For the canonical product status entry, see `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md`; for the most recent repo-vs-wiki reconciliation, see `wiki/analyses/Project_Audit_2026-05-11.md`.
+This is the comprehensive architecture snapshot of `ProofLockCleanup` as of 11 MAY 2026. It supersedes `Master_Context10MAY2026.md` (which is preserved verbatim as a frozen snapshot). For the canonical product status entry, see `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md`; for the most recent repo-vs-wiki reconciliation, see `wiki/analyses/Project_Audit_2026-05-11.md`.
 
 ---
 
 ## 1) Project identity and intent
 
-`ProofLockCleanup` hosts a Flutter product named **SnapSeal**, positioned as a **tamper-evident** local media vault (authenticity heuristics and risk reduction — not claims of absolute proof-of-truth) for authenticated capture, local sealing, and Supabase-backed ledger replication. The repository also operates an LLM Wiki used as the canonical synthesis layer for architecture, constraints, and ongoing alignment with a stricter future-state target called **ProofLock**.
+`ProofLockCleanup` hosts a Flutter product named **FactLockCam**, positioned as a **tamper-evident** local media vault (authenticity heuristics and risk reduction — not claims of absolute proof-of-truth) for authenticated capture, local sealing, and Supabase-backed ledger replication. The repository also operates an LLM Wiki used as the canonical synthesis layer for architecture, constraints, and ongoing alignment with a stricter future-state target called **ProofLock**.
 
-- **SnapSeal (current reality):** local-first secure media handling (photos *and now videos*) + Supabase-backed proof surfaces (`check_proof_status`, `simulate_chain_notarize`, `proof_ledger`).
+- **FactLockCam (current reality):** local-first secure media handling (photos *and now videos*) + Supabase-backed proof surfaces (`check_proof_status`, `simulate_chain_notarize`, `proof_ledger`).
 - **ProofLock (target architecture):** hardware-backed signing, pre-flight proof-status RPC, Polygon anchoring, C2PA, and stronger courier/verification guarantees.
 
-Canonical status anchor: `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md`.
+Canonical status anchor: `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md`.
 
 ---
 
 ## 2) Repository architecture map
 
-- `snapseal_app/` — Flutter mobile app (core product runtime).
+- `factlockcam_app/` — Flutter mobile app (core product runtime).
 - `supabase/` — database schema, migrations, and local/remote Supabase project assets.
 - `scripts/` — repeatable operational wrappers for Supabase, dart-defines, and environment workflows.
 - `wiki/` — LLM-maintained architecture knowledge base and decision context.
@@ -85,10 +85,10 @@ Conceptually a **product + architecture-knowledge dual system**: build/operate t
 
 ### 4.2 App initialization and configuration
 
-- `snapseal_app/lib/main.dart` initializes Supabase only when `SUPABASE_URL` and `SUPABASE_ANON_KEY` are available via compile-time `--dart-define` values; unconfigured mode still renders the shell with an auth notice.
+- `factlockcam_app/lib/main.dart` initializes Supabase only when `SUPABASE_URL` and `SUPABASE_ANON_KEY` are available via compile-time `--dart-define` values; unconfigured mode still renders the shell with an auth notice.
 - `AppConfig` also exposes `USE_POLYGON_NOTARIZER` and `REQUIRE_HARDWARE_ATTESTATION`. The latter is defined but **not yet wired** into capture/sync control flow.
 - Define values are produced by `scripts/write_flutter_dart_defines.py` (filtered, only `SUPABASE_URL` + `SUPABASE_ANON_KEY` by default) and synced via `scripts/sync_flutter_dart_defines.sh`. IDE launch runs sync pre-debug.
-- **Operational lesson (2026-05-11):** updating `dart_defines.json` (or rotating Supabase keys in `.env.local`) requires a **cold rebuild** of the Flutter app; a Dart hot-restart will keep stale compile-time defines and the runtime will report "Supabase is not configured yet…". Use `bash scripts/snapseal_supabase_pipeline.sh app-run` (or `flutter run --dart-define-from-file dart_defines.json`) instead of hot-restarting after a defines change.
+- **Operational lesson (2026-05-11):** updating `dart_defines.json` (or rotating Supabase keys in `.env.local`) requires a **cold rebuild** of the Flutter app; a Dart hot-restart will keep stale compile-time defines and the runtime will report "Supabase is not configured yet…". Use `bash scripts/factlockcam_supabase_pipeline.sh app-run` (or `flutter run --dart-define-from-file dart_defines.json`) instead of hot-restarting after a defines change.
 
 ### 4.3 Auth architecture
 
@@ -101,7 +101,7 @@ Conceptually a **product + architecture-knowledge dual system**: build/operate t
 
 The capture pipeline is performance-constrained and security-constrained, and is now **dual-mode**:
 
-- `AcquisitionMode` enum (`snapseal_app/lib/ui/views/camera/acquisition_mode.dart`) defines `photo` and `video` intents. The router parses `mode` from the `/camera?mode=...` query parameter.
+- `AcquisitionMode` enum (`factlockcam_app/lib/ui/views/camera/acquisition_mode.dart`) defines `photo` and `video` intents. The router parses `mode` from the `/camera?mode=...` query parameter.
 - `CameraView` initializes the camera with `enableAudio: mode.isVideo` and either:
   - **Photo:** `controller.takePicture()` on shutter tap.
   - **Video:** `controller.startVideoRecording()` on first tap, `controller.stopVideoRecording()` on second tap; a REC indicator and red shutter glow render while recording.
@@ -116,8 +116,8 @@ The capture pipeline is performance-constrained and security-constrained, and is
   8. Temp capture cleanup.
 - **Race-condition fix:** `CameraView.dispose()` previously called `stopVideoRecording()` without awaiting it before `controller.dispose()`. The framework contract forbids `async dispose`, so we now wrap the asynchronous teardown in a static helper (`_teardownCamera`) and explicitly `unawaited(...)` it, ensuring `stopVideoRecording` completes before the controller is torn down without violating `State.dispose()`'s synchronous contract.
 - **Permissions:**
-  - iOS: `NSCameraUsageDescription` and **`NSMicrophoneUsageDescription`** in `snapseal_app/ios/Runner/Info.plist`.
-  - Android: `android.permission.CAMERA` and **`android.permission.RECORD_AUDIO`** in `snapseal_app/android/app/src/main/AndroidManifest.xml`.
+  - iOS: `NSCameraUsageDescription` and **`NSMicrophoneUsageDescription`** in `factlockcam_app/ios/Runner/Info.plist`.
+  - Android: `android.permission.CAMERA` and **`android.permission.RECORD_AUDIO`** in `factlockcam_app/android/app/src/main/AndroidManifest.xml`.
 
 ### 4.5 Dashboard architecture
 
@@ -168,13 +168,13 @@ Historical schema drift across hosted projects has been narrowed by repair migra
 
 ### 6.1 Scripted workflow pattern
 
-`scripts/snapseal_supabase_pipeline.sh` centralizes:
+`scripts/factlockcam_supabase_pipeline.sh` centralizes:
 
 - login / link / start / reset / lint
 - push-dry-run / push
 - `migration-list` (loads `.env.local`; needs `SUPABASE_DB_PASSWORD`)
 - `config-push`
-- `flutter-defines` (writes `snapseal_app/dart_defines.json` from `.env.local`, filtered)
+- `flutter-defines` (writes `factlockcam_app/dart_defines.json` from `.env.local`, filtered)
 - `app-run` (writes defines + runs Flutter with `--dart-define-from-file`)
 
 The wrapper loads repo `.env.local`, ensuring required remote DB credentials are present and that compile-time defines are baked in for cold builds.
@@ -191,7 +191,7 @@ The wrapper loads repo `.env.local`, ensuring required remote DB credentials are
 
 ### 6.3 Dart-defines pipeline
 
-- `scripts/write_flutter_dart_defines.py` reads `.env.local` + process env, filters to `SUPABASE_URL` / `SUPABASE_ANON_KEY`, and emits `snapseal_app/dart_defines.json`.
+- `scripts/write_flutter_dart_defines.py` reads `.env.local` + process env, filters to `SUPABASE_URL` / `SUPABASE_ANON_KEY`, and emits `factlockcam_app/dart_defines.json`.
 - `scripts/sync_flutter_dart_defines.sh` is a thin shell wrapper used as a VS Code / Cursor pre-launch task.
 - `dart_defines.json` is gitignored.
 
@@ -207,15 +207,15 @@ Karpathy-style LLM Wiki:
 
 - `raw/` immutable sources (now includes `raw/project_audit_2026-05-11.md`).
 - `wiki/sources/` source summaries (incl. `Project_Audit_2026-05-11_Source`).
-- `wiki/concepts/` stable concept pages (`SnapSeal_Product_Baseline_2026-05` is the status anchor).
-- `wiki/analyses/` deep-dive analyses (`SnapSeal_Master_Blueprint`, `ProofLock_Refactor_Scope`, `Master_Context_10MAY2026`, **`Master_Context_11MAY2026`**, `Project_Audit_2026-05-11`).
+- `wiki/concepts/` stable concept pages (`FactLockCam_Product_Baseline_2026-05` is the status anchor).
+- `wiki/analyses/` deep-dive analyses (`FactLockCam_Master_Blueprint`, `ProofLock_Refactor_Scope`, `Master_Context_10MAY2026`, **`Master_Context_11MAY2026`**, `Project_Audit_2026-05-11`).
 - `wiki/index.md` as navigation root.
 - `wiki/log.md` as append-only evolution trail.
 
 Reading order for product state:
 
-1. `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md` (status anchor).
-2. `wiki/analyses/SnapSeal_Master_Blueprint.md` (capability map).
+1. `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md` (status anchor).
+2. `wiki/analyses/FactLockCam_Master_Blueprint.md` (capability map).
 3. `wiki/analyses/Project_Audit_2026-05-11.md` (post-2026-05-10 reconciliation).
 4. `wiki/analyses/Master_Context_11MAY2026.md` (this snapshot's wiki twin).
 5. `wiki/analyses/ProofLock_Refactor_Scope.md` (gap-to-target roadmap).
@@ -309,14 +309,14 @@ Reading order for product state:
 
 ## 13) Executive summary
 
-As of 11 MAY 2026, SnapSeal is a functioning local-first sealed-media vault that now captures and seals **both photos and videos** through a single ProofLock-shaped pipeline, with Supabase-backed proof surfaces (`check_proof_status`, `simulate_chain_notarize`, `proof_ledger`), wallet-scoped ledger RLS, a pending-sync scheduler with UI "Retry now", and compensating local file cleanup. Native enclave signing is wired as a channel but still returns simulated payloads; Polygon and C2PA remain unimplemented. The architecture has matured along reliability, atomicity, and capture-mode axes, but remains pre-viability relative to the ProofLock bar. The next trajectory is unchanged: replace simulation with real hardware signing, land durable chain anchoring, and complete the verification/courier UX.
+As of 11 MAY 2026, FactLockCam is a functioning local-first sealed-media vault that now captures and seals **both photos and videos** through a single ProofLock-shaped pipeline, with Supabase-backed proof surfaces (`check_proof_status`, `simulate_chain_notarize`, `proof_ledger`), wallet-scoped ledger RLS, a pending-sync scheduler with UI "Retry now", and compensating local file cleanup. Native enclave signing is wired as a channel but still returns simulated payloads; Polygon and C2PA remain unimplemented. The architecture has matured along reliability, atomicity, and capture-mode axes, but remains pre-viability relative to the ProofLock bar. The next trajectory is unchanged: replace simulation with real hardware signing, land durable chain anchoring, and complete the verification/courier UX.
 
 ---
 
 ## 14) Pointers
 
-- Status anchor: `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md`
-- Capability map: `wiki/analyses/SnapSeal_Master_Blueprint.md`
+- Status anchor: `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md`
+- Capability map: `wiki/analyses/FactLockCam_Master_Blueprint.md`
 - Reconciliation audit: `wiki/analyses/Project_Audit_2026-05-11.md`
 - Wiki twin of this file: `wiki/analyses/Master_Context_11MAY2026.md`
 - Gap-to-target: `wiki/analyses/ProofLock_Refactor_Scope.md`

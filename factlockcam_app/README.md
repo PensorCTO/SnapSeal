@@ -1,6 +1,6 @@
-# SnapSeal App
+# FactLockCam App
 
-SnapSeal is a Flutter foundation for a tamper-evident local media vault.
+FactLockCam is a Flutter foundation for a tamper-evident local media vault.
 Captured media is hashed, encrypted into a local vault, indexed in SQLite, and
 shown via thumbnails. Supabase provides OTP authentication, profile-to-wallet
 mapping, and an active-wallet replica of Polygon proof rows.
@@ -18,7 +18,7 @@ Fill repo-root `.env.local` from `../.env.example` with **SUPABASE_URL** and **S
 secrets such as `SUPABASE_DB_PASSWORD` stay out of the binary) and runs Flutter:
 
 ```bash
-../scripts/snapseal_supabase_pipeline.sh app-run
+../scripts/factlockcam_supabase_pipeline.sh app-run
 ```
 
 **IDE / plain `flutter run`:** sync defines from `.env.local`, then run with the generated file:
@@ -28,8 +28,8 @@ secrets such as `SUPABASE_DB_PASSWORD` stay out of the binary) and runs Flutter:
 flutter run --dart-define-from-file dart_defines.json
 ```
 
-Or use the VS Code / Cursor launch configuration **snapseal_app (Supabase from .env.local)**,
-which runs the sync script before debug (`snapseal_app/dart_defines.json` is gitignored).
+Or use the VS Code / Cursor launch configuration **factlockcam_app (Supabase from .env.local)**,
+which runs the sync script before debug (`factlockcam_app/dart_defines.json` is gitignored).
 
 Manual one-liners still work:
 
@@ -42,7 +42,7 @@ flutter run \
 Without those values, the local wallet shell still opens and the auth form shows
 a configuration notice.
 
-SnapSeal uses Supabase email OTP with the 6-digit `{{ .Token }}` in the email
+FactLockCam uses Supabase email OTP with the 6-digit `{{ .Token }}` in the email
 template. No native deep-link callback is required.
 
 ## Manual Magic Number Verification

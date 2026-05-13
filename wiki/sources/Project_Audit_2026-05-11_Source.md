@@ -16,7 +16,7 @@ This immutable **`raw/`** document records a **repository audit** that reconcile
 - **Tooling**: filtered **`dart_defines.json`** generation from `.env.local` / shell env for IDE and CLI runs.
 - **Tests**: retry, dashboard, and native enclave channel tests exist in addition to the widget shell.
 
-The durable **compiled** page with wiki cross-links and the findings table lives in [[Project_Audit_2026-05-11]]. Downstream concept/analysis pages ([[SnapSeal_Product_Baseline_2026-05]], [[SnapSeal_Master_Blueprint]], [[ProofLock_Refactor_Scope]], [[Master_Context_10MAY2026]]) were aligned in the same maintenance window.
+The durable **compiled** page with wiki cross-links and the findings table lives in [[Project_Audit_2026-05-11]]. Downstream concept/analysis pages ([[FactLockCam_Product_Baseline_2026-05]], [[FactLockCam_Master_Blueprint]], [[ProofLock_Refactor_Scope]], [[Master_Context_10MAY2026]]) were aligned in the same maintenance window.
 
 ## Provenance Tracking
 
@@ -25,8 +25,8 @@ The durable **compiled** page with wiki cross-links and the findings table lives
 ## Related Notes
 
 * [[Project_Audit_2026-05-11]]
-* [[SnapSeal_Product_Baseline_2026-05]]
-* [[SnapSeal_Master_Blueprint]]
+* [[FactLockCam_Product_Baseline_2026-05]]
+* [[FactLockCam_Master_Blueprint]]
 * [[ProofLock_Refactor_Scope]]
 * [[overview]]
 * [[log]]

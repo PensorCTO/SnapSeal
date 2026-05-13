@@ -4,9 +4,9 @@ The comprehensive **schema-first** architecture snapshot lives in the LLM Wiki:
 
 **[`wiki/analyses/MASTER_CONTEXT13MAY2026.md`](wiki/analyses/MASTER_CONTEXT13MAY2026.md)**
 
-That page supersedes the 2026-05-11 master context (`wiki/analyses/Master_Context_11MAY2026.md`); for product workflow and hosted Supabase repair narrative, continue to anchor on `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md` and `wiki/analyses/Project_Audit_2026-05-11.md`.
+That page supersedes the 2026-05-11 master context (`wiki/analyses/Master_Context_11MAY2026.md`); for product workflow and hosted Supabase repair narrative, continue to anchor on `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md` and `wiki/analyses/Project_Audit_2026-05-11.md`.
 
-**Verified on 2026-05-13:** `flutter test` in `snapseal_app/` — 31 passing tests across nine files under `snapseal_app/test/`.
+**Verified on 2026-05-13:** `flutter test` in `factlockcam_app/` — 31 passing tests across nine files under `factlockcam_app/test/`.
 2026-05-13 Architecture Pivot: The Cloud E2EE Vault & Web Verification
 1. The Core Paradigm Shift: Local Sandbox to Cloud E2EE
 To eliminate the catastrophic data-loss vulnerability caused by app uninstallations and to remove the friction of forced app downloads for recipients, ProofLock is transitioning from a purely local storage model to a Cloud-Assisted End-to-End Encrypted (E2EE) Vault hosted on Supabase.

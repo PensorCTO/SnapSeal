@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'app/snapseal_app.dart';
+import 'app/factlockcam_app.dart';
 import 'core/config/app_config.dart';
 import 'core/di/injection.dart';
 
@@ -19,5 +19,5 @@ Future<void> main() async {
 
   await configureDependencies();
 
-  runApp(const ProviderScope(child: SnapSealApp()));
+  runApp(const ProviderScope(child: FactLockCamApp()));
 }

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:snapseal/core/di/injection.dart';
-import 'package:snapseal/data/models/archive_item.dart';
-import 'package:snapseal/ui/controllers/dashboard_controller.dart';
-import 'package:snapseal/ui/views/archive_view.dart';
-import 'package:snapseal/ui/views/vault_home_view.dart';
+import 'package:factlockcam/core/di/injection.dart';
+import 'package:factlockcam/data/models/archive_item.dart';
+import 'package:factlockcam/ui/controllers/dashboard_controller.dart';
+import 'package:factlockcam/ui/views/archive_view.dart';
+import 'package:factlockcam/ui/views/vault_home_view.dart';
 
 void main() {
   setUpAll(() async {
@@ -37,7 +37,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('SnapSeal'), findsOneWidget);
+    expect(find.text('FactLockCam'), findsOneWidget);
     expect(find.text('Archive'), findsOneWidget);
     expect(find.text('Picture'), findsOneWidget);
     expect(find.text('Video'), findsOneWidget);

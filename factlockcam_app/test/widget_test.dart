@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:snapseal/app/snapseal_app.dart';
-import 'package:snapseal/data/models/archive_item.dart';
-import 'package:snapseal/core/di/injection.dart';
-import 'package:snapseal/ui/controllers/dashboard_controller.dart';
-import 'package:snapseal/ui/views/camera/camera_view.dart';
-import 'package:snapseal/ui/views/vault_home_view.dart';
+import 'package:factlockcam/app/factlockcam_app.dart';
+import 'package:factlockcam/data/models/archive_item.dart';
+import 'package:factlockcam/core/di/injection.dart';
+import 'package:factlockcam/ui/controllers/dashboard_controller.dart';
+import 'package:factlockcam/ui/views/camera/camera_view.dart';
+import 'package:factlockcam/ui/views/vault_home_view.dart';
 
 void main() {
   setUpAll(() async {
@@ -15,10 +15,10 @@ void main() {
     await configureDependencies();
   });
 
-  testWidgets('renders the SnapSeal logon shell', (tester) async {
-    await tester.pumpWidget(const ProviderScope(child: SnapSealApp()));
+  testWidgets('renders the FactLockCam logon shell', (tester) async {
+    await tester.pumpWidget(const ProviderScope(child: FactLockCamApp()));
 
-    expect(find.text('SnapSeal'), findsOneWidget);
+    expect(find.text('FactLockCam'), findsOneWidget);
     expect(find.text('Send Magic Number'), findsOneWidget);
     expect(find.text('Tamper-evident media vault'), findsOneWidget);
   });

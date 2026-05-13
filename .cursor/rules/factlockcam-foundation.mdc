@@ -1,12 +1,12 @@
 ---
-description: SnapSeal tamper-evident vault architecture rules
-globs: snapseal_app/lib/**/*.dart, supabase/migrations/*.sql
+description: FactLockCam tamper-evident vault architecture rules
+globs: factlockcam_app/lib/**/*.dart, supabase/migrations/*.sql
 alwaysApply: false
 ---
 
-# SnapSeal Foundation
+# FactLockCam Foundation
 
-- SnapSeal is a **tamper-evident** media vault (risk reduction / authenticity
+- FactLockCam is a **tamper-evident** media vault (risk reduction / authenticity
   heuristics), not a general secrecy vault or a claim of absolute proof-of-reality.
 - Original media bytes must enter the app through `VaultService`, which hashes,
   encrypts, stores, indexes, and later re-verifies them before courier transfer.

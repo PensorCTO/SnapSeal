@@ -1,5 +1,5 @@
 ---
-tags: [analysis, architecture, snapseal, prooflock, system_context, phase_2]
+tags: [analysis, architecture, factlockcam, prooflock, system_context, phase_2]
 summary: "Comprehensive architecture snapshot for 2026-05-13: four-panel vault UX, dual-mode capture, ProofLock-shaped seal pipeline, Domain Interaction Contract, pending-sync reconciliation, and remaining ProofLock-class gaps."
 ---
 
@@ -7,9 +7,9 @@ summary: "Comprehensive architecture snapshot for 2026-05-13: four-panel vault U
 
 ## Core Synthesis
 
-This page is the **current** comprehensive architecture snapshot for SnapSeal as of **2026-05-13**. It supersedes [[Master_Context_11MAY2026]] for timeline currency; substantive product behavior matches the 2026-05-11/12 wiki consolidation (dual-mode capture, four-panel UX, archive action contract, capture/archive hardening). **Canonical verified workflow and hosted-Supabase repair narrative** remain in [[SnapSeal_Product_Baseline_2026-05]]; **finish-line vs ProofLock manifest** remains in [[ProofLock_Refactor_Scope]]; **repo-vs-wiki audit table** remains in [[Project_Audit_2026-05-11]]. **Repository check (2026-05-13):** `flutter test` reports **31 passing tests** across **nine** files under `snapseal_app/test/` (hub/archive, forensic viewfinder, shutter behavior, retry path, native channel shim, asset actions, photo-view caching, video-thumbnail MIME temp extensions, widget shell).
+This page is the **current** comprehensive architecture snapshot for FactLockCam as of **2026-05-13**. It supersedes [[Master_Context_11MAY2026]] for timeline currency; substantive product behavior matches the 2026-05-11/12 wiki consolidation (dual-mode capture, four-panel UX, archive action contract, capture/archive hardening). **Canonical verified workflow and hosted-Supabase repair narrative** remain in [[FactLockCam_Product_Baseline_2026-05]]; **finish-line vs ProofLock manifest** remains in [[ProofLock_Refactor_Scope]]; **repo-vs-wiki audit table** remains in [[Project_Audit_2026-05-11]]. **Repository check (2026-05-13):** `flutter test` reports **31 passing tests** across **nine** files under `factlockcam_app/test/` (hub/archive, forensic viewfinder, shutter behavior, retry path, native channel shim, asset actions, photo-view caching, video-thumbnail MIME temp extensions, widget shell).
 
-SnapSeal is a Flutter **tamper-evident** local media vault—authenticity heuristics and risk reduction, **not** a claim of absolute proof-of-truth or sensor-origin certainty. Against a configured Supabase project it runs a **ProofLock-shaped** online path: preflight **`check_proof_status`**, **`NativeEnclaveChannel.signHash`** (still **simulated** on device), **`SimulatedChainNotarizer`** / **`simulate_chain_notarize`**, local **AES-GCM** sealing, SQLite metadata, and **`proof_ledger`** insertion when remote steps succeed, with **`pending_sync`** plus backoff otherwise.
+FactLockCam is a Flutter **tamper-evident** local media vault—authenticity heuristics and risk reduction, **not** a claim of absolute proof-of-truth or sensor-origin certainty. Against a configured Supabase project it runs a **ProofLock-shaped** online path: preflight **`check_proof_status`**, **`NativeEnclaveChannel.signHash`** (still **simulated** on device), **`SimulatedChainNotarizer`** / **`simulate_chain_notarize`**, local **AES-GCM** sealing, SQLite metadata, and **`proof_ledger`** insertion when remote steps succeed, with **`pending_sync`** plus backoff otherwise.
 
 ### Product surface (authenticated shell)
 
@@ -41,8 +41,8 @@ SnapSeal is a Flutter **tamper-evident** local media vault—authenticity heuris
 
 ### Developer operations
 
-- **`scripts/snapseal_supabase_pipeline.sh`**: login, link, local start/reset, lint, push dry-run/push, migration list, config push, Flutter defines, app run.
-- **`scripts/write_flutter_dart_defines.py`** + **`scripts/sync_flutter_dart_defines.sh`** (and IDE pre-launch tasks) emit **filtered** **`snapseal_app/dart_defines.json`** (default keys **`SUPABASE_URL`**, **`SUPABASE_ANON_KEY`**).
+- **`scripts/factlockcam_supabase_pipeline.sh`**: login, link, local start/reset, lint, push dry-run/push, migration list, config push, Flutter defines, app run.
+- **`scripts/write_flutter_dart_defines.py`** + **`scripts/sync_flutter_dart_defines.sh`** (and IDE pre-launch tasks) emit **filtered** **`factlockcam_app/dart_defines.json`** (default keys **`SUPABASE_URL`**, **`SUPABASE_ANON_KEY`**).
 - **Operational lesson:** after changing defines or rotating keys, perform a **cold rebuild**—hot restart can leave stale compile-time defines and surface “Supabase is not configured” incorrectly.
 
 ### Risk and gap summary (unchanged priorities)
@@ -59,15 +59,15 @@ Major gaps relative to [[ProofLock_Architectural_Manifest]] remain: **hardware-b
 
 ## Provenance Tracking
 
-* *Wiki synthesis anchors*: Consolidated from `wiki/index.md`, `wiki/overview.md`, [[SnapSeal_Product_Baseline_2026-05]], [[SnapSeal_Master_Blueprint]], [[ProofLock_Refactor_Scope]], [[Project_Audit_2026-05-11]], and [[Master_Context_11MAY2026]] (2026-05-13).
+* *Wiki synthesis anchors*: Consolidated from `wiki/index.md`, `wiki/overview.md`, [[FactLockCam_Product_Baseline_2026-05]], [[FactLockCam_Master_Blueprint]], [[ProofLock_Refactor_Scope]], [[Project_Audit_2026-05-11]], and [[Master_Context_11MAY2026]] (2026-05-13).
 * *Repo root shortcut*: `MASTER_CONTEXT13MAY2026.md` at repository root links here (mirroring the `MASTER_CONTEXT11MAY2026.md` companion pattern).
 * *Prior snapshot*: Supersedes [[Master_Context_11MAY2026]] as the dated **master context** sibling; [[Master_Context_10MAY2026]] remains historical.
-* *Verification on 2026-05-13*: `flutter test` in `snapseal_app/` (31 passing); test files include `vault_service_retry_test.dart`, `vault_service_video_thumbnail_test.dart`, `archive_photo_view_test.dart`, `archive_asset_actions_test.dart`, `vault_dashboard_view_test.dart`, `forensic_viewfinder_test.dart`, `camera_shutter_button_test.dart`, `native_enclave_channel_test.dart`, `widget_test.dart`.
+* *Verification on 2026-05-13*: `flutter test` in `factlockcam_app/` (31 passing); test files include `vault_service_retry_test.dart`, `vault_service_video_thumbnail_test.dart`, `archive_photo_view_test.dart`, `archive_asset_actions_test.dart`, `vault_dashboard_view_test.dart`, `forensic_viewfinder_test.dart`, `camera_shutter_button_test.dart`, `native_enclave_channel_test.dart`, `widget_test.dart`.
 
 ## Related Notes
 
-* [[SnapSeal_Product_Baseline_2026-05]]
-* [[SnapSeal_Master_Blueprint]]
+* [[FactLockCam_Product_Baseline_2026-05]]
+* [[FactLockCam_Master_Blueprint]]
 * [[Project_Audit_2026-05-11]]
 * [[ProofLock_Refactor_Scope]]
 * [[ProofLock_Architectural_Manifest]]

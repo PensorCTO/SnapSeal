@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Emit snapseal_app/dart_defines.json for `flutter run --dart-define-from-file`.
+"""Emit factlockcam_app/dart_defines.json for `flutter run --dart-define-from-file`.
 
 Only keys required by `AppConfig` are written so secrets from `.env.local`
 (e.g. SUPABASE_DB_PASSWORD) are never embedded in the compiled app.
@@ -60,7 +60,7 @@ def main() -> int:
         "--out",
         type=Path,
         required=True,
-        help="Output JSON path (e.g. snapseal_app/dart_defines.json).",
+        help="Output JSON path (e.g. factlockcam_app/dart_defines.json).",
     )
     args = ap.parse_args()
 

@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APP_DIR="$ROOT_DIR/snapseal_app"
-ENV_FILE="${SNAPSEAL_ENV_FILE:-$ROOT_DIR/.env.local}"
+APP_DIR="$ROOT_DIR/factlockcam_app"
+ENV_FILE="${FACTLOCKCAM_ENV_FILE:-$ROOT_DIR/.env.local}"
 
 if [[ -f "$ENV_FILE" ]]; then
   set -a
@@ -14,15 +14,15 @@ fi
 
 usage() {
   cat <<'HELP'
-SnapSeal Supabase development pipeline
+FactLockCam Supabase development pipeline
 
 Usage:
-  scripts/snapseal_supabase_pipeline.sh <command>
+  scripts/factlockcam_supabase_pipeline.sh <command>
 
 Commands:
   doctor        Show local tool versions and configured env variable presence
   login         Login to Supabase CLI, using SUPABASE_ACCESS_TOKEN when set
-  link          Link local Supabase config to SNAPSEAL_SUPABASE_PROJECT_REF
+  link          Link local Supabase config to FACTLOCKCAM_SUPABASE_PROJECT_REF
   status        Show local Supabase service status
   start         Start local Supabase stack
   stop          Stop local Supabase stack
@@ -32,12 +32,12 @@ Commands:
   push          Push migrations to linked remote project
   migration-list  Local vs remote migration history (loads .env.local; needs SUPABASE_DB_PASSWORD)
   config-push   Push supabase/config.toml Auth/project settings to remote
-  flutter-defines  Write snapseal_app/dart_defines.json from .env.local (filtered)
+  flutter-defines  Write factlockcam_app/dart_defines.json from .env.local (filtered)
   app-run       Run Flutter app using dart_defines.json from .env.local
 
 Environment:
-  SNAPSEAL_ENV_FILE                 Defaults to .env.local
-  SNAPSEAL_SUPABASE_PROJECT_REF     Remote project ref from dashboard URL
+  FACTLOCKCAM_ENV_FILE                 Defaults to .env.local
+  FACTLOCKCAM_SUPABASE_PROJECT_REF     Remote project ref from dashboard URL
   SUPABASE_ACCESS_TOKEN             Personal access token for CLI login
   SUPABASE_DB_PASSWORD              Remote database password for link/push
   SUPABASE_URL                      Project API URL for the Flutter app
@@ -62,7 +62,7 @@ case "${1:-help}" in
   doctor)
     (cd "$ROOT_DIR" && supabase --version)
     (cd "$APP_DIR" && flutter --version | sed -n '1p')
-    for name in SNAPSEAL_SUPABASE_PROJECT_REF SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_URL SUPABASE_ANON_KEY; do
+    for name in FACTLOCKCAM_SUPABASE_PROJECT_REF SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_URL SUPABASE_ANON_KEY; do
       if [[ -n "${!name:-}" ]]; then
         echo "$name=set"
       else
@@ -78,11 +78,11 @@ case "${1:-help}" in
     fi
     ;;
   link)
-    require_env SNAPSEAL_SUPABASE_PROJECT_REF
+    require_env FACTLOCKCAM_SUPABASE_PROJECT_REF
     if [[ -n "${SUPABASE_DB_PASSWORD:-}" ]]; then
-      supabase_cmd link --project-ref "$SNAPSEAL_SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+      supabase_cmd link --project-ref "$FACTLOCKCAM_SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
     else
-      supabase_cmd link --project-ref "$SNAPSEAL_SUPABASE_PROJECT_REF"
+      supabase_cmd link --project-ref "$FACTLOCKCAM_SUPABASE_PROJECT_REF"
     fi
     ;;
   status)
@@ -110,8 +110,8 @@ case "${1:-help}" in
     supabase_cmd migration list
     ;;
   config-push)
-    require_env SNAPSEAL_SUPABASE_PROJECT_REF
-    supabase_cmd config push --project-ref "$SNAPSEAL_SUPABASE_PROJECT_REF"
+    require_env FACTLOCKCAM_SUPABASE_PROJECT_REF
+    supabase_cmd config push --project-ref "$FACTLOCKCAM_SUPABASE_PROJECT_REF"
     ;;
   flutter-defines)
     require_env SUPABASE_URL

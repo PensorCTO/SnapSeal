@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:snapseal/core/ghost_key/native_enclave_channel.dart';
+import 'package:factlockcam/core/ghost_key/native_enclave_channel.dart';
 
 void main() {
   test(

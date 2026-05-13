@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Merge repo-root .env.local (if present) with current shell env and write
-# snapseal_app/dart_defines.json for IDE / flutter --dart-define-from-file.
+# factlockcam_app/dart_defines.json for IDE / flutter --dart-define-from-file.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ENV_FILE="${SNAPSEAL_ENV_FILE:-$ROOT_DIR/.env.local}"
-OUT="${SNAPSEAL_FLUTTER_DEFINES_OUT:-$ROOT_DIR/snapseal_app/dart_defines.json}"
+ENV_FILE="${FACTLOCKCAM_ENV_FILE:-$ROOT_DIR/.env.local}"
+OUT="${FACTLOCKCAM_FLUTTER_DEFINES_OUT:-$ROOT_DIR/factlockcam_app/dart_defines.json}"
 
 if [[ -f "$ENV_FILE" ]]; then
   set -a

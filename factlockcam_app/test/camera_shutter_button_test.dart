@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:snapseal/ui/views/camera/camera_view.dart';
+import 'package:factlockcam/ui/views/camera/camera_view.dart';
 
 void main() {
   testWidgets('video shutter tap starts recording when idle', (tester) async {

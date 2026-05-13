@@ -13,18 +13,18 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 - Initialized `wiki/index.md`, `wiki/overview.md`, and `wiki/glossary.md`.
 - Marked sample source as `COMPILED` in `manifest.md`.
 
-## [2026-04-30] analysis | SnapSeal Master Blueprint
+## [2026-04-30] analysis | FactLockCam Master Blueprint
 
-- Created `wiki/analyses/SnapSeal_Master_Blueprint.md`.
-- Documented finished capabilities, unfinished work, working functional use cases, and current risks for the SnapSeal app.
-- Updated `wiki/index.md`, `wiki/overview.md`, and `wiki/glossary.md` to include the SnapSeal blueprint.
+- Created `wiki/analyses/FactLockCam_Master_Blueprint.md`.
+- Documented finished capabilities, unfinished work, working functional use cases, and current risks for the FactLockCam app.
+- Updated `wiki/index.md`, `wiki/overview.md`, and `wiki/glossary.md` to include the FactLockCam blueprint.
 
 ## [2026-05-03] ingest | ProofLock Architectural Manifest
 
 - Added immutable source `raw/prooflock_architectural_manifest.md`.
 - Created `wiki/sources/ProofLock_Architectural_Manifest.md`.
 - Created `wiki/analyses/ProofLock_Refactor_Scope.md` (manifest ↔ codebase gap analysis and phased effort).
-- Updated `wiki/analyses/SnapSeal_Master_Blueprint.md` for email OTP auth and ProofLock target alignment.
+- Updated `wiki/analyses/FactLockCam_Master_Blueprint.md` for email OTP auth and ProofLock target alignment.
 - Updated `wiki/index.md`, `wiki/overview.md`, `wiki/glossary.md`, and aligned Cursor rules for capture paths and foundation constraints.
 - Marked manifest row `COMPILED` in `manifest.md`.
 
@@ -37,9 +37,9 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 
 ## [2026-05-09] maintenance | Product baseline and wiki consolidation
 
-- Added `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md` as the canonical SnapSeal status entry (verified workflow, compressed DB repair/backfill narrative).
+- Added `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md` as the canonical FactLockCam status entry (verified workflow, compressed DB repair/backfill narrative).
 - Replaced `wiki/analyses/System_Context_Audit_2026-05-09.md` body with a short archived stub pointing to the baseline.
-- Updated `wiki/analyses/SnapSeal_Master_Blueprint.md`, `wiki/overview.md`, `wiki/index.md`, and `wiki/glossary.md` to link the baseline and trim duplicated audit prominence.
+- Updated `wiki/analyses/FactLockCam_Master_Blueprint.md`, `wiki/overview.md`, `wiki/index.md`, and `wiki/glossary.md` to link the baseline and trim duplicated audit prominence.
 - Re-ran `python3 scripts/wiki_ingest.py --validate`.
 
 ## [2026-05-10] analysis | Master context architecture snapshot
@@ -50,14 +50,14 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 
 ## [2026-05-10] maintenance | Phase 2 vault-first dashboard route
 
-- Replaced `/dashboard` with `/vault-dashboard` via `VaultDashboardView` (`snapseal_app/lib/ui/views/vault_dashboard_view.dart`).
+- Replaced `/dashboard` with `/vault-dashboard` via `VaultDashboardView` (`factlockcam_app/lib/ui/views/vault_dashboard_view.dart`).
 - Added background pending-sync attempts (`VaultDatabase.listPendingArchiveItems`, `VaultService.retryPendingRemoteSync`, `DashboardController` fire-and-forget refresh).
-- Updated `wiki/analyses/SnapSeal_Master_Blueprint.md`, `wiki/analyses/Master_Context_10MAY2026.md`, and `snapseal_app/README.md`; ran `flutter test` / `dart analyze`.
+- Updated `wiki/analyses/FactLockCam_Master_Blueprint.md`, `wiki/analyses/Master_Context_10MAY2026.md`, and `factlockcam_app/README.md`; ran `flutter test` / `dart analyze`.
 
 ## [2026-05-10] maintenance | Tamper-evident wording + ledger RLS (wiki)
 
-- Aligned SnapSeal product framing with Rule 03 / app copy: **tamper-evident** media vault and risk-reduction language (not “mathematical certainty wallet”).
-- Updated `wiki/overview.md`, `wiki/glossary.md`, and `wiki/analyses/SnapSeal_Master_Blueprint.md` (including ledger `SELECT` now wallet-scoped per `20260510120000_tighten_ledger_select_rls.sql`).
+- Aligned FactLockCam product framing with Rule 03 / app copy: **tamper-evident** media vault and risk-reduction language (not “mathematical certainty wallet”).
+- Updated `wiki/overview.md`, `wiki/glossary.md`, and `wiki/analyses/FactLockCam_Master_Blueprint.md` (including ledger `SELECT` now wallet-scoped per `20260510120000_tighten_ledger_select_rls.sql`).
 - Re-ran `python3 scripts/wiki_ingest.py --validate`.
 
 ## [2026-05-10] maintenance | Repo root snapshots: tamper-evident wording
@@ -68,7 +68,7 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 
 ## [2026-05-11] audit | Project audit + wiki refresh
 
-- Cross-checked Flutter vault/RPC/sync/native-channel paths against `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md`, `wiki/analyses/SnapSeal_Master_Blueprint.md`, `wiki/analyses/ProofLock_Refactor_Scope.md`, and `wiki/analyses/Master_Context_10MAY2026.md`.
+- Cross-checked Flutter vault/RPC/sync/native-channel paths against `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md`, `wiki/analyses/FactLockCam_Master_Blueprint.md`, `wiki/analyses/ProofLock_Refactor_Scope.md`, and `wiki/analyses/Master_Context_10MAY2026.md`.
 - Added `wiki/analyses/Project_Audit_2026-05-11.md` (schema-first-class) with findings table and residual gaps.
 - Updated baseline, blueprint, refactor scope, master context, `wiki/overview.md`, `wiki/index.md`, and `wiki/glossary.md` for **`proofLockFile`**, simulated **`NativeEnclaveChannel`**, **`proof_ledger`**, pending-sync **scheduler + UI retry**, **`dart_defines.json`**, and expanded tests.
 - Re-ran `python3 scripts/wiki_ingest.py --validate`.
@@ -81,16 +81,16 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 
 ## [2026-05-11] feature | Phase 2 dual-mode capture (photo + video)
 
-- Added `AcquisitionMode` enum (`snapseal_app/lib/ui/views/camera/acquisition_mode.dart`) and threaded `mode` as a `/camera?mode=...` query parameter through `app_router.dart`.
+- Added `AcquisitionMode` enum (`factlockcam_app/lib/ui/views/camera/acquisition_mode.dart`) and threaded `mode` as a `/camera?mode=...` query parameter through `app_router.dart`.
 - Reworked `CameraView` to accept `AcquisitionMode`: photo retains single-tap shutter; video toggles `startVideoRecording` / `stopVideoRecording` with REC indicator and red shutter, then routes the resulting `XFile` through the existing `VaultService.sealAndStoreCapture` ProofLock pipeline.
 - Replaced the single dashboard "Capture" FAB with side-by-side **Photo** and **Video** extended FABs in `VaultDashboardView`; added a play-arrow badge overlay on `video/*` grid items and a video-aware error fallback.
 - Updated `VaultService._inferMimeType` to map `.mov`/`.mp4`/`.m4v`/`.webm` to their `video/*` MIME types so dashboards, video playback, and certificate drafts can branch on media kind.
-- Permissions: added `NSMicrophoneUsageDescription` (`snapseal_app/ios/Runner/Info.plist`) and `android.permission.RECORD_AUDIO` (`snapseal_app/android/app/src/main/AndroidManifest.xml`).
+- Permissions: added `NSMicrophoneUsageDescription` (`factlockcam_app/ios/Runner/Info.plist`) and `android.permission.RECORD_AUDIO` (`factlockcam_app/android/app/src/main/AndroidManifest.xml`).
 - Tests: added a `vault_dashboard_view_test.dart` assertion for the Photo + Video FABs and updated `widget_test.dart` to tap "Photo" rather than the retired "Capture". `flutter analyze` and `flutter test` are green (13 tests).
 
 ## [2026-05-11] fix | Camera dispose race for video recording
 
-- `CameraView.dispose()` previously called `controller.stopVideoRecording()` without awaiting it before `controller.dispose()`, creating a race that could leak the platform encoder (`snapseal_app/lib/ui/views/camera/camera_view.dart`).
+- `CameraView.dispose()` previously called `controller.stopVideoRecording()` without awaiting it before `controller.dispose()`, creating a race that could leak the platform encoder (`factlockcam_app/lib/ui/views/camera/camera_view.dart`).
 - Extracted a static `_teardownCamera` helper that awaits `stopVideoRecording` (when recording) before `controller.dispose()`, and explicitly `unawaited(...)` the future from synchronous `State.dispose()` to preserve the framework contract.
 - `flutter analyze` and `flutter test` remain clean after the fix.
 
@@ -104,26 +104,32 @@ summary: "Append-only activity log for ingests, queries, lint passes, and major 
 
 ## [2026-05-11] maintenance | Four-panel vault UX wiki refresh
 
-- Updated `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md`, `wiki/analyses/SnapSeal_Master_Blueprint.md`, and `wiki/analyses/Master_Context_11MAY2026.md` for the post-login `/vault-home` hub, `/archive` Photos/Videos tabs, legacy `/vault-dashboard` redirect, and shared `/camera?mode=photo|video` capture flow.
+- Updated `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md`, `wiki/analyses/FactLockCam_Master_Blueprint.md`, and `wiki/analyses/Master_Context_11MAY2026.md` for the post-login `/vault-home` hub, `/archive` Photos/Videos tabs, legacy `/vault-dashboard` redirect, and shared `/camera?mode=photo|video` capture flow.
 - Documented archive behavior changes: native video-frame thumbnails, zero-byte thumbnail regeneration, owner-side full-size photo viewing (`ArchivePhotoView`), verified video playback (`ArchiveVideoView`), and per-item local delete that leaves remote proof rows intact.
 - Updated `wiki/index.md`, `wiki/overview.md`, and `wiki/glossary.md` to include the four-panel UX, local archive delete, and owner-side verified viewing terminology.
 
 ## [2026-05-11] maintenance | Shutter painter wiki refresh
 
 - Reviewed wiki health with `python3 scripts/wiki_ingest.py --status` and `python3 scripts/wiki_ingest.py --validate` before edits: 15 wiki pages, 0 pending manifest rows, 0 broken wiki links.
-- Updated `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md`, `wiki/analyses/SnapSeal_Master_Blueprint.md`, `wiki/analyses/Master_Context_11MAY2026.md`, and `wiki/overview.md` for the custom `ShutterButtonPainter`: transparent-at-rest center, 150 ms white photo tap-down snap, and Kinetic Green fill while video recording.
+- Updated `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md`, `wiki/analyses/FactLockCam_Master_Blueprint.md`, `wiki/analyses/Master_Context_11MAY2026.md`, and `wiki/overview.md` for the custom `ShutterButtonPainter`: transparent-at-rest center, 150 ms white photo tap-down snap, and Kinetic Green fill while video recording.
 - Added `ShutterButtonPainter` to `wiki/glossary.md` and refreshed test status to `flutter analyze` + `flutter test` green (21 tests).
 
 ## [2026-05-12] maintenance | Domain Interaction Contract + wiki cleanup
 
 - Reviewed wiki health with `python3 scripts/wiki_ingest.py --status` and `python3 scripts/wiki_ingest.py --validate`: 15 wiki pages, 0 pending manifest rows, 0 broken wiki links.
-- Updated `wiki/overview.md`, `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md`, `wiki/analyses/SnapSeal_Master_Blueprint.md`, `wiki/analyses/Master_Context_11MAY2026.md`, `wiki/analyses/ProofLock_Refactor_Scope.md`, and `wiki/analyses/Project_Audit_2026-05-11.md` for the media-type-driven archive action contract (`MediaActionType`, `AssetActionRegistry`, `AssetAction`, `UniversalAssetToolbar`).
+- Updated `wiki/overview.md`, `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md`, `wiki/analyses/FactLockCam_Master_Blueprint.md`, `wiki/analyses/Master_Context_11MAY2026.md`, `wiki/analyses/ProofLock_Refactor_Scope.md`, and `wiki/analyses/Project_Audit_2026-05-11.md` for the media-type-driven archive action contract (`MediaActionType`, `AssetActionRegistry`, `AssetAction`, `UniversalAssetToolbar`).
 - Documented recent hardening: `ArchivePhotoView` caches verified extraction per asset fingerprint, `CameraView` clears stale REC state on sealing failures, and `VaultService` uses MIME-aware temp extensions when regenerating video thumbnails from decrypted bytes.
 - Added glossary entries for **Domain Interaction Contract**, **UniversalAssetToolbar**, and **MIME-aware video thumbnail fallback**; refreshed test status to `flutter analyze` + `flutter test` green (31 tests).
 
 ## [2026-05-13] analysis | Master Context (13 MAY 2026)
 
 - Added `wiki/analyses/MASTER_CONTEXT13MAY2026.md` as the dated **current** comprehensive architecture snapshot; updated `wiki/index.md` (mark [[Master_Context_11MAY2026]] superseded), `wiki/overview.md` synthesis + provenance, and `wiki/analyses/Master_Context_11MAY2026.md` framing to reference the roll-forward.
-- Cross-checked `flutter test` in `snapseal_app/` (31 passing tests across nine test files).
+- Cross-checked `flutter test` in `factlockcam_app/` (31 passing tests across nine test files).
 - Re-ran `python3 scripts/wiki_ingest.py --validate`.
 - Added repo-root `MASTER_CONTEXT13MAY2026.md` as a shortcut pointer into the wiki page.
+
+## [2026-05-13] maintenance | FactLockCam Rename
+
+- Renamed the Flutter runtime directory to `factlockcam_app/`, updated package imports to `package:factlockcam/`, and refreshed native identifiers to `com.factlockcam.app`.
+- Renamed active product wiki anchors to [[FactLockCam_Product_Baseline_2026-05]] and [[FactLockCam_Master_Blueprint]]; updated current wiki navigation, overview, glossary, and master-context references.
+- Preserved local vault persistence identifiers (`snapseal_vault.db`, `snapseal_vault`, `snapseal:vault_key`) to avoid an on-device data migration.

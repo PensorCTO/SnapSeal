@@ -2,9 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:snapseal/core/archive/domain/models/media_action_type.dart';
-import 'package:snapseal/core/archive/domain/services/asset_action_registry.dart';
-import 'package:snapseal/core/archive/presentation/widgets/universal_asset_toolbar.dart';
+import 'package:factlockcam/core/archive/domain/models/media_action_type.dart';
+import 'package:factlockcam/core/archive/domain/services/asset_action_registry.dart';
+import 'package:factlockcam/core/archive/presentation/widgets/universal_asset_toolbar.dart';
 
 void main() {
   test('registry maps current media type strings to archive actions', () {

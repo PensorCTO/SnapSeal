@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Snapseal</string>
+	<string>FactLockCam</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>snapseal</string>
+	<string>FactLockCam</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -46,8 +46,8 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>SnapSeal uses the camera to capture media for sealing.</string>
+	<string>FactLockCam uses the camera to capture media for sealing.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>SnapSeal records audio with video captures so the sealed clip preserves its original soundtrack.</string>
+	<string>FactLockCam records audio with video captures so the sealed clip preserves its original soundtrack.</string>
 </dict>
 </plist>

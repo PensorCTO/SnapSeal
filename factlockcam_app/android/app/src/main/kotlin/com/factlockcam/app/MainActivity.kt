@@ -1,4 +1,4 @@
-package com.snapseal.snapseal
+package com.factlockcam.app
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -11,7 +11,7 @@ class MainActivity : FlutterActivity() {
     super.configureFlutterEngine(flutterEngine)
     MethodChannel(
       flutterEngine.dartExecutor.binaryMessenger,
-      "com.snapseal.app/enclave",
+      "com.factlockcam.app/enclave",
     ).setMethodCallHandler { call, result ->
       when (call.method) {
         "signHash" -> {
@@ -19,7 +19,7 @@ class MainActivity : FlutterActivity() {
           if (hash.isNullOrEmpty()) {
             result.error("bad_args", "hash required", null)
           } else {
-            // TODO(ProofLock): replace with Android Keystore / hardware-backed signing.
+            // TODO: Replace with Android Keystore / hardware-backed signing.
             val simulated =
               Base64.getEncoder().encodeToString(
                 ("SIMULATED_DEV|$hash").toByteArray(StandardCharsets.UTF_8),

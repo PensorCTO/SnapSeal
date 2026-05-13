@@ -5,8 +5,8 @@ import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 import '../ui/controllers/pending_sync_scheduler.dart';
 
-class SnapSealApp extends ConsumerWidget {
-  const SnapSealApp({super.key});
+class FactLockCamApp extends ConsumerWidget {
+  const FactLockCamApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -14,7 +14,7 @@ class SnapSealApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      title: 'SnapSeal',
+      title: 'FactLockCam',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       routerConfig: router,

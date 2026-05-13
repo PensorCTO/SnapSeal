@@ -5,10 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:snapseal/data/models/archive_item.dart';
-import 'package:snapseal/data/models/sealed_asset.dart';
-import 'package:snapseal/domain/services/vault_service.dart';
-import 'package:snapseal/ui/views/archive_photo_view.dart';
+import 'package:factlockcam/data/models/archive_item.dart';
+import 'package:factlockcam/data/models/sealed_asset.dart';
+import 'package:factlockcam/domain/services/vault_service.dart';
+import 'package:factlockcam/ui/views/archive_photo_view.dart';
 
 class _MockVaultService extends Mock implements VaultService {}
 

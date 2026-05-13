@@ -1,4 +1,4 @@
-# Blueprint — Phase 2: SnapSeal to ProofLock (10 MAY 2026)
+# Blueprint — Phase 2: FactLockCam to ProofLock (10 MAY 2026)
 
 ## 1. Architectural Manifest
 

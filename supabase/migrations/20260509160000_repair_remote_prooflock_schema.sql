@@ -1,7 +1,7 @@
 -- Repair hosted DB drift: proof_ledger on some projects was an older ad-hoc shape
 -- (e.g. owner_id, tx_hash) and never had simulated_chain_ledger or
 -- simulate_chain_notarize, while schema_migrations could still list the
--- 20260503120000 migration as applied. This migration force-aligns the SnapSeal
+-- 20260503120000 migration as applied. This migration force-aligns the FactLockCam
 -- proof surface to match 20260503120000_prooflock_simulated_chain.sql.
 -- WARNING: drops proof ledger tables; any data in those tables is lost.
 

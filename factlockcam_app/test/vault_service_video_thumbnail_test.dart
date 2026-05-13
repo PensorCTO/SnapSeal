@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:snapseal/domain/services/vault_service.dart';
+import 'package:factlockcam/domain/services/vault_service.dart';
 
 void main() {
   test('video thumbnail temp extension follows MIME type', () {

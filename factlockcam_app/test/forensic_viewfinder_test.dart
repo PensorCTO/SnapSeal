@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:snapseal/core/ui/painters/reticle_painter.dart';
-import 'package:snapseal/ui/views/camera/acquisition_mode.dart';
-import 'package:snapseal/ui/views/camera/telemetry_overlay.dart';
+import 'package:factlockcam/core/ui/painters/reticle_painter.dart';
+import 'package:factlockcam/ui/views/camera/acquisition_mode.dart';
+import 'package:factlockcam/ui/views/camera/telemetry_overlay.dart';
 
 void main() {
   test('ReticlePainter shouldRepaint only when guideAspectRatio changes', () {

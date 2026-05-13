@@ -19,23 +19,19 @@ echo "=== 2. State Purge ==="
 supabase stop --no-backup || true
 
 # If containers remain attached (some CLI versions), force-stop project containers so volumes can be removed.
-if docker ps -q --filter 'name=snapseal' | grep -q . || docker ps -q --filter 'name=ProofLockCleanup' | grep -q .; then
+if docker ps -q --filter 'name=factlockcam' | grep -q .; then
   echo "Force-stopping lingering Supabase containers..."
-  ids="$(docker ps -q --filter 'name=snapseal')"
+  ids="$(docker ps -q --filter 'name=factlockcam')"
   [ -n "$ids" ] && docker stop $ids 2>/dev/null || true
-  ids="$(docker ps -q --filter 'name=ProofLockCleanup')"
-  [ -n "$ids" ] && docker stop $ids 2>/dev/null || true
-  ids="$(docker ps -aq --filter 'name=snapseal')"
-  [ -n "$ids" ] && docker rm -f $ids 2>/dev/null || true
-  ids="$(docker ps -aq --filter 'name=ProofLockCleanup')"
+  ids="$(docker ps -aq --filter 'name=factlockcam')"
   [ -n "$ids" ] && docker rm -f $ids 2>/dev/null || true
 fi
 
-echo "Removing Docker volumes for this Supabase project (snapseal / ProofLockCleanup naming)..."
+echo "Removing Docker volumes for this Supabase project (factlockcam naming)..."
 while read -r vol; do
   [ -z "$vol" ] && continue
   docker volume rm -f "$vol" || true
-done < <(docker volume ls -q | grep -iE 'snapseal|ProofLockCleanup' || true)
+done < <(docker volume ls -q | grep -iE 'factlockcam' || true)
 
 echo "=== 3. Environment Rebuild ==="
 supabase start

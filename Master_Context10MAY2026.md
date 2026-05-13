@@ -2,15 +2,15 @@
 
 ## 1) Project identity and intent
 
-`ProofLockCleanup` currently hosts a Flutter product named **SnapSeal**, positioned as a **tamper-evident** local media vault (authenticity heuristics and risk reduction—not claims of absolute proof-of-truth) for authenticated media capture, local sealing, and ledger replication. The repository also contains an LLM wiki used as the canonical synthesis layer for architecture, constraints, and ongoing alignment with a stricter future-state target called **ProofLock**.
+`ProofLockCleanup` currently hosts a Flutter product named **FactLockCam**, positioned as a **tamper-evident** local media vault (authenticity heuristics and risk reduction—not claims of absolute proof-of-truth) for authenticated media capture, local sealing, and ledger replication. The repository also contains an LLM wiki used as the canonical synthesis layer for architecture, constraints, and ongoing alignment with a stricter future-state target called **ProofLock**.
 
 At a high level:
 
-- **SnapSeal (current reality):** local-first secure media handling + Supabase-backed active-wallet ledger.
+- **FactLockCam (current reality):** local-first secure media handling + Supabase-backed active-wallet ledger.
 - **ProofLock (target architecture):** hardware-backed signing, pre-flight proof-status RPC, Polygon anchoring, C2PA, and stronger courier/verification guarantees.
 
 The canonical status anchor as of May 2026 is:
-- `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md`
+- `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md`
 
 ---
 
@@ -18,7 +18,7 @@ The canonical status anchor as of May 2026 is:
 
 Primary top-level concerns:
 
-- `snapseal_app/` — Flutter mobile app (core product runtime).
+- `factlockcam_app/` — Flutter mobile app (core product runtime).
 - `supabase/` — database schema, migrations, and local/remote Supabase project assets.
 - `scripts/` — repeatable operational wrappers for Supabase and environment workflows.
 - `wiki/` — LLM-maintained architecture knowledge base and decision context.
@@ -135,7 +135,7 @@ The local layer remains source-of-truth for immediate UX rendering.
 Current + evolving relational surfaces include:
 
 - `profiles` (user profile + wallet identity mapping).
-- `seal_ledger` (foundation active-wallet ledger surface from early SnapSeal migration).
+- `seal_ledger` (foundation active-wallet ledger surface from early FactLockCam migration).
 - `simulated_chain_ledger` + `proof_ledger` (repair-aligned ProofLock-style surfaces in newer migration path).
 
 Important architectural reality:
@@ -159,7 +159,7 @@ These are `SECURITY DEFINER` and include post-migration schema reload notificati
 
 Operational practice is script-first rather than ad-hoc CLI:
 
-- `scripts/snapseal_supabase_pipeline.sh` centralizes:
+- `scripts/factlockcam_supabase_pipeline.sh` centralizes:
   - login/link/start/reset/lint
   - push-dry-run/push
   - config-push
@@ -200,8 +200,8 @@ This repository uses a Karpathy-style LLM Wiki operating model:
 
 Current architectural source-of-truth ordering for product state:
 
-1. `wiki/concepts/SnapSeal_Product_Baseline_2026-05.md` (current status anchor).
-2. `wiki/analyses/SnapSeal_Master_Blueprint.md` (full current capability map).
+1. `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md` (current status anchor).
+2. `wiki/analyses/FactLockCam_Master_Blueprint.md` (full current capability map).
 3. `wiki/analyses/ProofLock_Refactor_Scope.md` (gap-to-target roadmap).
 4. `wiki/sources/ProofLock_Architectural_Manifest.md` (target manifest synthesis).
 
@@ -288,5 +288,5 @@ Recommended sequence based on current repo shape:
 
 ## 13) Executive summary
 
-As of 10 MAY 2026, SnapSeal is a functioning local-first sealed-media wallet with Supabase-backed ledger replication and a verified logon->capture->dashboard happy path on migrated infrastructure. The architecture has matured in consistency and operations (compensating file cleanup, migration repair/backfill, scripted env workflows), but it remains pre-viability relative to the stricter ProofLock security bar. The core trajectory is clear: harden reliability, raise trust roots with hardware signing, and complete durable public proof/verification pathways.
+As of 10 MAY 2026, FactLockCam is a functioning local-first sealed-media wallet with Supabase-backed ledger replication and a verified logon->capture->dashboard happy path on migrated infrastructure. The architecture has matured in consistency and operations (compensating file cleanup, migration repair/backfill, scripted env workflows), but it remains pre-viability relative to the stricter ProofLock security bar. The core trajectory is clear: harden reliability, raise trust roots with hardware signing, and complete durable public proof/verification pathways.
 
