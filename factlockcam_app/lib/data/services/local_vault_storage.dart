@@ -73,11 +73,19 @@ class LocalVaultStorage {
 
   Future<Directory> get _vaultDirectory async {
     final documents = await getApplicationDocumentsDirectory();
-    final directory = Directory(p.join(documents.path, 'snapseal_vault'));
-    if (!directory.existsSync()) {
-      await directory.create(recursive: true);
+    const modernName = 'factlockcam_vault';
+    const legacyName = 'snapseal_vault';
+    final modern = Directory(p.join(documents.path, modernName));
+    if (modern.existsSync()) {
+      return modern;
     }
-    return directory;
+    final legacy = Directory(p.join(documents.path, legacyName));
+    if (legacy.existsSync()) {
+      await legacy.rename(modern.path);
+      return modern;
+    }
+    await modern.create(recursive: true);
+    return modern;
   }
 
   Future<String> writeEncryptedOriginal({
@@ -135,9 +143,12 @@ class LocalVaultStorage {
   }
 
   Future<void> deleteAll() async {
-    final vault = await _vaultDirectory;
-    if (vault.existsSync()) {
-      await vault.delete(recursive: true);
+    final documents = await getApplicationDocumentsDirectory();
+    for (final name in ['factlockcam_vault', 'snapseal_vault']) {
+      final vault = Directory(p.join(documents.path, name));
+      if (vault.existsSync()) {
+        await vault.delete(recursive: true);
+      }
     }
   }
 }

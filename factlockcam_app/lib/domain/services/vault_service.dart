@@ -88,7 +88,8 @@ class VaultService {
        _nativeEnclave = nativeEnclave,
        _authRepository = authRepository;
 
-  static const _vaultKeyName = 'snapseal:vault_key';
+  static const _vaultKeyName = 'factlockcam:vault_key';
+  static const _legacyVaultKeyName = 'snapseal:vault_key';
 
   final VaultDatabase _database;
   final LocalVaultStorage _storage;
@@ -217,7 +218,7 @@ class VaultService {
     String? mimeType,
     required String userId,
   }) async {
-    final tempDir = await Directory.systemTemp.createTemp('snapseal_seal_');
+    final tempDir = await Directory.systemTemp.createTemp('factlockcam_seal_');
     final tempFile = File('${tempDir.path}/media.bin');
     try {
       await tempFile.writeAsBytes(rawMediaBytes, flush: true);
@@ -414,7 +415,7 @@ class VaultService {
     }
 
     final tempDir = await Directory.systemTemp.createTemp(
-      'snapseal_video_thumb_',
+      'factlockcam_video_thumb_',
     );
     final extension = videoThumbnailTempExtensionForMime(mimeType);
     final tempFile = File('${tempDir.path}/source$extension');
@@ -462,6 +463,7 @@ class VaultService {
     await _database.deleteAll();
     await _storage.deleteAll();
     await _secureStorage.delete(key: _vaultKeyName);
+    await _secureStorage.delete(key: _legacyVaultKeyName);
   }
 
   /// Removes the local SQLite row and encrypted + thumbnail files for one asset.
@@ -600,9 +602,16 @@ class VaultService {
   }
 
   Future<Uint8List> _loadOrCreateKeyBytes() async {
-    final existing = await _secureStorage.read(key: _vaultKeyName);
+    var existing = await _secureStorage.read(key: _vaultKeyName);
     if (existing != null) {
       return _vaultEncryption.decodeKey(existing);
+    }
+    existing = await _secureStorage.read(key: _legacyVaultKeyName);
+    if (existing != null) {
+      final keyBytes = _vaultEncryption.decodeKey(existing);
+      await _secureStorage.write(key: _vaultKeyName, value: existing);
+      await _secureStorage.delete(key: _legacyVaultKeyName);
+      return keyBytes;
     }
 
     final keyBytes = _vaultEncryption.generateKeyBytes();

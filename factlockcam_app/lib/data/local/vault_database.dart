@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -10,6 +12,29 @@ final vaultDatabaseProvider = Provider<VaultDatabase>(
   (ref) => getIt<VaultDatabase>(),
 );
 
+/// Renames a legacy SnapSeal DB (and SQLite `-wal` / `-shm` / `-journal` peers)
+/// so first launch after rebrand continues on the same file.
+Future<void> _migrateLegacyVaultDatabaseIfNeeded(String documentsPath) async {
+  const modernBaseName = 'factlockcam_vault.db';
+  const legacyBaseName = 'snapseal_vault.db';
+  final modernBase = p.join(documentsPath, modernBaseName);
+  final legacyBase = p.join(documentsPath, legacyBaseName);
+
+  if (File(modernBase).existsSync()) {
+    return;
+  }
+  if (!File(legacyBase).existsSync()) {
+    return;
+  }
+  const companions = ['', '-wal', '-shm', '-journal'];
+  for (final companion in companions) {
+    final from = File('$legacyBase$companion');
+    if (from.existsSync()) {
+      await from.rename('$modernBase$companion');
+    }
+  }
+}
+
 class VaultDatabase {
   Database? _database;
 
@@ -20,7 +45,8 @@ class VaultDatabase {
     }
 
     final documents = await getApplicationDocumentsDirectory();
-    final databasePath = p.join(documents.path, 'snapseal_vault.db');
+    await _migrateLegacyVaultDatabaseIfNeeded(documents.path);
+    final databasePath = p.join(documents.path, 'factlockcam_vault.db');
 
     return _database = await openDatabase(
       databasePath,
