@@ -44,12 +44,7 @@ class UniversalAssetToolbar extends ConsumerWidget {
                 }
                 unawaited(_handleAction(context, ref, action));
               },
-              child: Text(
-                _labelForAction(action, mediaType),
-                style: action == MediaActionType.verify
-                    ? const TextStyle(color: Color(0xFF00D26A))
-                    : null,
-              ),
+              child: _actionChild(action, mediaType),
             ),
           ...additionalActions,
         ],
@@ -93,6 +88,24 @@ class UniversalAssetToolbar extends ConsumerWidget {
     return 'Actions for this sealed asset.';
   }
 
+  static Widget _actionChild(MediaActionType action, String mediaType) {
+    final style = action == MediaActionType.verify
+        ? const TextStyle(color: Color(0xFF00D26A))
+        : null;
+    if (action != MediaActionType.share) {
+      return Text(_labelForAction(action, mediaType), style: style);
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(CupertinoIcons.share_up, size: 20),
+        const SizedBox(width: 8),
+        Text(_labelForAction(action, mediaType), style: style),
+      ],
+    );
+  }
+
   static String _labelForAction(MediaActionType action, String mediaType) {
     switch (action) {
       case MediaActionType.view:
@@ -102,7 +115,7 @@ class UniversalAssetToolbar extends ConsumerWidget {
       case MediaActionType.delete:
         return 'Delete from this device';
       case MediaActionType.share:
-        return 'Share';
+        return 'Send Proof';
       case MediaActionType.export:
         return 'Export';
     }

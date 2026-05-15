@@ -5,11 +5,13 @@ import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:crypto/crypto.dart' as crypto;
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:postgrest/postgrest.dart';
 import 'package:video_thumbnail/video_thumbnail.dart' as video_thumbnail;
 
+import '../../core/config/app_config.dart';
 import '../../core/crypto/courier_crypto.dart';
 import '../../core/crypto/vault_encryption_handler.dart';
 import '../../core/di/locator.dart';
@@ -47,6 +49,21 @@ String videoThumbnailTempExtensionForMime(String? mimeType) {
     default:
       return '.mp4';
   }
+}
+
+/// Strips leading slashes so Storage RLS `split_part(..., '/', 1)` matches [auth.uid()].
+String _normalizedCourierBlobPath(String raw) {
+  var path = raw.trim();
+  while (path.startsWith('/')) {
+    path = path.substring(1);
+  }
+  return path;
+}
+
+bool _courierWebVaultHostLooksMachineLocal(Uri uri) {
+  if (!uri.hasAuthority) return false;
+  final h = uri.host.toLowerCase();
+  return h == 'localhost' || h == '127.0.0.1' || h == '::1';
 }
 
 class ProofLockConflictException implements Exception {
@@ -90,6 +107,9 @@ class VaultService {
 
   static const _vaultKeyName = 'factlockcam:vault_key';
   static const _legacyVaultKeyName = 'snapseal:vault_key';
+  /// Compile-time **only**. Has no Dart default — empty means "not passed"; see [_effectiveCourierWebVaultBase].
+  static const String _webVaultCompilerDefine =
+      String.fromEnvironment('WEB_VAULT_BASE_URL');
 
   final VaultDatabase _database;
   final LocalVaultStorage _storage;
@@ -99,6 +119,24 @@ class VaultService {
   final ChainNotarizer _chainNotarizer;
   final NativeEnclaveChannel _nativeEnclave;
   final AuthRepository _authRepository;
+
+  /// Courier vault origin embedded in shared links.
+  ///
+  /// **Precedence**: any non-empty `String.fromEnvironment('WEB_VAULT_BASE_URL')`
+  /// wins (tunnel, staging, prod). Fallback to `http://localhost:3000` exists **only**
+  /// in debug when the define was not passed — it never replaces an explicit dart-define.
+  String _effectiveCourierWebVaultBase() {
+    final trimmed = _webVaultCompilerDefine.trim();
+    if (trimmed.isNotEmpty) {
+      return AppConfig.normalizeSupabaseProjectUrl(trimmed);
+    }
+    if (kDebugMode) return 'http://localhost:3000';
+    throw StateError(
+      'WEB_VAULT_BASE_URL is unset. For profile/release QA, pass '
+      '`--dart-define=WEB_VAULT_BASE_URL=https://YOUR-NGROK-SUBDOMAIN.ngrok-free.app` '
+      '(or tunnel equivalent) built from dart_defines / launch tooling.',
+    );
+  }
 
   /// ProofLock pipeline: isolate hash → preflight RPC → TEE sign → simulated chain
   /// → AES-GCM local vault → `proof_ledger` → burn source.
@@ -244,6 +282,71 @@ class VaultService {
     } finally {
       await _deleteTemporaryCapture(path);
     }
+  }
+
+  Future<String> createCourierPackage({
+    required String assetHash,
+    required String verifierPassword,
+  }) async {
+    final userId = _authRepository.currentUserId;
+    if (userId == null || userId.isEmpty) {
+      throw StateError('No authenticated user for courier package creation.');
+    }
+    if (!_sealLedgerRepository.isConfigured) {
+      throw StateError(
+        'Supabase is not configured. Run with --dart-define SUPABASE_URL=... '
+        'and --dart-define SUPABASE_ANON_KEY=...',
+      );
+    }
+
+    final courierVaultBase = _effectiveCourierWebVaultBase();
+    final vaultBaseParsed = Uri.tryParse(courierVaultBase);
+    if (!kDebugMode &&
+        vaultBaseParsed != null &&
+        _courierWebVaultHostLooksMachineLocal(vaultBaseParsed)) {
+      throw StateError(
+        'WEB_VAULT_BASE_URL points at localhost ($courierVaultBase). Recipients '
+        'on another device cannot reach it — use an HTTPS tunnel (Ngrok, etc.), '
+        'pass that origin via dart-define, rebuild the iOS app, then regenerate the link.',
+      );
+    }
+
+    final item = await _database.findArchiveItem(assetHash);
+    if (item == null) {
+      throw StateError('No sealed asset exists for $assetHash.');
+    }
+
+    final resolved = await _storage.resolveArchivePaths(item);
+    if (resolved.thumbnailPath != item.thumbnailPath ||
+        resolved.encryptedPath != item.encryptedPath) {
+      await _database.upsertArchiveItem(resolved);
+    }
+
+    final encryptedBytes = await _storage.readEncryptedOriginal(
+      resolved.encryptedPath,
+    );
+    final keyBytes = await _loadOrCreateKeyBytes();
+    final encodedVaultKey = _vaultEncryption.encodeKey(keyBytes);
+    final fileExtension = _fileExtensionForMimeType(resolved.mimeType);
+    final storagePath = _normalizedCourierBlobPath('$userId/$assetHash$fileExtension.seal');
+
+    await _sealLedgerRepository.uploadCourierEncryptedBlob(
+      storagePath: storagePath,
+      encryptedBytes: encryptedBytes,
+    );
+
+    final packageId = await _sealLedgerRepository.getOrCreateCourierPackage(
+      assetHash: assetHash,
+      verifierPassword: verifierPassword,
+      encodedVaultKey: encodedVaultKey,
+      fileExtension: fileExtension,
+      storagePath: storagePath,
+    );
+
+    final base = courierVaultBase.endsWith('/')
+        ? courierVaultBase.substring(0, courierVaultBase.length - 1)
+        : courierVaultBase;
+    return '$base/courier?pkg=${Uri.encodeQueryComponent(packageId)}';
   }
 
   Future<({String hash, Uint8List bytes})> _readFileAndSha256InIsolate(
@@ -649,6 +752,17 @@ class VaultService {
       return 'image/jpeg';
     }
     return 'image/jpeg';
+  }
+
+  String _fileExtensionForMimeType(String? mimeType) {
+    return switch (mimeType?.trim().toLowerCase()) {
+      'image/png' => '.png',
+      'image/heic' || 'image/heif' => '.heic',
+      'video/quicktime' => '.mov',
+      'video/webm' => '.webm',
+      'video/mp4' || 'video/x-m4v' => '.mp4',
+      _ => '.jpg',
+    };
   }
 
   Future<void> _deleteTemporaryCapture(String path) async {

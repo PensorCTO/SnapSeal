@@ -11,6 +11,7 @@ class AssetActionRegistry {
   static const _viewableActions = <MediaActionType>[
     MediaActionType.view,
     MediaActionType.verify,
+    MediaActionType.share,
     MediaActionType.delete,
   ];
 

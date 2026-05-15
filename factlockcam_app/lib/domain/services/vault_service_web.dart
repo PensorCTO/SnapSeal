@@ -85,6 +85,13 @@ class VaultService {
     throw UnsupportedError('Local archive extraction is mobile-only.');
   }
 
+  Future<String> createCourierPackage({
+    required String assetHash,
+    required String verifierPassword,
+  }) async {
+    throw UnsupportedError('Courier package origination is mobile-only.');
+  }
+
   Future<void> burnLocalWallet() async {}
 
   Future<bool> retryPendingRemoteSync(String assetFingerprint) async => false;

@@ -11,11 +11,13 @@ void main() {
     expect(AssetActionRegistry.getActionsForType('image/jpeg'), [
       MediaActionType.view,
       MediaActionType.verify,
+      MediaActionType.share,
       MediaActionType.delete,
     ]);
     expect(AssetActionRegistry.getActionsForType('video/mp4'), [
       MediaActionType.view,
       MediaActionType.verify,
+      MediaActionType.share,
       MediaActionType.delete,
     ]);
     expect(AssetActionRegistry.getActionsForType('application/pdf'), [
@@ -41,6 +43,8 @@ void main() {
 
     expect(find.text('Play video'), findsOneWidget);
     expect(find.text('Verify integrity'), findsOneWidget);
+    expect(find.text('Send Proof'), findsOneWidget);
+    expect(find.byIcon(CupertinoIcons.share_up), findsOneWidget);
     expect(find.text('Delete from this device'), findsOneWidget);
   });
 
@@ -58,6 +62,8 @@ void main() {
 
     expect(find.text('View full-size photo'), findsOneWidget);
     expect(find.text('Verify integrity'), findsOneWidget);
+    expect(find.text('Send Proof'), findsOneWidget);
+    expect(find.byIcon(CupertinoIcons.share_up), findsOneWidget);
     expect(find.text('Delete from this device'), findsOneWidget);
   });
 }

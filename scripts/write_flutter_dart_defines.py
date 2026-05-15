@@ -14,8 +14,18 @@ import sys
 from pathlib import Path
 
 REQUIRED_KEYS = ("SUPABASE_URL", "SUPABASE_ANON_KEY")
-OPTIONAL_KEYS = ("LOCAL_ANON_KEY",)
+OPTIONAL_KEYS = ("LOCAL_ANON_KEY", "WEB_VAULT_BASE_URL")
 ALLOWED_KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
+
+
+def _normalize_https_dup_scheme(url: str) -> str:
+    """Fix copy-paste errors like ``https://https://project.supabase.com``."""
+    v = url.strip()
+    while v.startswith("https://https://"):
+        v = "https://" + v.removeprefix("https://https://")
+    if v.startswith("http://https://"):
+        v = "https://" + v.removeprefix("http://https://")
+    return v
 
 
 def parse_env_file(path: Path) -> dict[str, str]:
@@ -47,6 +57,9 @@ def resolve_values(env_file: Path | None) -> dict[str, str]:
         v = (file_vals.get(key) or os.environ.get(key, "")).strip()
         if v:
             merged[key] = v
+    for url_key in ("SUPABASE_URL", "WEB_VAULT_BASE_URL"):
+        if url_key in merged:
+            merged[url_key] = _normalize_https_dup_scheme(merged[url_key])
     return merged
 
 

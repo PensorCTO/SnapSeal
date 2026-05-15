@@ -20,8 +20,23 @@ class AppConfig {
 
   static bool get isLocalWeb => kIsWeb && kDebugMode;
 
-  static String get effectiveSupabaseUrl =>
-      isLocalWeb ? localSupabaseUrl : supabaseUrl;
+  /// Strips duplicated scheme from bad env copy-paste, e.g. `https://https://…`.
+  static String normalizeSupabaseProjectUrl(String url) {
+    var u = url.trim();
+    while (u.startsWith('https://https://')) {
+      u = u.substring('https://'.length);
+    }
+    if (u.startsWith('http://https://')) {
+      u = 'https://${u.substring('http://https://'.length)}';
+    }
+    return u;
+  }
+
+  static String get effectiveSupabaseUrl {
+    final raw = isLocalWeb ? localSupabaseUrl : supabaseUrl;
+    if (raw.isEmpty) return raw;
+    return normalizeSupabaseProjectUrl(raw);
+  }
 
   static String get effectiveSupabaseAnonKey =>
       isLocalWeb ? localAnonKey : supabaseAnonKey;

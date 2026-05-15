@@ -1,6 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/debug/debug_agent_ndjson.dart';
 import '../../core/di/locator.dart';
 
 import 'supabase_client_handle.dart';
@@ -103,6 +106,119 @@ class SealLedgerRepository {
       'device_signature': deviceSignature,
       'chain_tx_hash': chainTxHash,
     });
+  }
+
+  Future<void> uploadCourierEncryptedBlob({
+    required String storagePath,
+    required Uint8List encryptedBytes,
+  }) async {
+    final client = _requiredClient();
+    final supabaseHost =
+        Uri.tryParse(client.rest.url)?.host ?? 'unknown_host';
+    // #region agent log
+    await debugAgentNdjson(
+      sessionId: 'aefb6a',
+      hypothesisId: 'H1',
+      location: 'seal_ledger_repository.dart:uploadCourierEncryptedBlob:start',
+      message: 'courier_blob_upload_attempt',
+      data: <String, Object?>{
+        'bucket': 'courier-blobs',
+        'supabase_host': supabaseHost,
+        'storage_path_segments': storagePath.split('/').length,
+        'payload_byte_length': encryptedBytes.lengthInBytes,
+      },
+    );
+    // #endregion agent log
+
+    try {
+      await client.storage
+          .from('courier-blobs')
+          .uploadBinary(
+            storagePath,
+            encryptedBytes,
+            fileOptions: const FileOptions(
+              contentType: 'application/octet-stream',
+              upsert: true,
+            ),
+          );
+      // #region agent log
+    } on StorageException catch (error) {
+      await debugAgentNdjson(
+        sessionId: 'aefb6a',
+        hypothesisId: 'H1',
+        location:
+            'seal_ledger_repository.dart:uploadCourierEncryptedBlob:error',
+        message: 'courier_blob_upload_failed',
+        data: <String, Object?>{
+          'error_type': 'StorageException',
+          'status': error.statusCode,
+          'error_message_contains_bucket': error.message.contains(
+            'Bucket not found',
+          ),
+          'sanitized_storage_message': error.message.length > 200
+              ? error.message.substring(0, 200)
+              : error.message,
+          'bucket': 'courier-blobs',
+          'supabase_host': supabaseHost,
+        },
+      );
+      rethrow;
+    } catch (error) {
+      await debugAgentNdjson(
+        sessionId: 'aefb6a',
+        hypothesisId: 'H3',
+        location:
+            'seal_ledger_repository.dart:uploadCourierEncryptedBlob:error_unknown',
+        message: 'courier_blob_upload_failed',
+        data: <String, Object?>{
+          'error_type': error.runtimeType.toString(),
+          'supabase_host': supabaseHost,
+        },
+      );
+      // #endregion agent log
+      rethrow;
+    }
+
+    await debugAgentNdjson(
+      sessionId: 'aefb6a',
+      hypothesisId: 'H4',
+      location:
+          'seal_ledger_repository.dart:uploadCourierEncryptedBlob:success',
+      message: 'courier_blob_upload_success',
+      data: <String, Object?>{
+        'bucket': 'courier-blobs',
+        'supabase_host': supabaseHost,
+      },
+    );
+  }
+
+  Future<String> getOrCreateCourierPackage({
+    required String assetHash,
+    required String verifierPassword,
+    required String encodedVaultKey,
+    required String fileExtension,
+    required String storagePath,
+  }) async {
+    final client = _requiredClient();
+    final userId = client.auth.currentUser?.id;
+    if (userId == null) {
+      throw StateError('No authenticated user for courier package creation.');
+    }
+
+    final response = await client.rpc(
+      'get_or_create_courier_package',
+      params: <String, dynamic>{
+        'p_asset_hash': assetHash,
+        'p_verifier_password': verifierPassword,
+        'p_encoded_vault_key': encodedVaultKey,
+        'p_file_extension': fileExtension,
+        'p_storage_path': storagePath,
+      },
+    );
+    if (response is! String || response.isEmpty) {
+      throw StateError('get_or_create_courier_package returned no package id.');
+    }
+    return response;
   }
 
   SupabaseClient _requiredClient() {
