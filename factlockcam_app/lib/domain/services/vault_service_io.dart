@@ -808,7 +808,7 @@ class VaultService {
     if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
       return 'image/jpeg';
     }
-    return 'image/jpeg';
+    return 'application/octet-stream';
   }
 
   String _fileExtensionForMimeType(String? mimeType) {
