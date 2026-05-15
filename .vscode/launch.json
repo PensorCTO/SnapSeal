@@ -20,8 +20,7 @@
       "program": "lib/main.dart",
       "preLaunchTask": "factlockcam: sync Flutter dart defines",
       "toolArgs": [
-        "--dart-define-from-file=${workspaceFolder}/factlockcam_app/dart_defines.json",
-        "--dart-define=WEB_VAULT_BASE_URL=REPLACE_WITH_NGROK_URL"
+        "--dart-define-from-file=${workspaceFolder}/factlockcam_app/dart_defines.json"
       ]
     }
   ]

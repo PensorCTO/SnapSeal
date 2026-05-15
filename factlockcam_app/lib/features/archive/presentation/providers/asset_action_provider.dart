@@ -25,7 +25,14 @@ class AssetAction extends _$AssetAction {
           // domain-driven instead of owned by the current presentation route.
           break;
         case MediaActionType.verify:
-          await proofLockService.extractForCourier(assetHash);
+          try {
+            await proofLockService.extractForCourier(assetHash);
+          } on UnsupportedError catch (e) {
+            throw UnsupportedError(
+              'Asset verification is unavailable on this platform. '
+              '${e.message}',
+            );
+          }
           break;
         case MediaActionType.delete:
           await vaultService.deleteArchiveItem(assetHash);

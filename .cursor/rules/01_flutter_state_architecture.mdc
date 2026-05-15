@@ -9,4 +9,4 @@ alwaysApply: true
 - REQUIRE `flutter_riverpod` for all UI state flowing through `ProviderScope`, `ConsumerWidget`, and `ConsumerStatefulWidget`.
 - REQUIRE `get_it` for internal service wiring (composition root: `factlockcam_app/lib/core/di/injection.dart`; `injectable`+codegen optional when build_runner is available).
 - ENFORCE bridging pattern: `final vaultServiceProvider = Provider<VaultService>((ref) => getIt<VaultService>());`
-- REQUIRE heavy computations (SHA-256, XOR) to execute within `Isolate.run()` to protect UI frame times.
+- REQUIRE heavy computations (SHA-256, AES-GCM, image thumbnail generation) to execute within `Isolate.run()` (or browser-native Web Crypto / Canvas APIs on web, where isolates are unavailable) to protect UI frame times.

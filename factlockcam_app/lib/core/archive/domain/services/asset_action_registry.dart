@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../models/media_action_type.dart';
 
 class AssetActionRegistry {
@@ -23,7 +25,22 @@ class AssetActionRegistry {
     MediaActionType.delete,
   ];
 
+  /// Returns the actions available for [mediaType] on the current platform.
+  ///
+  /// On the web [MediaActionType.verify] is excluded because
+  /// `VaultService.extractForCourier` requires the local filesystem
+  /// (`dart:io`) and is mobile-only.
   static List<MediaActionType> getActionsForType(String mediaType) {
+    final actions = _resolveActions(mediaType);
+    if (kIsWeb) {
+      return actions
+          .where((a) => a != MediaActionType.verify)
+          .toList(growable: false);
+    }
+    return actions;
+  }
+
+  static List<MediaActionType> _resolveActions(String mediaType) {
     switch (_normalizeMediaType(mediaType)) {
       case _AssetMediaKind.picture:
       case _AssetMediaKind.video:
