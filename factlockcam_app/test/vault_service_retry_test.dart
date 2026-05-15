@@ -205,15 +205,21 @@ void main() {
   );
 
   test(
-    'returns false without signing when proof status is anonymous',
+    'clears pending sync when proof status is anonymous (orphaned ledger wallet)',
     () async {
       when(
         () => ledger.checkProofStatus(assetFingerprint),
       ).thenAnswer((_) async => 'anonymous');
+      when(
+        () => database.markSyncSucceeded(assetFingerprint: assetFingerprint),
+      ).thenAnswer((_) async {});
 
       final result = await service.retryPendingRemoteSync(assetFingerprint);
 
-      expect(result, isFalse);
+      expect(result, isTrue);
+      verify(
+        () => database.markSyncSucceeded(assetFingerprint: assetFingerprint),
+      ).called(1);
       verifyNever(() => native.signHash(any()));
       verifyNever(
         () => chain.notarizeFileHash(

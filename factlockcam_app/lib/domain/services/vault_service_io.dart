@@ -107,9 +107,11 @@ class VaultService {
 
   static const _vaultKeyName = 'factlockcam:vault_key';
   static const _legacyVaultKeyName = 'snapseal:vault_key';
+
   /// Compile-time **only**. Has no Dart default — empty means "not passed"; see [_effectiveCourierWebVaultBase].
-  static const String _webVaultCompilerDefine =
-      String.fromEnvironment('WEB_VAULT_BASE_URL');
+  static const String _webVaultCompilerDefine = String.fromEnvironment(
+    'WEB_VAULT_BASE_URL',
+  );
 
   final VaultDatabase _database;
   final LocalVaultStorage _storage;
@@ -328,7 +330,9 @@ class VaultService {
     final keyBytes = await _loadOrCreateKeyBytes();
     final encodedVaultKey = _vaultEncryption.encodeKey(keyBytes);
     final fileExtension = _fileExtensionForMimeType(resolved.mimeType);
-    final storagePath = _normalizedCourierBlobPath('$userId/$assetHash$fileExtension.seal');
+    final storagePath = _normalizedCourierBlobPath(
+      '$userId/$assetHash$fileExtension.seal',
+    );
 
     await _sealLedgerRepository.uploadCourierEncryptedBlob(
       storagePath: storagePath,
@@ -668,12 +672,14 @@ class VaultService {
       final status = await _sealLedgerRepository.checkProofStatus(
         assetFingerprint,
       );
-      if (status == 'owned_by_other' || status == 'anonymous') {
-        return false;
-      }
-      if (status == 'owned_by_me') {
+      // `anonymous`: ledger row exists but no profile claims its wallet — signing
+      // and notarization retries cannot fix that; stop looping like `owned_by_me`.
+      if (status == 'anonymous' || status == 'owned_by_me') {
         await _database.markSyncSucceeded(assetFingerprint: assetFingerprint);
         return true;
+      }
+      if (status == 'owned_by_other') {
+        return false;
       }
     } catch (e) {
       if (_isRecoverableRemoteFailure(e)) {
