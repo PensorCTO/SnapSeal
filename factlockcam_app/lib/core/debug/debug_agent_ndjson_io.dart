@@ -3,10 +3,17 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
-const _cursorDebugLogPath =
-    '/Users/paulensor/Projects/ProofLockCleanup/.cursor/debug-aefb6a.log';
-const _ingestEndpoint =
-    'http://127.0.0.1:7538/ingest/e76402cf-87ef-4c85-95c6-3adf6790364a';
+/// Optional compile-time debug ingest endpoint.
+///
+/// Set via `--dart-define=DEBUG_INGEST_ENDPOINT=http://127.0.0.1:7538/ingest/...`.
+/// When empty (the default), the HTTP ingest path is skipped entirely.
+const _debugIngestEndpoint = String.fromEnvironment('DEBUG_INGEST_ENDPOINT');
+
+/// Optional compile-time debug log file path.
+///
+/// Set via `--dart-define=DEBUG_LOG_PATH=/absolute/path/to/debug.log`.
+/// When empty (the default), the file-append path is skipped entirely.
+const _debugLogPath = String.fromEnvironment('DEBUG_LOG_PATH');
 
 Future<void> debugAgentNdjson({
   required String sessionId,
@@ -29,28 +36,40 @@ Future<void> debugAgentNdjson({
   };
   final line = jsonEncode(payload);
 
-  // #region agent log
-  try {
-    await File(
-      _cursorDebugLogPath,
-    ).writeAsString('$line\n', mode: FileMode.append);
-  } catch (_) {}
+  // #region agent log (file)
 
-  HttpClient? client;
-  try {
-    client = HttpClient();
-    final uri = Uri.parse(_ingestEndpoint);
-    final req = await client
-        .postUrl(uri)
-        .timeout(const Duration(milliseconds: 800));
-    req.headers.set(HttpHeaders.contentTypeHeader, 'application/json');
-    req.headers.set('X-Debug-Session-Id', sessionId);
-    req.write(line);
-    await req.close().timeout(const Duration(milliseconds: 1200));
-  } catch (_) {
-    // Ingest/host unavailable (common on-device); file append may still succeed on desktop targets.
-  } finally {
-    client?.close(force: true);
+  if (_debugLogPath.isNotEmpty) {
+    try {
+      await File(_debugLogPath).writeAsString(
+        '$line\n',
+        mode: FileMode.append,
+      );
+    } catch (_) {}
   }
-  // #endregion agent log
+
+  // #endregion agent log (file)
+
+  // #region agent log (http ingest)
+
+  if (_debugIngestEndpoint.isNotEmpty) {
+    HttpClient? client;
+    try {
+      client = HttpClient();
+      final uri = Uri.parse(_debugIngestEndpoint);
+      final req = await client
+          .postUrl(uri)
+          .timeout(const Duration(milliseconds: 800));
+      req.headers.set(HttpHeaders.contentTypeHeader, 'application/json');
+      req.headers.set('X-Debug-Session-Id', sessionId);
+      req.write(line);
+      await req.close().timeout(const Duration(milliseconds: 1200));
+    } catch (_) {
+      // Ingest host unavailable (common on-device); file append may still
+      // succeed when separately configured.
+    } finally {
+      client?.close(force: true);
+    }
+  }
+
+  // #endregion agent log (http ingest)
 }
