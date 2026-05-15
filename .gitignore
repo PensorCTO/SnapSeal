@@ -26,5 +26,8 @@ auth.json
 .agents/.skill-lock.json
 .agents/skills/flutter-expert/
 
+# External / third-party projects in repo root
+deepseek-cursor-proxy/
+
 # Logs
 *.log
