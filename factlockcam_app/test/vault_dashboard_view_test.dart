@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:factlockcam/core/di/injection.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
 import 'package:factlockcam/ui/controllers/dashboard_controller.dart';
-import 'package:factlockcam/ui/views/archive_view.dart';
-import 'package:factlockcam/ui/views/vault_home_view.dart';
+import 'package:factlockcam/ui/mobile/archive_view.dart';
+import 'package:factlockcam/ui/mobile/vault_home_view.dart';
 
 void main() {
   setUpAll(() async {

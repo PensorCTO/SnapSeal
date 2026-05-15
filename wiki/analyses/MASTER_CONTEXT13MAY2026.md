@@ -66,6 +66,7 @@ Major gaps relative to [[ProofLock_Architectural_Manifest]] remain: **hardware-b
 
 ## Related Notes
 
+* [[FactLockCam_Blueprints_14May2026]] - Layered technical blueprint (2026-05-14); onboarding-oriented companion to this snapshot.
 * [[FactLockCam_Product_Baseline_2026-05]]
 * [[FactLockCam_Master_Blueprint]]
 * [[Project_Audit_2026-05-11]]

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../data/models/archive_item.dart';
 import '../controllers/dashboard_controller.dart';
 import 'archive_item_actions.dart';
+import 'archive_thumbnail.dart';
 import 'vault_home_view.dart';
 
 /// Local archive: photos and videos in separate tabs with thumbnails and delete.
@@ -190,18 +189,9 @@ class _ArchiveGrid extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.file(
-                      File(item.thumbnailPath),
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => ColoredBox(
-                        color: Colors.black26,
-                        child: Icon(
-                          showVideoBadge
-                              ? Icons.videocam_outlined
-                              : Icons.image_not_supported_outlined,
-                          color: Colors.white70,
-                        ),
-                      ),
+                    ArchiveThumbnail(
+                      thumbnailPath: item.thumbnailPath,
+                      showVideoBadge: showVideoBadge,
                     ),
                     if (showVideoBadge) const Center(child: _VideoBadge()),
                     Positioned(

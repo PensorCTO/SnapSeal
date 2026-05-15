@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:factlockcam/core/ui/painters/shutter_button_painter.dart';
-import 'package:factlockcam/ui/views/camera/camera_view.dart';
+import 'package:factlockcam/ui/mobile/camera/camera_view.dart';
 
 void main() {
   testWidgets('video shutter tap starts recording when idle', (tester) async {

@@ -8,7 +8,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
 import 'package:factlockcam/data/models/sealed_asset.dart';
 import 'package:factlockcam/domain/services/vault_service.dart';
-import 'package:factlockcam/ui/views/archive_photo_view.dart';
+import 'package:factlockcam/ui/mobile/archive_photo_view.dart';
 
 class _MockVaultService extends Mock implements VaultService {}
 

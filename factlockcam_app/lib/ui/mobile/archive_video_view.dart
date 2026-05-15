@@ -1,11 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../data/models/archive_item.dart';
 import '../../domain/services/vault_service.dart';
+import 'archive_video_source.dart';
 
 class ArchiveVideoView extends ConsumerStatefulWidget {
   const ArchiveVideoView({super.key, required this.item});
@@ -18,7 +17,7 @@ class ArchiveVideoView extends ConsumerStatefulWidget {
 
 class _ArchiveVideoViewState extends ConsumerState<ArchiveVideoView> {
   VideoPlayerController? _controller;
-  File? _tempFile;
+  Future<void> Function()? _disposeSource;
   bool _isLoading = true;
   String? _error;
 
@@ -34,26 +33,20 @@ class _ArchiveVideoViewState extends ConsumerState<ArchiveVideoView> {
           .read(vaultServiceProvider)
           .extractForCourier(widget.item.assetFingerprint);
       final extension = _extensionFromMime(widget.item.mimeType);
-      final file = File(
-        '${Directory.systemTemp.path}/${widget.item.assetFingerprint}$extension',
+      final source = await createArchiveVideoSource(
+        bytes: sealed.bytes,
+        assetFingerprint: widget.item.assetFingerprint,
+        extension: extension,
       );
-      await file.writeAsBytes(sealed.bytes, flush: true);
-
-      final controller = VideoPlayerController.file(file);
-      await controller.initialize();
-      controller.setLooping(true);
 
       if (!mounted) {
-        await controller.dispose();
-        if (file.existsSync()) {
-          await file.delete();
-        }
+        await source.dispose();
         return;
       }
 
       setState(() {
-        _tempFile = file;
-        _controller = controller;
+        _disposeSource = source.dispose;
+        _controller = source.controller;
         _isLoading = false;
       });
     } catch (e) {
@@ -82,10 +75,11 @@ class _ArchiveVideoViewState extends ConsumerState<ArchiveVideoView> {
 
   @override
   void dispose() {
-    _controller?.dispose();
-    final file = _tempFile;
-    if (file != null && file.existsSync()) {
-      file.deleteSync();
+    final disposeSource = _disposeSource;
+    if (disposeSource != null) {
+      disposeSource();
+    } else {
+      _controller?.dispose();
     }
     super.dispose();
   }

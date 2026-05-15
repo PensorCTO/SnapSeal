@@ -6,8 +6,8 @@ import 'package:factlockcam/app/factlockcam_app.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
 import 'package:factlockcam/core/di/injection.dart';
 import 'package:factlockcam/ui/controllers/dashboard_controller.dart';
-import 'package:factlockcam/ui/views/camera/camera_view.dart';
-import 'package:factlockcam/ui/views/vault_home_view.dart';
+import 'package:factlockcam/ui/mobile/camera/camera_view.dart';
+import 'package:factlockcam/ui/mobile/vault_home_view.dart';
 
 void main() {
   setUpAll(() async {

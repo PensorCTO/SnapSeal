@@ -1,0 +1,7 @@
+---# Rule: Courier Origination (Send Proof)
+
+1. **State Isolation**: UI components must never call `Supabase` directly. All "Send Proof" actions must dispatch through a Riverpod `AsyncNotifier` (e.g., `CourierOriginationProvider`).
+2. **Environment Variable Fallback**: The generated Web Vault URL must construct using an environment variable `WEB_VAULT_BASE_URL` with a fallback to `http://localhost:3000` for local dev.
+3. **UX Non-Blocking**: The RPC call to `get_or_create_courier_package` can have latency. The UI must reflect a loading state (e.g., CupertinoActivityIndicator) and handle potential `PostgrestException` failures gracefully via a SnackBar or Cupertino dialog.
+alwaysApply: true
+---

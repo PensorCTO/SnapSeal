@@ -2,11 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../ui/controllers/auth_controller.dart';
-import '../../ui/views/archive_view.dart';
-import '../../ui/views/camera/acquisition_mode.dart';
-import '../../ui/views/camera/camera_view.dart';
-import '../../ui/views/logon_view.dart';
-import '../../ui/views/vault_home_view.dart';
+import '../../ui/mobile/archive_view.dart';
+import '../../ui/mobile/camera/acquisition_mode.dart';
+import '../../ui/mobile/camera/camera_view.dart';
+import '../../ui/mobile/logon_view.dart';
+import '../../ui/mobile/vault_home_view.dart';
+import '../../ui/web/courier_unlock_view.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -17,12 +18,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final session = authState.asData?.value?.session;
       final isAuthenticated = session != null;
       final isOnLogon = state.matchedLocation == LogonView.routePath;
+      final isCourierRoute =
+          state.matchedLocation == CourierUnlockView.routePath;
 
       if (isAuthenticated && isOnLogon) {
         return VaultHomeView.routePath;
       }
 
-      if (!isAuthenticated && !isOnLogon) {
+      if (!isAuthenticated && !isOnLogon && !isCourierRoute) {
         return LogonView.routePath;
       }
 
@@ -52,6 +55,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final mode = AcquisitionMode.parse(state.uri.queryParameters['mode']);
           return CameraView(mode: mode);
         },
+      ),
+      GoRoute(
+        path: CourierUnlockView.routePath,
+        builder: (context, state) =>
+            CourierUnlockView(packageId: state.uri.queryParameters['pkg']),
       ),
     ],
   );

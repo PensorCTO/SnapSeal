@@ -13,7 +13,9 @@ import re
 import sys
 from pathlib import Path
 
-ALLOWED_KEYS = ("SUPABASE_URL", "SUPABASE_ANON_KEY")
+REQUIRED_KEYS = ("SUPABASE_URL", "SUPABASE_ANON_KEY")
+OPTIONAL_KEYS = ("LOCAL_ANON_KEY",)
+ALLOWED_KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
 
 
 def parse_env_file(path: Path) -> dict[str, str]:
@@ -65,7 +67,7 @@ def main() -> int:
     args = ap.parse_args()
 
     merged = resolve_values(args.env_file)
-    missing = [k for k in ALLOWED_KEYS if k not in merged or not merged[k]]
+    missing = [k for k in REQUIRED_KEYS if k not in merged or not merged[k]]
     if missing:
         src = args.env_file if args.env_file else "environment"
         print(
