@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
@@ -77,9 +79,13 @@ class _ArchiveVideoViewState extends ConsumerState<ArchiveVideoView> {
   void dispose() {
     final disposeSource = _disposeSource;
     if (disposeSource != null) {
-      disposeSource();
+      // Controller.dispose() and temp file deletion are async; State.dispose cannot await.
+      unawaited(disposeSource());
     } else {
-      _controller?.dispose();
+      final controller = _controller;
+      if (controller != null) {
+        unawaited(controller.dispose());
+      }
     }
     super.dispose();
   }
