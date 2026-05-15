@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/local/vault_database.dart';
 import '../../data/models/archive_item.dart';
-import '../../data/services/local_vault_storage.dart';
 import '../../domain/services/vault_service.dart';
 
 final dashboardControllerProvider =
@@ -59,21 +58,7 @@ class DashboardController extends AsyncNotifier<List<ArchiveItem>> {
   }
 
   Future<List<ArchiveItem>> _loadResolvedArchive() async {
-    final db = ref.read(vaultDatabaseProvider);
-    final storage = ref.read(localVaultStorageProvider);
-    final vault = ref.read(vaultServiceProvider);
-    final raw = await db.listArchiveItems();
-    final out = <ArchiveItem>[];
-    for (final item in raw) {
-      var next = await storage.resolveArchivePaths(item);
-      next = await vault.regenerateMissingThumbnail(next);
-      out.add(next);
-      if (next.thumbnailPath != item.thumbnailPath ||
-          next.encryptedPath != item.encryptedPath) {
-        await db.upsertArchiveItem(next);
-      }
-    }
-    return out;
+    return ref.read(vaultServiceProvider).listArchiveItems();
   }
 
   /// Explicit background trigger invoked by the view lifecycle.
@@ -137,11 +122,16 @@ class DashboardController extends AsyncNotifier<List<ArchiveItem>> {
       return;
     }
 
+    await ref.read(vaultServiceProvider).updateArchiveMetadata(
+          assetFingerprint: assetFingerprint,
+          title: title,
+          description: description,
+        );
+
     final updated = existing.copyWith(
       title: normalizedTitle,
       description: normalizedDescription,
     );
-    await db.upsertArchiveItem(updated);
 
     final current = state.asData?.value;
     if (current == null) {

@@ -474,6 +474,57 @@ class VaultService {
     }
   }
 
+  /// DB rows plus path resolution and missing-thumbnail regeneration (same path as dashboard load).
+  Future<List<ArchiveItem>> listArchiveItems() async {
+    final raw = await _database.listArchiveItems();
+    final out = <ArchiveItem>[];
+    for (final item in raw) {
+      var next = await _storage.resolveArchivePaths(item);
+      next = await regenerateMissingThumbnail(next);
+      out.add(next);
+      if (next.thumbnailPath != item.thumbnailPath ||
+          next.encryptedPath != item.encryptedPath) {
+        await _database.upsertArchiveItem(next);
+      }
+    }
+    return out;
+  }
+
+  Future<void> updateArchiveMetadata({
+    required String assetFingerprint,
+    required String? title,
+    required String? description,
+  }) async {
+    final existing = await _database.findArchiveItem(assetFingerprint);
+    if (existing == null) {
+      return;
+    }
+
+    final normalizedTitle = _normalizeMetadataField(title);
+    final normalizedDescription = _normalizeMetadataField(description);
+    if (normalizedTitle == existing.title &&
+        normalizedDescription == existing.description) {
+      return;
+    }
+
+    await _database.updateArchiveMetadata(
+      assetFingerprint: assetFingerprint,
+      title: normalizedTitle,
+      description: normalizedDescription,
+    );
+  }
+
+  String? _normalizeMetadataField(String? value) {
+    if (value == null) {
+      return null;
+    }
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+    return trimmed;
+  }
+
   bool _localFileExists(String path) {
     try {
       return File(path).existsSync();
