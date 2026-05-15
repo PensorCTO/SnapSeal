@@ -1,13 +1,12 @@
----<rule>
-  <name>FactLockCam State & DI Constraints</name>
-  <description>Enforces Riverpod and GetIt layering based on the production audit.</description>
-  <action>
-    - FORBID `package:bloc`, `flutter_bloc`, and `package:provider`.
-    - REQUIRE `flutter_riverpod` for all UI state flowing through `ProviderScope`, `ConsumerWidget`, and `ConsumerStatefulWidget`.
-    - REQUIRE `get_it` for internal service wiring (composition root: `factlockcam_app/lib/core/di/injection.dart`; `injectable`+codegen optional when build_runner is available).
-    - ENFORCE bridging pattern: `final vaultServiceProvider = Provider<VaultService>((ref) => getIt<VaultService>());`
-    - REQUIRE heavy computations (SHA-256, XOR) to execute within `Isolate.run()` to protect UI frame times.
-  </action>
-</rule>
+---
+description: Enforces Riverpod and GetIt layering based on the production audit.
 alwaysApply: true
 ---
+
+# FactLockCam State & DI Constraints
+
+- FORBID `package:bloc`, `flutter_bloc`, and `package:provider`.
+- REQUIRE `flutter_riverpod` for all UI state flowing through `ProviderScope`, `ConsumerWidget`, and `ConsumerStatefulWidget`.
+- REQUIRE `get_it` for internal service wiring (composition root: `factlockcam_app/lib/core/di/injection.dart`; `injectable`+codegen optional when build_runner is available).
+- ENFORCE bridging pattern: `final vaultServiceProvider = Provider<VaultService>((ref) => getIt<VaultService>());`
+- REQUIRE heavy computations (SHA-256, XOR) to execute within `Isolate.run()` to protect UI frame times.

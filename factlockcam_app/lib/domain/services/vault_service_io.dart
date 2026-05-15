@@ -102,6 +102,11 @@ class VaultService {
 
   /// ProofLock pipeline: isolate hash → preflight RPC → TEE sign → simulated chain
   /// → AES-GCM local vault → `proof_ledger` → burn source.
+  ///
+  /// **Ordering:** Ledger preflight, device signing, and chain notarization run
+  /// before [`_persistSealedBytes`]. A thrown [`ProofLockConflictException`] therefore
+  /// exits before any encrypted vault files or SQLite archive rows are written, so no
+  /// orphan assets are created by that conflict path alone.
   Future<SealCaptureResult> proofLockFile(
     File sourceFile,
     String userId,
@@ -536,11 +541,12 @@ class VaultService {
     }
 
     String? chainTxHash;
-    if (!pendingRemote) {
+    final signature = deviceSignature;
+    if (!pendingRemote && signature != null) {
       try {
         chainTxHash = await _chainNotarizer.notarizeFileHash(
           fileHash: assetFingerprint,
-          deviceSignature: deviceSignature!,
+          deviceSignature: signature,
         );
       } catch (e) {
         if (_isRecoverableRemoteFailure(e)) {
@@ -551,7 +557,7 @@ class VaultService {
       }
     }
 
-    if (pendingRemote || chainTxHash == null) {
+    if (pendingRemote || chainTxHash == null || signature == null) {
       await _database.markSyncDeferred(
         assetFingerprint: assetFingerprint,
         nextRetryAt: _nextRetryAt(item.syncAttemptCount + 1),
@@ -562,7 +568,7 @@ class VaultService {
     try {
       await _sealLedgerRepository.insertProofLedgerRow(
         assetHash: assetFingerprint,
-        deviceSignature: deviceSignature!,
+        deviceSignature: signature,
         chainTxHash: chainTxHash,
       );
       await _database.markSyncSucceeded(assetFingerprint: assetFingerprint);

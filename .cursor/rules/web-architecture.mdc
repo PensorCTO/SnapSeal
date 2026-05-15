@@ -1,19 +1,22 @@
----# Rule: FactLockCam Web Target Architecture
-
-1.  **Platform Conditional Imports**: 
-    - Never import `dart:io` in shared domain or state files. 
-    - Use `flutter/foundation.dart` (`kIsWeb`) for platform-specific branching.
-    - File operations (like `File` or `Directory` from `dart:io`) MUST be abstracted behind an interface (e.g., `ILocalVaultStorage`). The web implementation must use `dart:html` or memory-backed storage, as the web target lacks a native file system.
-
-2.  **Routing Strictness**: 
-    - Use `go_router` for all navigation. 
-    - Web routes MUST support deep linking via URL parameters (e.g., `http://localhost:3000/courier?pkg=[p_package_id]`). 
-
-3.  **Cryptographic Integrity**: 
-    - The web UI MUST consume `CourierCrypto.decryptAndVerifyFingerprint` exactly as the iOS client does. 
-    - Do NOT duplicate decryption logic in UI controllers.
-
-4.  **Local Supabase Environment**:
-    - When `kIsWeb` and `kDebugMode` are true, `Supabase.initialize` MUST point to `http://127.0.0.1:54325` (FactLockCam isolated local Kong; matches `supabase/config.toml` `[api].port`) to support domain-less local development alongside other stacks on the default ports.
+---
+description: FactLockCam web target — conditional imports, go_router deep links, crypto, local Supabase.
 alwaysApply: true
 ---
+
+# FactLockCam Web Target Architecture
+
+1. **Platform Conditional Imports**
+   - Never import `dart:io` in shared domain or state files.
+   - Use `flutter/foundation.dart` (`kIsWeb`) for platform-specific branching.
+   - File operations (like `File` or `Directory` from `dart:io`) MUST be abstracted behind an interface (e.g., `ILocalVaultStorage`). The web implementation must use `dart:html` or memory-backed storage, as the web target lacks a native file system.
+
+2. **Routing Strictness**
+   - Use `go_router` for all navigation.
+   - Web routes MUST support deep linking via URL parameters (e.g., `http://localhost:3000/courier?pkg=[p_package_id]`).
+
+3. **Cryptographic Integrity**
+   - The web UI MUST consume `CourierCrypto.decryptAndVerifyFingerprint` exactly as the iOS client does.
+   - Do NOT duplicate decryption logic in UI controllers.
+
+4. **Local Supabase Environment**
+   - When `kIsWeb` and `kDebugMode` are true, `Supabase.initialize` MUST point to `http://127.0.0.1:54325` (FactLockCam isolated local Kong; matches `supabase/config.toml` `[api].port`) to support domain-less local development alongside other stacks on the default ports.

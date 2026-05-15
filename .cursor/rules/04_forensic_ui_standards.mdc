@@ -1,14 +1,13 @@
----<rule>
-  <name>Forensic UI & Viewfinder Performance</name>
-  <description>Enforces the Technical/Forensic design language and protects camera frame rates.</description>
-  <action>
-    - REQUIRE typography for all HUD, telemetry, hashes, timestamps, and ledger identifiers to use a monospaced technical font (prefer `GoogleFonts.spaceMono` through `AppTextStyles`).
-    - FORBID thick borders, solid containers, or drop shadows over the camera feed. Use stark, thin lines (`strokeWidth: 1.0` or `1.5`) and high contrast.
-    - REQUIRE the use of `CustomPaint` for camera frames, reticles, crosshairs, and the capture shutter to minimize the widget tree depth.
-    - REQUIRE all UI overlays operating on top of the live camera feed to be wrapped in `RepaintBoundary`.
-    - REQUIRE the capture control to use the mechanical iris motif via `ShutterIrisPainter` inside a `RepaintBoundary`.
-    - COLOR PALETTE: Primary surfaces use Titanium Deep (`0xFF121212`) and Titanium Panel (`0xFF1C1C1C`); primary UI text uses Stark White (`0xFFFFFFFF`); active/in-progress states use Kinetic Green (`0xFF00D26A`); completed locked/verified states use Verified Neon (`0xFF39FF14`).
-  </action>
-</rule>
+---
+description: Technical/Forensic UI language and viewfinder performance (camera overlays).
 alwaysApply: true
 ---
+
+# Forensic UI & Viewfinder Performance
+
+- REQUIRE typography for all HUD, telemetry, hashes, timestamps, and ledger identifiers to use a monospaced technical font (prefer `GoogleFonts.spaceMono` through `AppTextStyles`).
+- FORBID thick borders, solid containers, or drop shadows over the camera feed. Use stark, thin lines (`strokeWidth: 1.0` or `1.5`) and high contrast.
+- REQUIRE the use of `CustomPaint` for camera frames, reticles, crosshairs, and the capture shutter to minimize the widget tree depth.
+- REQUIRE all UI overlays operating on top of the live camera feed to be wrapped in `RepaintBoundary`.
+- REQUIRE the capture control to use the mechanical iris motif via `ShutterIrisPainter` inside a `RepaintBoundary`.
+- COLOR PALETTE: Primary surfaces use Titanium Deep (`0xFF121212`) and Titanium Panel (`0xFF1C1C1C`); primary UI text uses Stark White (`0xFFFFFFFF`); active/in-progress states use Kinetic Green (`0xFF00D26A`); completed locked/verified states use Verified Neon (`0xFF39FF14`).

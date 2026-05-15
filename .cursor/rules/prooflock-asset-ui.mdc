@@ -1,12 +1,13 @@
 ---
+description: Digital archive asset UI — toolbar, action registry, Riverpod, performance.
+globs: factlockcam_app/lib/core/archive/**, factlockcam_app/lib/features/archive/**, factlockcam_app/lib/ui/mobile/archive_*.dart
 alwaysApply: false
 ---
+
 # Digital Archive UI Standard
 
 1. **Context Anchor**: Every UI component displaying a media asset (picture, video, audio, document) MUST include the `UniversalAssetToolbar`.
 2. **Action Delegation**: Never write custom UI buttons for Delete, Play, or Verify. Always use the `AssetActionRegistry` to fetch the contextual actions available for the specific `media_type`.
-3. **State Management**: All UI state for asset actions MUST flow through `ProviderScope` and `ConsumerWidget` using Riverpod 2.0 `AsyncNotifier`[cite: 2, 4]. Do not use `StatefulWidget` for business logic.
+3. **State Management**: All UI state for asset actions MUST flow through `ProviderScope` and `ConsumerWidget` using Riverpod 2.0 `AsyncNotifier`. Do not use `StatefulWidget` for business logic.
 4. **Performance**: Wrap high-frequency list items (e.g., scrolling archives) in a `RepaintBoundary` to isolate volatile rendering zones and prevent full-tree repaints.
 5. **Aesthetics**: Enforce iOS Cupertino-compliant patterns, utilizing titanium textures and brand green (#00D26A) accents for primary actions.
-alwaysApply: true
----
