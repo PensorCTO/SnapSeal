@@ -26,7 +26,8 @@ Read this page first when answering questions about the wiki.
 - [[System_Context_Audit_2026-05-09]] - Archived stub (superseded by [[FactLockCam_Product_Baseline_2026-05]]).
 - [[Master_Context_10MAY2026]] - Archived comprehensive snapshot for 2026-05-10 (superseded by [[Master_Context_11MAY2026]]).
 - [[Master_Context_11MAY2026]] - Comprehensive architecture snapshot for 2026-05-11 (superseded by [[MASTER_CONTEXT13MAY2026]]).
-- [[MASTER_CONTEXT13MAY2026]] - **Current** comprehensive architecture snapshot (2026-05-13; four-panel vault UX, Phase 2 dual-mode capture, ProofLock-shaped seal, pending-sync reconciliation, Domain Interaction Contract).
+- [[MASTER_CONTEXT13MAY2026]] - Comprehensive architecture snapshot for 2026-05-13 (superseded by [[MASTER_CONTEXT16MAY2026]]).
+- [[MASTER_CONTEXT16MAY2026]] - **Current** comprehensive architecture snapshot (2026-05-16; audit-verified 36/36 tests passing, web courier infrastructure, web platform architecture, Heavy Metal design, Cloud E2EE Vault pivot status).
 - [[FactLockCam_Blueprints_14May2026]] - **Layered technical blueprint** (2026-05-14): client stack, routing, capture, `proofLockFile` ordering, Supabase integration, archive contract, risks, ops; companion to [[MASTER_CONTEXT13MAY2026]] (also `FactLockCam_Blueprints14May2026.md` at repo root).
 - [[Project_Audit_2026-05-11]] - Repo vs wiki reconciliation (seal pipeline, sync, native channel, tests, tooling).
 

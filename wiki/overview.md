@@ -9,7 +9,7 @@ summary: "Big-picture view of ProofLockCleanup: FactLockCam product runtime, Sup
 
 `ProofLockCleanup` is a **dual** workspace: (1) the **FactLockCam** Flutter application (`factlockcam_app/`) with **local-first** encrypted media vault behavior and optional **Supabase** auth and proof ledger replication; (2) a **Karpathy-style LLM Wiki** (`wiki/`) that compiles durable architecture truth from `raw/` sources and ongoing reconciliation.
 
-For **product status and verified workflow**, start at [[FactLockCam_Product_Baseline_2026-05]]. For **dated narrative architecture**, use [[MASTER_CONTEXT13MAY2026]]. For **layered technical breakdown** (routing, DI, `VaultService.proofLockFile`, RPC mapping, archive contract), use [[FactLockCam_Blueprints_14May2026]] (mirrors repo root `FactLockCam_Blueprints14May2026.md`). For **gap-to-target** relative to the ProofLock manifest, see [[ProofLock_Refactor_Scope]].
+For **product status and verified workflow**, start at [[FactLockCam_Product_Baseline_2026-05]]. For **dated narrative architecture**, use [[MASTER_CONTEXT16MAY2026]]. For **layered technical breakdown** (routing, DI, `VaultService.proofLockFile`, RPC mapping, archive contract), use [[FactLockCam_Blueprints_14May2026]] (mirrors repo root `FactLockCam_Blueprints14May2026.md`). For **gap-to-target** relative to the ProofLock manifest, see [[ProofLock_Refactor_Scope]].
 
 Primary navigation: [[index]] · [[glossary]] · [[log]]
 
