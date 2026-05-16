@@ -3,8 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../ui/controllers/auth_controller.dart';
 import '../../ui/mobile/archive_view.dart';
-import '../../ui/mobile/camera/acquisition_mode.dart';
-import '../../ui/mobile/camera/camera_view.dart';
 import '../../ui/mobile/logon_view.dart';
 import '../../ui/mobile/vault_home_view.dart';
 import '../../ui/web/courier_unlock_view.dart';
@@ -48,13 +46,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: ArchiveView.routePath,
         builder: (context, state) => const ArchiveView(),
-      ),
-      GoRoute(
-        path: CameraView.routePath,
-        builder: (context, state) {
-          final mode = AcquisitionMode.parse(state.uri.queryParameters['mode']);
-          return CameraView(mode: mode);
-        },
       ),
       GoRoute(
         path: CourierUnlockView.routePath,

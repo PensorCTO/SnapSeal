@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
@@ -12,14 +13,19 @@ import '../../../core/ui/painters/shutter_button_painter.dart';
 import '../../../data/supabase/auth_repository.dart';
 import '../../../domain/services/vault_service.dart';
 import '../../controllers/dashboard_controller.dart';
+import '../vault_home_view.dart';
 import 'acquisition_mode.dart';
 import 'camera_chrome_frame.dart';
 import 'telemetry_overlay.dart';
 
 class CameraView extends ConsumerStatefulWidget {
-  const CameraView({super.key, this.mode = AcquisitionMode.photo});
+  const CameraView({super.key, this.mode = AcquisitionMode.photo, this.onCaptureComplete});
 
   final AcquisitionMode mode;
+
+  /// Called after the capture completes and the asset is sealed.
+  /// When null, falls back to [Navigator.of(context).pop] (standalone route).
+  final VoidCallback? onCaptureComplete;
 
   static const routePath = '/camera';
 
@@ -185,7 +191,12 @@ class _CameraViewState extends ConsumerState<CameraView> {
         if (!mounted) return;
       }
       ref.invalidate(dashboardControllerProvider);
-      Navigator.of(context).pop(true);
+      if (!mounted) return;
+      setState(() {
+        _isSealing = false;
+        _isRecording = false;
+      });
+      widget.onCaptureComplete?.call();
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -238,7 +249,15 @@ class _CameraViewState extends ConsumerState<CameraView> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(title: Text(isVideo ? 'Capture video' : 'Capture')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.go(VaultHomeView.routePath),
+        ),
+        title: Text(isVideo ? 'Capture video' : 'Capture'),
+      ),
       body: Stack(
         fit: StackFit.expand,
         children: [
