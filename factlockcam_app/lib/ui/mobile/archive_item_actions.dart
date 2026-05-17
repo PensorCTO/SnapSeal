@@ -16,7 +16,7 @@ import 'archive/providers/courier_link_provider.dart';
 import 'archive_photo_view.dart';
 import 'archive_video_view.dart';
 
-/// Shared bottom sheet + dialogs for archive rows (used by [ArchiveView]).
+/// Shared bottom sheet + dialogs for archive rows.
 class ArchiveItemActions {
   const ArchiveItemActions._();
 

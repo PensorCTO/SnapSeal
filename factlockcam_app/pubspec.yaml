@@ -74,3 +74,4 @@ flutter:
     # The runtime backdrop is FactLockCamBackground.mp4; declaring the
     # directory avoids analyzer churn while the binary is being staged.
     - assets/videos/
+    - assets/images/factlockcam_logoheader.jpg

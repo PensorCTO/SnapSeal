@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../ui/controllers/auth_controller.dart';
-import '../../ui/mobile/archive_view.dart';
 import '../../ui/mobile/logon_view.dart';
 import '../../ui/mobile/vault_home_view.dart';
 import '../../ui/web/courier_unlock_view.dart';
@@ -42,10 +41,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: VaultHomeView.routePath,
         builder: (context, state) => const VaultHomeView(),
-      ),
-      GoRoute(
-        path: ArchiveView.routePath,
-        builder: (context, state) => const ArchiveView(),
       ),
       GoRoute(
         path: CourierUnlockView.routePath,

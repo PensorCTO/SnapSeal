@@ -1,49 +1,41 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_typography.dart';
-import '../../../core/services/haptic_service.dart';
-import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
-import '../../../data/models/archive_item.dart';
-import '../../controllers/dashboard_controller.dart';
-import '../archive_item_actions.dart';
-import '../archive_view.dart';
-import 'asset_inspector_screen.dart';
-import 'chronology_card.dart';
-import 'swipe_action_layer.dart';
+import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_typography.dart';
+import '../../../../core/services/haptic_service.dart';
+import '../../../../core/ui/widgets/heavy_metal_backdrop.dart';
+import '../../../../data/models/archive_item.dart';
+import '../../../controllers/dashboard_controller.dart';
+import '../../archive_item_actions.dart';
+import '../asset_inspector_screen.dart';
+import '../chronology_card.dart';
+import '../swipe_action_layer.dart';
+import 'omni_control_bar.dart';
+import 'omni_grid_view.dart';
+import 'providers/archive_prefs_provider.dart';
 
-// #region agent log
-const _kDebugLog =
-    '/Users/paulensor/Projects/ProofLockCleanup/.cursor/debug-4d5e77.log';
-// #endregion
-
-/// Haptic Chronology viewport — the Archive tab within the vault shell.
+/// Unified Archive Omni-Surface — the archive tab (Tab Index 3) within the
+/// vault shell.
 ///
-/// Displays sealed assets as a vertically scrolling stack of
-/// [ChronologyCard] plates with scroll-driven Transform animations,
-/// RepaintBoundary isolation, and off-thread thumbnail decoding.
-class ChronologyViewport extends ConsumerStatefulWidget {
-  const ChronologyViewport({super.key, this.onCaptureRequested});
+/// Replaces the standalone ArchiveView and ChronologyViewport. Supports
+/// toggling between a date-grouped Grid View and the haptic Chronology View,
+/// with dynamic media-type filtering.
+class UnifiedArchiveViewport extends ConsumerStatefulWidget {
+  const UnifiedArchiveViewport({super.key, this.onCaptureRequested});
 
-  /// Called when the user taps the Picture or Video tile in the empty state.
-  /// Receives the destination tab index: 1 for Picture, 2 for Video.
+  /// When set, the Picture and Video empty-state tiles switch the parent
+  /// bottom-nav tab to index 1 or 2 respectively.
   final ValueChanged<int>? onCaptureRequested;
 
-  static const routePath = '/vault-home';
-
   @override
-  ConsumerState<ChronologyViewport> createState() =>
-      _ChronologyViewportState();
+  ConsumerState<UnifiedArchiveViewport> createState() =>
+      _UnifiedArchiveViewportState();
 }
 
-class _ChronologyViewportState extends ConsumerState<ChronologyViewport>
-    with HeavyMetalBackdropMixin<ChronologyViewport> {
+class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport> {
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0;
   bool _initialSyncTriggered = false;
@@ -83,96 +75,35 @@ class _ChronologyViewportState extends ConsumerState<ChronologyViewport>
       });
     }
 
-    final archive = ref.watch(dashboardControllerProvider);
-
-    // #region agent log
-    archive.whenData((items) {
-      try {
-        File(_kDebugLog).writeAsStringSync(
-          '${json.encode({
-            'sessionId': '4d5e77',
-            'runId': 'r1',
-            'hypothesisId': 'C',
-            'location': 'chronology_viewport.dart:build',
-            'message': 'ChronologyViewport built',
-            'data': {'itemCount': items.length, 'isEmpty': items.isEmpty},
-            'timestamp': DateTime.now().millisecondsSinceEpoch,
-          })}\n',
-          mode: FileMode.append,
-        );
-      } catch (_) {}
-    });
-    // #endregion
+    final filteredItems = ref.watch(filteredArchiveProvider);
+    final prefs = ref.watch(archivePrefsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.titaniumDeep,
       body: SafeArea(
         child: Column(
           children: [
-            // ── Logo bar ───────────────────────────────────
+            // ── Logo bar ───────────────────────────────────────
             const HeavyMetalLogoBanner(),
 
-            // ── Pending sync banner ──────────────────────────
-            archive.when(
-              data: (items) {
-                final pendingCount =
-                    items.where((item) => item.pendingSync).length;
-                if (pendingCount == 0) return const SizedBox.shrink();
+            // ── Pending sync banner ────────────────────────────
+            _PendingSyncBanner(),
 
-                return MaterialBanner(
-                  backgroundColor: AppColors.titaniumPanel.withValues(alpha: 0.92),
-                  content: Text(
-                    '$pendingCount item(s) pending sync. '
-                    'We will keep retrying in the background.',
-                    style: AppTextStyles.monoSm(
-                      color: AppColors.alertAmber,
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        ref
-                            .read(dashboardControllerProvider.notifier)
-                            .syncPendingInBackground();
-                      },
-                      child: Text(
-                        'RETRY NOW',
-                        style: AppTextStyles.monoSm(
-                          color: AppColors.kineticGreen,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-              error: (err, __) => const SizedBox.shrink(),
-              loading: () => const SizedBox.shrink(),
-            ),
+            // ── Control bar (filter chips + view toggle) ───────
+            const OmniControlBar(),
 
-            // ── Chronology scroll + action tiles ────────────
+            // ── Main content ──────────────────────────────────
             Expanded(
-              child: archive.when(
-                data: (items) => _buildContent(context, items),
-                error: (error, _) => Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      error.toString(),
-                      style: AppTextStyles.monoSm(
-                        color: AppColors.alertAmber,
-                      ),
+              child: filteredItems.isEmpty
+                  ? _EmptyState(
+                      onCaptureRequested: widget.onCaptureRequested,
+                    )
+                  : AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: prefs.viewMode == ArchiveViewMode.grid
+                          ? OmniGridView(key: const ValueKey('grid'), items: filteredItems)
+                          : _buildChronologyView(filteredItems),
                     ),
-                  ),
-                ),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.verifiedNeon,
-                    ),
-                  ),
-                ),
-              ),
             ),
           ],
         ),
@@ -180,16 +111,11 @@ class _ChronologyViewportState extends ConsumerState<ChronologyViewport>
     );
   }
 
-  Widget _buildContent(BuildContext context, List<ArchiveItem> items) {
+  Widget _buildChronologyView(List<ArchiveItem> items) {
     return LayoutBuilder(
+      key: const ValueKey('chronology'),
       builder: (context, constraints) {
         final viewportHeight = constraints.maxHeight;
-
-        if (items.isEmpty) {
-          return _EmptyState(
-            onCaptureRequested: widget.onCaptureRequested,
-          );
-        }
 
         return ListView.builder(
           controller: _scrollController,
@@ -198,7 +124,6 @@ class _ChronologyViewportState extends ConsumerState<ChronologyViewport>
             bottom: MediaQuery.of(context).padding.bottom + 100,
           ),
           itemCount: items.length,
-          // Overlap items so they stack physically.
           itemExtent: (340.0 * (1 - _imageOverlapFraction)) + 340.0,
           itemBuilder: (context, index) {
             final item = items[index];
@@ -234,7 +159,6 @@ class _ChronologyViewportState extends ConsumerState<ChronologyViewport>
   }
 
   void _onSwipeShare(ArchiveItem item) {
-    // Haptic already fired by SwipeActionLayer.
     unawaited(ref.read(hapticServiceProvider).heavyImpact());
     if (!mounted) return;
     unawaited(
@@ -257,12 +181,55 @@ class _ChronologyViewportState extends ConsumerState<ChronologyViewport>
   }
 }
 
-/// Empty-state view when the vault contains no sealed assets.
+/// Pending sync banner extracted from ChronologyViewport.
+class _PendingSyncBanner extends ConsumerWidget {
+  const _PendingSyncBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final archive = ref.watch(dashboardControllerProvider);
+    return archive.when(
+      data: (items) {
+        final pendingCount = items.where((item) => item.pendingSync).length;
+        if (pendingCount == 0) return const SizedBox.shrink();
+
+        return MaterialBanner(
+          backgroundColor: AppColors.titaniumPanel.withValues(alpha: 0.92),
+          content: Text(
+            '$pendingCount item(s) pending sync. '
+            'We will keep retrying in the background.',
+            style: AppTextStyles.monoSm(
+              color: AppColors.alertAmber,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                ref
+                    .read(dashboardControllerProvider.notifier)
+                    .syncPendingInBackground();
+              },
+              child: Text(
+                'RETRY NOW',
+                style: AppTextStyles.monoSm(
+                  color: AppColors.kineticGreen,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+      error: (_, _) => const SizedBox.shrink(),
+      loading: () => const SizedBox.shrink(),
+    );
+  }
+}
+
+/// Empty-state view when the vault contains no items matching the filter.
 class _EmptyState extends StatelessWidget {
   const _EmptyState({this.onCaptureRequested});
 
-  /// When set, the Picture and Video tiles switch the parent bottom-nav tab
-  /// to index 1 or 2 respectively.
   final ValueChanged<int>? onCaptureRequested;
 
   @override
@@ -301,18 +268,11 @@ class _EmptyState extends StatelessWidget {
           label: 'Video',
           onTap: () => onCaptureRequested?.call(2),
         ),
-        const SizedBox(height: 12),
-        _QuickActionTile(
-          icon: Icons.folder_open_outlined,
-          label: 'Vault',
-          onTap: () => context.push(ArchiveView.routePath),
-        ),
       ],
     );
   }
 }
 
-/// Compact hub tile used in the empty state.
 class _QuickActionTile extends StatelessWidget {
   const _QuickActionTile({
     required this.icon,

@@ -2,14 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/services/haptic_service.dart';
 import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
 import '../../controllers/dashboard_controller.dart';
-import '../archive_view.dart';
 
 /// Heavy Metal hub panel — the Home tab inside the vault shell.
 ///
@@ -52,7 +50,12 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
       backgroundColor: AppColors.titaniumDeep,
       body: Column(
         children: [
-          const HeavyMetalLogoBanner(),
+          HeavyMetalLogoBanner(
+            child: Image.asset(
+              'assets/images/factlockcam_logoheader.jpg',
+              fit: BoxFit.contain,
+            ),
+          ),
           archive.when(
             data: (items) {
               final pendingCount =
@@ -122,9 +125,9 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
                               icon: Icons.folder_open_outlined,
                               label: 'Vault',
                               subtitle: 'Browse photos and videos on this device',
-                              onTap: () => _handleHubTap(
-                                () => context.push(ArchiveView.routePath),
-                              ),
+              onTap: () => _handleHubTap(
+                () => widget.onCaptureRequested?.call(3),
+              ),
                             ),
                             const SizedBox(height: 12),
                             _HubTile(

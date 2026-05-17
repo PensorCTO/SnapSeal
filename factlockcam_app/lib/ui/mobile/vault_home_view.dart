@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/theme/app_colors.dart';
 import 'camera/acquisition_mode.dart';
 import 'camera/camera_view.dart';
-import 'vault/chronology_viewport.dart';
+import 'vault/archive_omni/unified_archive_viewport.dart';
 import 'vault/haptic_hub_panel.dart';
 import 'vault/professional_nav_bar.dart';
 
@@ -58,7 +58,7 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
             mode: AcquisitionMode.video,
             onCaptureComplete: _onCaptureComplete,
           ),
-          ChronologyViewport(
+          UnifiedArchiveViewport(
             onCaptureRequested: _onCaptureRequested,
           ),
         ],
