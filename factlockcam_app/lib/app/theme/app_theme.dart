@@ -7,7 +7,7 @@ class AppTheme {
   static final _textTheme = AppTextStyles.textTheme();
 
   static ThemeData get light => ThemeData(
-    colorScheme: _scheme,
+    colorScheme: _lightScheme,
     scaffoldBackgroundColor: AppColors.titaniumDeep,
     textTheme: _textTheme,
     useMaterial3: true,
@@ -19,7 +19,7 @@ class AppTheme {
   );
 
   static ThemeData get dark => ThemeData(
-    colorScheme: _scheme,
+    colorScheme: _darkScheme,
     scaffoldBackgroundColor: AppColors.titaniumDeep,
     textTheme: _textTheme,
     useMaterial3: true,
@@ -30,7 +30,24 @@ class AppTheme {
     textButtonTheme: _textButtonTheme,
   );
 
-  static const _scheme = ColorScheme(
+  static const _lightScheme = ColorScheme(
+    brightness: Brightness.light,
+    primary: AppColors.verifiedNeon,
+    onPrimary: AppColors.titaniumDeep,
+    secondary: AppColors.starkWhite,
+    onSecondary: AppColors.titaniumDeep,
+    tertiary: AppColors.kineticGreen,
+    onTertiary: AppColors.titaniumDeep,
+    error: Color(0xFFFF5A5F),
+    onError: AppColors.titaniumDeep,
+    surface: AppColors.titaniumDeep,
+    onSurface: AppColors.starkWhite,
+    surfaceContainerHighest: AppColors.titaniumPanel,
+    outline: Color(0xFF5B5B5B),
+    outlineVariant: AppColors.titaniumEdge,
+  );
+
+  static const _darkScheme = ColorScheme(
     brightness: Brightness.dark,
     primary: AppColors.verifiedNeon,
     onPrimary: AppColors.titaniumDeep,
