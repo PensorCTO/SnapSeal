@@ -1,5 +1,5 @@
 ---
-tags: [source_summary, audit, snapseal, prooflock, repository]
+tags: [source_summary, audit, factlockcam, prooflock, repository]
 summary: "Source summary for the 2026-05-11 repository vs wiki reconciliation audit (immutable raw)."
 ---
 

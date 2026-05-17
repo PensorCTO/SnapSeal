@@ -1,5 +1,5 @@
 ---
-tags: [analysis, audit, snapseal, prooflock, wiki_maintenance]
+tags: [analysis, audit, factlockcam, prooflock, wiki_maintenance]
 summary: "Repository audit as of 2026-05-11: reconciles LLM Wiki claims with Flutter/Supabase implementation (seal pipeline, sync, tests, dev tooling)."
 ---
 

@@ -5,6 +5,31 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-05-17
+
+- Performed comprehensive LLM Wiki review and cleanup: updated stale references across 7 wiki pages for accuracy with the current codebase state.
+  - Fixed broken wiki links (`CourierRepository`, `VaultPathResolver` glossary terms).
+  - **[[FactLockCam_Master_Blueprint]]**: Updated test count 31→36, replaced `ShutterButtonPainter`→`ShutterIrisPainter`, corrected standalone `/camera` route → tab-embedded `IndexedStack`/`ProfessionalNavBar` hub model.
+  - **[[FactLockCam_Blueprints_14May2026]]**: Updated companion reference from [[MASTER_CONTEXT13MAY2026]]→[[MASTER_CONTEXT16MAY2026]], removed standalone `/camera` route from routing table, test count 31→36.
+  - **[[FactLockCam_Product_Baseline_2026-05]]**: Replaced `ShutterButtonPainter`→`ShutterIrisPainter`, updated camera routing description for tab-embedded model.
+  - **[[overview]]**: Updated Related Notes to reference [[MASTER_CONTEXT16MAY2026]] instead of 13MAY.
+  - **[[index]]**: Updated Blueprints and Master Blueprint descriptions for current architecture.
+  - **[[Heavy_Metal_Design_System]]**: Added [[MASTER_CONTEXT16MAY2026]] to Related Notes.
+  - **[[glossary]]**: Updated `AcquisitionMode` entry (no standalone `/camera` route).
+- Cleaned up stale `snapseal` tag on [[Project_Audit_2026-05-11]] analysis page.
+
+- Implemented **Courier Retrofit** (per Diagnostic Integrity Report "Send Proof" Courier Failure blueprint):
+  - Decoupled state and UI: `CourierLink` notifier returns `Future<String>` (not void); `SharePlus` side-effect moved to `ArchiveItemActions.showSendProofDialog` in the UI layer.
+  - Fixed iOS path drift: created `VaultPathResolver` DI service; injected into `VaultService`; all four `_storage.resolveArchivePaths` call sites replaced with `_pathResolver.resolve`.
+  - Removed `.plock` reference from `courier_crypto.dart` doc comment; confirmed no XOR/PLOCK_VERIFIED_V1 exists in codebase (AES-GCM unified end-to-end).
+  - Encapsulated web data layer: created `CourierRepository` wrapping `SupabaseClientHandle` with typed `checkCourierAttempts`, `attemptUnlock`, `downloadBlob` methods; injected into `CourierUnlockNotifier`, replacing direct `Supabase.instance.client` access.
+  - Wired Send Proof stubs: replaced SnackBar TODOs in `AssetInspectorScreen._onSendProof` and `ChronologyViewport._onSwipeShare` with full `showSendProofDialog` flow.
+- Added glossary terms: `CourierRepository`, `VaultPathResolver`.
+- Updated [[FactLockCam_Blueprints_14May2026]] with courier retrofit details and corrected suggested read order.
+- Updated [[MASTER_CONTEXT16MAY2026]] audit findings to reflect wired courier export.
+- Updated [[FactLockCam_Master_Blueprint]] courier/package export and "Prepare A Courier Payload" section.
+- Updated [[overview]] to reference [[MASTER_CONTEXT16MAY2026]] instead of 13MAY.
+
 ## 2026-05-14
 
 - Added [[FactLockCam_Blueprints_14May2026]] under `wiki/analyses/`: layered technical architecture blueprint (companion to [[MASTER_CONTEXT13MAY2026]]); mirrors repo root `FactLockCam_Blueprints14May2026.md`.

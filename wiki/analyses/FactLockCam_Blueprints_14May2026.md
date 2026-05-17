@@ -1,13 +1,13 @@
 ---
 tags: [analysis, architecture, factlockcam, blueprint, onboarding, technical_breakdown]
-summary: "Layered technical breakdown of present FactLockCam architecture (14 May 2026): client stack, routing, capture, VaultService proofLockFile, Supabase RPCs, archive contract, risks, and ops—companion to MASTER_CONTEXT13MAY2026."
+summary: "Layered technical breakdown of present FactLockCam architecture (14 May 2026): client stack, routing, capture, VaultService proofLockFile, Supabase RPCs, archive contract, risks, and ops—companion to MASTER_CONTEXT16MAY2026."
 ---
 
 # FactLockCam Blueprints (14 May 2026)
 
 ## Core Synthesis
 
-This page is an **engineering-oriented** blueprint of the **current** FactLockCam system: repository layout, Flutter composition (Riverpod, GoRouter, GetIt routing to domain services), dual-mode capture, the **`VaultService.proofLockFile`** ordering and failure modes, Supabase **`SealLedgerRepository`** RPCs and table roles, archive UX and the Domain Interaction Contract, local persistence, and operational scripts. It complements the narrative snapshot [[MASTER_CONTEXT13MAY2026]] (2026-05-13) with **layered detail** suitable for onboarding and design review.
+This page is an **engineering-oriented** blueprint of the **current** FactLockCam system: repository layout, Flutter composition (Riverpod, GoRouter, GetIt routing to domain services), dual-mode capture, the **`VaultService.proofLockFile`** ordering and failure modes, Supabase **`SealLedgerRepository`** RPCs and table roles, archive UX and the Domain Interaction Contract, local persistence, and operational scripts. It complements the narrative snapshot [[MASTER_CONTEXT16MAY2026]] (2026-05-16) with **layered detail** suitable for onboarding and design review.
 
 **Canonical status and repair narrative** remain in [[FactLockCam_Product_Baseline_2026-05]]; **capability inventory and risks** in [[FactLockCam_Master_Blueprint]]; **ProofLock gap analysis** in [[ProofLock_Refactor_Scope]]. An unfrontmattered copy of this breakdown also lives at repository root as `FactLockCam_Blueprints14May2026.md` for quick file search outside the wiki.
 
@@ -48,12 +48,11 @@ This page is an **engineering-oriented** blueprint of the **current** FactLockCa
 |------|----------|
 | `/` | Redirects to logon |
 | `/logon` | Email OTP flow |
-| `/vault-home` | Hub (Archive / Picture / Video) |
+| `/vault-home` | Hub: `IndexedStack` shell with `ProfessionalNavBar` (Home / Picture / Video / More). Camera views (photo/video) are tab-embedded; post-capture switches back to Home |
 | `/archive` | Tabbed photo/video archive |
-| `/camera?mode=photo\|video` | Shared `CameraView` with `AcquisitionMode` |
 | `/vault-dashboard` | **Legacy redirect** → `/vault-home` |
 
-Unauthenticated users → `/logon`; authenticated users on `/logon` → hub.
+Unauthenticated users → `/logon`; authenticated users on `/logon` → hub. Camera is no longer a standalone `/camera?mode=` route — it is embedded inside `VaultHomeView` via `IndexedStack`.
 
 ### Authentication and session
 
@@ -119,7 +118,7 @@ Unauthenticated users → `/logon`; authenticated users on `/logon` → hub.
 
 ### Risks and ops (snapshot)
 
-Consolidated from [[MASTER_CONTEXT13MAY2026]] and [[FactLockCam_Master_Blueprint]]: simulated signing; Polygon unimplemented; `pending_sync` diagnostics thin; RLS/grants and RPC privacy review ongoing; hosted schema drift; **31** Flutter tests (2026-05-13 note)—not a full crypto/sync matrix.
+Consolidated from [[MASTER_CONTEXT16MAY2026]] and [[FactLockCam_Master_Blueprint]]: simulated signing; Polygon unimplemented; `pending_sync` diagnostics thin; RLS/grants and RPC privacy review ongoing; hosted schema drift; **36** Flutter tests (2026-05-16 audit)—not a full crypto/sync matrix.
 
 **Ops:** `scripts/factlockcam_supabase_pipeline.sh`; CI `.github/workflows/supabase.yml`; `scripts/supabase_local_hard_reset.sh`.
 
@@ -175,20 +174,20 @@ flowchart TB
 ### Suggested read order
 
 1. [[FactLockCam_Product_Baseline_2026-05]]
-2. [[MASTER_CONTEXT13MAY2026]]
+2. [[MASTER_CONTEXT16MAY2026]]
 3. [[FactLockCam_Master_Blueprint]]
 4. [[ProofLock_Refactor_Scope]]
 5. Code: `factlockcam_app/lib/main.dart`, `app/router/app_router.dart`, `core/di/injection.dart`, `domain/services/vault_service.dart`, `data/supabase/seal_ledger_repository.dart`, `supabase/migrations/`
 
 ## Provenance Tracking
 
-* *Content*: Compiled from repository root `FactLockCam_Blueprints14May2026.md` (created 2026-05-14) cross-checked with [[FactLockCam_Product_Baseline_2026-05]], [[MASTER_CONTEXT13MAY2026]], [[FactLockCam_Master_Blueprint]], and implementation paths under `factlockcam_app/lib/`.
+* *Content*: Compiled from repository root `FactLockCam_Blueprints14May2026.md` (created 2026-05-14) cross-checked with [[FactLockCam_Product_Baseline_2026-05]], [[MASTER_CONTEXT16MAY2026]], [[FactLockCam_Master_Blueprint]], and implementation paths under `factlockcam_app/lib/`.
 * *Purpose*: Wiki-durable navigation entry for layered architecture detail; root file retained for non-wiki workflows.
 
 ## Related Notes
 
 * [[FactLockCam_Product_Baseline_2026-05]]
-* [[MASTER_CONTEXT13MAY2026]]
+* [[MASTER_CONTEXT16MAY2026]]
 * [[FactLockCam_Master_Blueprint]]
 * [[ProofLock_Refactor_Scope]]
 * [[Project_Audit_2026-05-11]]
