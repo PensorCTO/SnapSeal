@@ -145,7 +145,7 @@ class _ChronologyViewportState extends ConsumerState<ChronologyViewport>
                   ],
                 );
               },
-              error: (_err, __) => const SizedBox.shrink(),
+              error: (err, __) => const SizedBox.shrink(),
               loading: () => const SizedBox.shrink(),
             ),
 

@@ -11,7 +11,7 @@ class AppTheme {
     scaffoldBackgroundColor: AppColors.titaniumDeep,
     textTheme: _textTheme,
     useMaterial3: true,
-    brightness: Brightness.dark,
+    brightness: Brightness.light,
     appBarTheme: _appBarTheme,
     cardTheme: _cardTheme,
     dividerTheme: _dividerTheme,

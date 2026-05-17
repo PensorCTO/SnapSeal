@@ -1,15 +1,13 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_typography.dart';
-import '../../core/config/app_config.dart';
-import '../../core/crypto/courier_crypto.dart';
-import '../../core/crypto/vault_encryption_handler.dart';
+import 'courier_unlock_notifier.dart';
 
-class CourierUnlockView extends StatefulWidget {
+class CourierUnlockView extends ConsumerStatefulWidget {
   const CourierUnlockView({super.key, required this.packageId});
 
   static const routePath = '/courier';
@@ -17,33 +15,31 @@ class CourierUnlockView extends StatefulWidget {
   final String? packageId;
 
   @override
-  State<CourierUnlockView> createState() => _CourierUnlockViewState();
+  ConsumerState<CourierUnlockView> createState() => _CourierUnlockViewState();
 }
 
-class _CourierUnlockViewState extends State<CourierUnlockView> {
+class _CourierUnlockViewState extends ConsumerState<CourierUnlockView> {
   final _emailController = TextEditingController();
   final _challengeController = TextEditingController();
-  final _vault = DefaultVaultEncryptionHandler();
-
-  Map<String, dynamic>? _attemptStatus;
-  Uint8List? _verifiedBytes;
-  String? _fileExtension;
-  String? _message;
-  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadAttemptStatus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(courierUnlockProvider.notifier)
+          .loadAttemptStatus(widget.packageId);
+    });
   }
 
   @override
   void didUpdateWidget(covariant CourierUnlockView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.packageId != widget.packageId) {
-      _verifiedBytes = null;
-      _fileExtension = null;
-      _loadAttemptStatus();
+      ref.read(courierUnlockProvider.notifier).reset();
+      ref
+          .read(courierUnlockProvider.notifier)
+          .loadAttemptStatus(widget.packageId);
     }
   }
 
@@ -54,116 +50,18 @@ class _CourierUnlockViewState extends State<CourierUnlockView> {
     super.dispose();
   }
 
-  Future<void> _loadAttemptStatus() async {
-    if (!_canUseBackend) {
-      setState(() {
-        _attemptStatus = null;
-        _message = 'Supabase is not configured for this build.';
-      });
-      return;
-    }
-
-    final packageId = widget.packageId;
-    if (packageId == null || packageId.isEmpty) {
-      setState(() {
-        _attemptStatus = null;
-        _message = 'Missing courier package id.';
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _message = null;
-    });
-
-    try {
-      final response = await Supabase.instance.client.rpc(
-        'check_courier_attempts',
-        params: {'p_package_id': packageId},
-      );
-      if (!mounted) return;
-      setState(() {
-        _attemptStatus = Map<String, dynamic>.from(response as Map);
-        _isLoading = false;
-      });
-    } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _message = error.toString();
-        _isLoading = false;
-      });
-    }
+  void _unlock() {
+    ref.read(courierUnlockProvider.notifier).unlock(
+          widget.packageId,
+          _challengeController.text,
+          _emailController.text,
+        );
   }
-
-  Future<void> _unlock() async {
-    final packageId = widget.packageId;
-    if (!_canUseBackend || packageId == null || packageId.isEmpty) {
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _message = null;
-      _verifiedBytes = null;
-      _fileExtension = null;
-    });
-
-    try {
-      final response = await Supabase.instance.client.rpc(
-        'attempt_courier_unlock',
-        params: {
-          'p_package_id': packageId,
-          'p_verifier_guess': _challengeController.text,
-          'p_requestor_email': _emailController.text.trim(),
-        },
-      );
-      final row = _firstRpcRow(response);
-      final bucket = row['storage_bucket'] as String;
-      final path = row['storage_path'] as String;
-      final encryptedBytes = await Supabase.instance.client.storage
-          .from(bucket)
-          .download(path);
-      final verifiedBytes = await CourierCrypto.decryptAndVerifyFingerprint(
-        vault: _vault,
-        encryptedPayload: encryptedBytes,
-        keyBytes: _vault.decodeKey(row['key'] as String),
-        expectedFingerprint: row['asset_hash'] as String,
-      );
-
-      if (!mounted) return;
-      setState(() {
-        _verifiedBytes = verifiedBytes;
-        _fileExtension = (row['file_extension'] as String).toLowerCase();
-        _message = 'Verified SHA-256 fingerprint and decrypted in browser RAM.';
-        _isLoading = false;
-      });
-    } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _message = error.toString();
-        _isLoading = false;
-      });
-      await _loadAttemptStatus();
-    }
-  }
-
-  Map<String, dynamic> _firstRpcRow(Object? response) {
-    if (response is List && response.isNotEmpty) {
-      return Map<String, dynamic>.from(response.first as Map);
-    }
-    if (response is Map) {
-      return Map<String, dynamic>.from(response);
-    }
-    throw StateError('Courier unlock RPC returned no package data.');
-  }
-
-  bool get _canUseBackend => AppConfig.hasSupabaseConfig;
-
-  bool get _isLocked => _attemptStatus?['locked'] == true;
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(courierUnlockProvider);
+
     return Scaffold(
       backgroundColor: AppColors.titaniumDeep,
       body: SafeArea(
@@ -189,13 +87,13 @@ class _CourierUnlockViewState extends State<CourierUnlockView> {
                   const SizedBox(height: 24),
                   _StatusPanel(
                     packageId: widget.packageId,
-                    attemptStatus: _attemptStatus,
-                    message: _message,
+                    attemptStatus: state.attemptStatus,
+                    message: state.message,
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _emailController,
-                    enabled: !_isLoading && !_isLocked,
+                    enabled: !state.isLoading && !state.isLocked,
                     keyboardType: TextInputType.emailAddress,
                     autofillHints: const [AutofillHints.email],
                     decoration: const InputDecoration(
@@ -206,7 +104,7 @@ class _CourierUnlockViewState extends State<CourierUnlockView> {
                   const SizedBox(height: 12),
                   TextField(
                     controller: _challengeController,
-                    enabled: !_isLoading && !_isLocked,
+                    enabled: !state.isLoading && !state.isLocked,
                     obscureText: true,
                     decoration: const InputDecoration(
                       labelText: 'One-time password',
@@ -215,19 +113,20 @@ class _CourierUnlockViewState extends State<CourierUnlockView> {
                   ),
                   const SizedBox(height: 16),
                   FilledButton(
-                    onPressed: _isLoading || _isLocked ? null : _unlock,
-                    child: _isLoading
+                    onPressed:
+                        state.isLoading || state.isLocked ? null : _unlock,
+                    child: state.isLoading
                         ? const SizedBox.square(
                             dimension: 18,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Text('Unlock package'),
                   ),
-                  if (_verifiedBytes != null) ...[
+                  if (state.verifiedBytes != null) ...[
                     const SizedBox(height: 24),
                     _VerifiedPreview(
-                      bytes: _verifiedBytes!,
-                      fileExtension: _fileExtension,
+                      bytes: state.verifiedBytes!,
+                      fileExtension: state.fileExtension,
                     ),
                   ],
                 ],
