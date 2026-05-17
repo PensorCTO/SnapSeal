@@ -49,10 +49,12 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
             onCaptureRequested: _onCaptureRequested,
           ),
           CameraView(
+            key: ValueKey('camera_photo_${_selectedIndex == 1}'),
             mode: AcquisitionMode.photo,
             onCaptureComplete: _onCaptureComplete,
           ),
           CameraView(
+            key: ValueKey('camera_video_${_selectedIndex == 2}'),
             mode: AcquisitionMode.video,
             onCaptureComplete: _onCaptureComplete,
           ),

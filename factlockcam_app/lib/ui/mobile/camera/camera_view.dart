@@ -252,9 +252,15 @@ class _CameraViewState extends ConsumerState<CameraView> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.canPop()
-              ? context.pop()
-              : context.go(VaultHomeView.routePath),
+          onPressed: () {
+            if (widget.onCaptureComplete != null) {
+              widget.onCaptureComplete!();
+            } else if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(VaultHomeView.routePath);
+            }
+          },
         ),
         title: Text(isVideo ? 'Capture video' : 'Capture'),
       ),
