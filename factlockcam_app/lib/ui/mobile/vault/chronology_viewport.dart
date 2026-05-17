@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,7 +17,12 @@ import 'asset_inspector_screen.dart';
 import 'chronology_card.dart';
 import 'swipe_action_layer.dart';
 
-/// Haptic Chronology viewport — the Home tab within the vault shell.
+// #region agent log
+const _kDebugLog =
+    '/Users/paulensor/Projects/ProofLockCleanup/.cursor/debug-4d5e77.log';
+// #endregion
+
+/// Haptic Chronology viewport — the Archive tab within the vault shell.
 ///
 /// Displays sealed assets as a vertically scrolling stack of
 /// [ChronologyCard] plates with scroll-driven Transform animations,
@@ -76,6 +83,25 @@ class _ChronologyViewportState extends ConsumerState<ChronologyViewport>
     }
 
     final archive = ref.watch(dashboardControllerProvider);
+
+    // #region agent log
+    archive.whenData((items) {
+      try {
+        File(_kDebugLog).writeAsStringSync(
+          '${json.encode({
+            'sessionId': '4d5e77',
+            'runId': 'r1',
+            'hypothesisId': 'C',
+            'location': 'chronology_viewport.dart:build',
+            'message': 'ChronologyViewport built',
+            'data': {'itemCount': items.length, 'isEmpty': items.isEmpty},
+            'timestamp': DateTime.now().millisecondsSinceEpoch,
+          })}\n',
+          mode: FileMode.append,
+        );
+      } catch (_) {}
+    });
+    // #endregion
 
     return Scaffold(
       backgroundColor: AppColors.titaniumDeep,
@@ -276,7 +302,7 @@ class _EmptyState extends StatelessWidget {
         const SizedBox(height: 12),
         _QuickActionTile(
           icon: Icons.folder_open_outlined,
-          label: 'Archive',
+          label: 'Vault',
           onTap: () => context.push(ArchiveView.routePath),
         ),
       ],

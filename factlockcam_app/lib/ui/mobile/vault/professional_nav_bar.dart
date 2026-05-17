@@ -5,8 +5,8 @@ import '../../../app/theme/app_typography.dart';
 
 /// Professional forensic-themed bottom navigation bar for the vault shell.
 ///
-/// Three tabs: Home (vault), Picture (camera photo), Video (camera video),
-/// with a reserved fourth slot for future profile/settings.
+/// Five tabs: Home (hub), Picture (camera photo), Video (camera video),
+/// Archive (chronology cards), More (future settings).
 /// Styled with the project's dark-titanium palette, VerifiedNeon accent,
 /// monospaced uppercase labels, and a thin accent bar on the selected tab.
 class ProfessionalNavBar extends StatelessWidget {
@@ -64,6 +64,12 @@ class ProfessionalNavBar extends StatelessWidget {
                 label: 'Video',
                 isSelected: selectedIndex == 2,
                 onTap: () => onDestinationSelected(2),
+              ),
+              _TabItem(
+                icon: Icons.folder_open_outlined,
+                label: 'Archive',
+                isSelected: selectedIndex == 3,
+                onTap: () => onDestinationSelected(3),
               ),
               _TabItem(
                 icon: Icons.more_horiz,

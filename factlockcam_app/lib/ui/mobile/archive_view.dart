@@ -8,7 +8,7 @@ import 'archive_item_actions.dart';
 import 'archive_thumbnail.dart';
 import 'vault_home_view.dart';
 
-/// Local archive: photos and videos in separate tabs with thumbnails and delete.
+/// Local vault: photos and videos in separate tabs with thumbnails and delete.
 class ArchiveView extends ConsumerStatefulWidget {
   const ArchiveView({super.key});
 
@@ -50,7 +50,7 @@ class _ArchiveViewState extends ConsumerState<ArchiveView>
               ? context.pop()
               : context.go(VaultHomeView.routePath),
         ),
-        title: const Text('Archive'),
+        title: const Text('Vault'),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [

@@ -37,8 +37,8 @@ void main() {
     );
     await tester.pump(const Duration(seconds: 1));
 
-    // Home tab is selected by default — verify vault content is visible.
-    expect(find.text('NO SEALED ASSETS'), findsOneWidget);
+    // Home tab is selected by default — verify hub content is visible.
+    expect(find.text('CHOOSE AN ACTION'), findsOneWidget);
     expect(buildCounter.value, 1);
 
     // Tap Picture tab — camera view should appear.

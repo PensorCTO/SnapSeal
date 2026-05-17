@@ -5,12 +5,21 @@ import '../../app/theme/app_colors.dart';
 import 'camera/acquisition_mode.dart';
 import 'camera/camera_view.dart';
 import 'vault/chronology_viewport.dart';
+import 'vault/haptic_hub_panel.dart';
 import 'vault/professional_nav_bar.dart';
 
-/// Post-login Haptic Chronology dashboard shell.
+// #region agent log
+import 'dart:convert';
+import 'dart:io';
+
+const _kDebugLog =
+    '/Users/paulensor/Projects/ProofLockCleanup/.cursor/debug-4d5e77.log';
+// #endregion
+
+/// Post-login vault shell.
 ///
-/// Hosts an [IndexedStack] with three tabs (Home / Picture / Video) and a
-/// [ProfessionalNavBar] at the bottom. The tab-based camera views avoid the
+/// Hosts an [IndexedStack] with four tabs (Home / Picture / Video / Vault)
+/// and a [ProfessionalNavBar] at the bottom. The camera tabs avoid the
 /// "stranded" post-capture flow by switching back to the Home tab after
 /// sealing completes.
 class VaultHomeView extends ConsumerStatefulWidget {
@@ -39,12 +48,28 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
 
   @override
   Widget build(BuildContext context) {
+    // #region agent log
+    try {
+      File(_kDebugLog).writeAsStringSync(
+        '${json.encode({
+          'sessionId': '4d5e77',
+          'runId': 'r1',
+          'hypothesisId': 'A',
+          'location': 'vault_home_view.dart:build',
+          'message': 'IndexedStack build',
+          'data': {'selectedIndex': _selectedIndex},
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+        })}\n',
+        mode: FileMode.append,
+      );
+    } catch (_) {}
+    // #endregion
     return Scaffold(
       backgroundColor: AppColors.titaniumDeep,
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          ChronologyViewport(
+          HapticHubPanel(
             onCaptureRequested: _onCaptureRequested,
           ),
           CameraView(
@@ -55,11 +80,30 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
             mode: AcquisitionMode.video,
             onCaptureComplete: _onCaptureComplete,
           ),
+          ChronologyViewport(
+            onCaptureRequested: _onCaptureRequested,
+          ),
         ],
       ),
       bottomNavigationBar: ProfessionalNavBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
+          // #region agent log
+          try {
+            File(_kDebugLog).writeAsStringSync(
+              '${json.encode({
+                'sessionId': '4d5e77',
+                'runId': 'r1',
+                'hypothesisId': 'A',
+                'location': 'vault_home_view.dart:onTab',
+                'message': 'Tab selected',
+                'data': {'index': index, 'stackSize': 4},
+                'timestamp': DateTime.now().millisecondsSinceEpoch,
+              })}\n',
+              mode: FileMode.append,
+            );
+          } catch (_) {}
+          // #endregion
           setState(() {
             _selectedIndex = index;
           });

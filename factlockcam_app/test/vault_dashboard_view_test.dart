@@ -35,12 +35,13 @@ void main() {
         child: const MaterialApp(home: VaultHomeView()),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('FACTLOCKCAM'), findsOneWidget);
+    expect(find.text('CHOOSE AN ACTION'), findsOneWidget);
     expect(find.text('ARCHIVE'), findsOneWidget);
-    expect(find.text('PICTURE'), findsOneWidget);
-    expect(find.text('VIDEO'), findsOneWidget);
+    expect(find.text('PICTURE'), findsWidgets);
+    expect(find.text('VIDEO'), findsWidgets);
   });
 
   testWidgets('vault hub renders a Stack-based heavy-metal layout', (
@@ -56,7 +57,7 @@ void main() {
         child: const MaterialApp(home: VaultHomeView()),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
 
     final stacks = find.descendant(
       of: find.byType(VaultHomeView),
