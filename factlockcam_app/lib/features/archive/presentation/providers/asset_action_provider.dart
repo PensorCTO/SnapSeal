@@ -30,7 +30,7 @@ class AssetAction extends _$AssetAction {
           } on UnsupportedError catch (e) {
             throw UnsupportedError(
               'Asset verification is unavailable on this platform. '
-              '${e.message}',
+              '$e',
             );
           }
           break;

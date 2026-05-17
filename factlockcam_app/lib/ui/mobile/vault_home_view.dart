@@ -8,17 +8,9 @@ import 'vault/chronology_viewport.dart';
 import 'vault/haptic_hub_panel.dart';
 import 'vault/professional_nav_bar.dart';
 
-// #region agent log
-import 'dart:convert';
-import 'dart:io';
-
-const _kDebugLog =
-    '/Users/paulensor/Projects/ProofLockCleanup/.cursor/debug-4d5e77.log';
-// #endregion
-
 /// Post-login vault shell.
 ///
-/// Hosts an [IndexedStack] with four tabs (Home / Picture / Video / Vault)
+/// Hosts an [IndexedStack] with four tabs (Home / Picture / Video / Archive)
 /// and a [ProfessionalNavBar] at the bottom. The camera tabs avoid the
 /// "stranded" post-capture flow by switching back to the Home tab after
 /// sealing completes.
@@ -48,22 +40,6 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
 
   @override
   Widget build(BuildContext context) {
-    // #region agent log
-    try {
-      File(_kDebugLog).writeAsStringSync(
-        '${json.encode({
-          'sessionId': '4d5e77',
-          'runId': 'r1',
-          'hypothesisId': 'A',
-          'location': 'vault_home_view.dart:build',
-          'message': 'IndexedStack build',
-          'data': {'selectedIndex': _selectedIndex},
-          'timestamp': DateTime.now().millisecondsSinceEpoch,
-        })}\n',
-        mode: FileMode.append,
-      );
-    } catch (_) {}
-    // #endregion
     return Scaffold(
       backgroundColor: AppColors.titaniumDeep,
       body: IndexedStack(
@@ -88,22 +64,6 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
       bottomNavigationBar: ProfessionalNavBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
-          // #region agent log
-          try {
-            File(_kDebugLog).writeAsStringSync(
-              '${json.encode({
-                'sessionId': '4d5e77',
-                'runId': 'r1',
-                'hypothesisId': 'A',
-                'location': 'vault_home_view.dart:onTab',
-                'message': 'Tab selected',
-                'data': {'index': index, 'stackSize': 4},
-                'timestamp': DateTime.now().millisecondsSinceEpoch,
-              })}\n',
-              mode: FileMode.append,
-            );
-          } catch (_) {}
-          // #endregion
           setState(() {
             _selectedIndex = index;
           });
