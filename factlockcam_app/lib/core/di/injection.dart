@@ -2,8 +2,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../data/local/vault_database.dart';
 import '../../data/services/local_vault_storage.dart';
+import '../../data/services/vault_path_resolver.dart';
 import '../../data/supabase/auth_repository.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
+import '../../data/supabase/courier_repository.dart';
 import '../../data/supabase/supabase_client_handle.dart';
 import '../crypto/vault_encryption_handler.dart';
 import '../../domain/export/certificate_export_service.dart';
@@ -33,6 +35,9 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<VaultDatabase>(VaultDatabase.new);
   getIt.registerLazySingleton<LocalVaultStorage>(LocalVaultStorage.new);
+  getIt.registerLazySingleton<VaultPathResolver>(
+    () => VaultPathResolver(getIt<LocalVaultStorage>()),
+  );
   getIt.registerLazySingleton<NativeEnclaveChannel>(NativeEnclaveChannel.new);
 
   getIt.registerLazySingleton<VaultEncryptionHandler>(
@@ -45,6 +50,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<SealLedgerRepository>(
     () => SealLedgerRepository(getIt<SupabaseClientHandle>()),
+  );
+
+  getIt.registerLazySingleton<CourierRepository>(
+    () => CourierRepository(getIt<SupabaseClientHandle>()),
   );
 
   getIt.registerLazySingleton<ChainNotarizer>(
@@ -67,6 +76,7 @@ Future<void> configureDependencies() async {
       chainNotarizer: getIt<ChainNotarizer>(),
       nativeEnclave: getIt<NativeEnclaveChannel>(),
       authRepository: getIt<AuthRepository>(),
+      pathResolver: getIt<VaultPathResolver>(),
     ),
   );
 }

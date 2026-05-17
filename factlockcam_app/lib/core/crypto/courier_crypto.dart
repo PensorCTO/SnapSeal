@@ -6,7 +6,7 @@ import 'vault_encryption_handler.dart';
 /// stored SHA-256 fingerprint before releasing plaintext for packaging.
 ///
 /// **Inputs:** sealed payload bytes, vault key, expected fingerprint string (hex).
-/// **Outputs:** verified plaintext suitable for `.plock` / outbound packaging.
+/// **Outputs:** verified plaintext suitable for outbound packaging.
 /// **Expected failure modes:**
 /// - **Authentication/decrypt failure** — wrong key, corrupt ciphertext, or
 ///   truncated payload (errors from the underlying cipher implementation).

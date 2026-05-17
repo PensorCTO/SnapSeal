@@ -8,8 +8,8 @@ part of 'courier_link_provider.dart';
 
 /// See also [CourierLink].
 @ProviderFor(CourierLink)
-final courierLinkProvider = AsyncNotifierProvider<CourierLink, void>(
+final courierLinkProvider = AsyncNotifierProvider<CourierLink, String>(
   CourierLink.new,
 );
 
-typedef _$CourierLink = AsyncNotifier<void>;
+typedef _$CourierLink = AsyncNotifier<String>;

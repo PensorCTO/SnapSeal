@@ -13,6 +13,7 @@ import '../../../data/models/archive_item.dart';
 import '../../../data/models/sealed_asset.dart';
 import '../../../domain/export/certificate_export_service.dart';
 import '../../../domain/services/vault_service.dart';
+import '../archive_item_actions.dart';
 import '../archive_video_source.dart';
 import 'providers/asset_metadata_provider.dart';
 import 'providers/thumbnail_cache_provider.dart';
@@ -233,15 +234,13 @@ class _AssetInspectorScreenState extends ConsumerState<AssetInspectorScreen>
 
   void _onSendProof() {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Send Proof: ${widget.item.assetFingerprint.substring(0, 12)}',
-        ),
-        backgroundColor: AppColors.titaniumPanel,
+    unawaited(
+      ArchiveItemActions.showSendProofDialog(
+        context,
+        ref,
+        widget.item,
       ),
     );
-    // TODO: Wire courier creation flow — see courier_link_provider.dart
   }
 
   Future<void> _onViewFull() async {

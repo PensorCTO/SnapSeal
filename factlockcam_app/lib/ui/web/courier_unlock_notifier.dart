@@ -1,11 +1,12 @@
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/config/app_config.dart';
 import '../../core/crypto/courier_crypto.dart';
 import '../../core/crypto/vault_encryption_handler.dart';
+import '../../core/di/locator.dart';
+import '../../data/supabase/courier_repository.dart';
 
 final courierUnlockProvider =
     NotifierProvider<CourierUnlockNotifier, CourierUnlockState>(
@@ -40,7 +41,8 @@ class CourierUnlockState {
   }) =>
       CourierUnlockState(
         attemptStatus: attemptStatus ?? this.attemptStatus,
-        verifiedBytes: clearVerified ? null : (verifiedBytes ?? this.verifiedBytes),
+        verifiedBytes:
+            clearVerified ? null : (verifiedBytes ?? this.verifiedBytes),
         fileExtension:
             clearVerified ? null : (fileExtension ?? this.fileExtension),
         message: clearMessage ? null : (message ?? this.message),
@@ -50,9 +52,13 @@ class CourierUnlockState {
 
 class CourierUnlockNotifier extends Notifier<CourierUnlockState> {
   final _vault = DefaultVaultEncryptionHandler();
+  late final CourierRepository _courierRepository;
 
   @override
-  CourierUnlockState build() => const CourierUnlockState();
+  CourierUnlockState build() {
+    _courierRepository = getIt<CourierRepository>();
+    return const CourierUnlockState();
+  }
 
   bool get _canUseBackend => AppConfig.hasSupabaseConfig;
 
@@ -78,12 +84,11 @@ class CourierUnlockNotifier extends Notifier<CourierUnlockState> {
     state = state.copyWith(isLoading: true, clearMessage: true);
 
     try {
-      final response = await Supabase.instance.client.rpc(
-        'check_courier_attempts',
-        params: {'p_package_id': packageId},
+      final attemptStatus = await _courierRepository.checkCourierAttempts(
+        packageId,
       );
       state = state.copyWith(
-        attemptStatus: Map<String, dynamic>.from(response as Map),
+        attemptStatus: attemptStatus,
         isLoading: false,
       );
     } catch (error) {
@@ -107,20 +112,17 @@ class CourierUnlockNotifier extends Notifier<CourierUnlockState> {
     );
 
     try {
-      final response = await Supabase.instance.client.rpc(
-        'attempt_courier_unlock',
-        params: {
-          'p_package_id': packageId,
-          'p_verifier_guess': challenge,
-          'p_requestor_email': email.trim(),
-        },
+      final row = await _courierRepository.attemptUnlock(
+        packageId: packageId,
+        verifierGuess: challenge,
+        requestorEmail: email,
       );
-      final row = _firstRpcRow(response);
       final bucket = row['storage_bucket'] as String;
       final path = row['storage_path'] as String;
-      final encryptedBytes = await Supabase.instance.client.storage
-          .from(bucket)
-          .download(path);
+      final encryptedBytes = await _courierRepository.downloadBlob(
+        bucket: bucket,
+        path: path,
+      );
       final verifiedBytes = await CourierCrypto.decryptAndVerifyFingerprint(
         vault: _vault,
         encryptedPayload: encryptedBytes,
@@ -142,15 +144,5 @@ class CourierUnlockNotifier extends Notifier<CourierUnlockState> {
 
   void reset() {
     state = const CourierUnlockState();
-  }
-
-  Map<String, dynamic> _firstRpcRow(Object? response) {
-    if (response is List && response.isNotEmpty) {
-      return Map<String, dynamic>.from(response.first as Map);
-    }
-    if (response is Map) {
-      return Map<String, dynamic>.from(response);
-    }
-    throw StateError('Courier unlock RPC returned no package data.');
   }
 }

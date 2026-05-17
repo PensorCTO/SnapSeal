@@ -20,6 +20,7 @@ import '../../data/local/vault_database.dart';
 import '../../data/models/archive_item.dart';
 import '../../data/models/sealed_asset.dart';
 import '../../data/services/local_vault_storage.dart';
+import '../../data/services/vault_path_resolver.dart';
 import '../../data/supabase/auth_repository.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
 import '../blockchain/chain_notarizer.dart';
@@ -96,6 +97,7 @@ class VaultService {
     required ChainNotarizer chainNotarizer,
     required NativeEnclaveChannel nativeEnclave,
     required AuthRepository authRepository,
+    VaultPathResolver? pathResolver,
   }) : _database = database,
        _storage = storage,
        _secureStorage = secureStorage,
@@ -103,7 +105,8 @@ class VaultService {
        _sealLedgerRepository = sealLedgerRepository,
        _chainNotarizer = chainNotarizer,
        _nativeEnclave = nativeEnclave,
-       _authRepository = authRepository;
+       _authRepository = authRepository,
+       _pathResolver = pathResolver ?? VaultPathResolver(storage);
 
   static const _vaultKeyName = 'factlockcam:vault_key';
   static const _legacyVaultKeyName = 'snapseal:vault_key';
@@ -121,6 +124,7 @@ class VaultService {
   final ChainNotarizer _chainNotarizer;
   final NativeEnclaveChannel _nativeEnclave;
   final AuthRepository _authRepository;
+  final VaultPathResolver _pathResolver;
 
   /// Courier vault origin embedded in shared links.
   ///
@@ -318,7 +322,7 @@ class VaultService {
       throw StateError('No sealed asset exists for $assetHash.');
     }
 
-    final resolved = await _storage.resolveArchivePaths(item);
+    final resolved = await _pathResolver.resolve(item);
     if (resolved.thumbnailPath != item.thumbnailPath ||
         resolved.encryptedPath != item.encryptedPath) {
       await _database.upsertArchiveItem(resolved);
@@ -483,7 +487,7 @@ class VaultService {
     final raw = await _database.listArchiveItems();
     final out = <ArchiveItem>[];
     for (final item in raw) {
-      var next = await _storage.resolveArchivePaths(item);
+      var next = await _pathResolver.resolve(item);
       next = await regenerateMissingThumbnail(next);
       out.add(next);
       if (next.thumbnailPath != item.thumbnailPath ||
@@ -602,7 +606,7 @@ class VaultService {
       throw StateError('No sealed asset exists for $assetFingerprint.');
     }
 
-    final resolved = await _storage.resolveArchivePaths(item);
+    final resolved = await _pathResolver.resolve(item);
     if (resolved.thumbnailPath != item.thumbnailPath ||
         resolved.encryptedPath != item.encryptedPath) {
       await _database.upsertArchiveItem(resolved);
@@ -638,7 +642,7 @@ class VaultService {
     if (item == null) {
       return;
     }
-    final resolved = await _storage.resolveArchivePaths(item);
+    final resolved = await _pathResolver.resolve(item);
     await _storage.deleteAssetFiles(
       encryptedPath: resolved.encryptedPath,
       thumbnailPath: resolved.thumbnailPath,

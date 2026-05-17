@@ -12,6 +12,7 @@ import '../../../core/services/haptic_service.dart';
 import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
 import '../../../data/models/archive_item.dart';
 import '../../controllers/dashboard_controller.dart';
+import '../archive_item_actions.dart';
 import '../archive_view.dart';
 import 'asset_inspector_screen.dart';
 import 'chronology_card.dart';
@@ -235,11 +236,12 @@ class _ChronologyViewportState extends ConsumerState<ChronologyViewport>
   void _onSwipeShare(ArchiveItem item) {
     // Haptic already fired by SwipeActionLayer.
     unawaited(ref.read(hapticServiceProvider).heavyImpact());
-    // TODO: Wire courier share flow — see courier_link_provider.dart
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Share: ${item.assetFingerprint.substring(0, 12)}'),
+    unawaited(
+      ArchiveItemActions.showSendProofDialog(
+        context,
+        ref,
+        item,
       ),
     );
   }

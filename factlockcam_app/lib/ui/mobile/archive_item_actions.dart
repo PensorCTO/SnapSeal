@@ -5,6 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:share_plus/share_plus.dart';
+
 import '../../core/archive/domain/models/media_action_type.dart';
 import '../../core/archive/presentation/widgets/universal_asset_toolbar.dart';
 import '../../data/models/archive_item.dart';
@@ -55,7 +57,7 @@ class ArchiveItemActions {
                     break;
                   case MediaActionType.share:
                     if (!context.mounted) return;
-                    await _showSendProofDialog(context, ref, item);
+                    await showSendProofDialog(context, ref, item);
                     break;
                   case MediaActionType.export:
                     break;
@@ -140,7 +142,7 @@ class ArchiveItemActions {
     );
   }
 
-  static Future<void> _showSendProofDialog(
+  static Future<void> showSendProofDialog(
     BuildContext context,
     WidgetRef ref,
     ArchiveItem item,
@@ -159,18 +161,17 @@ class ArchiveItemActions {
     unawaited(_showLoadingDialog(context));
 
     try {
-      await ref
+      final url = await ref
           .read(courierLinkProvider.notifier)
-          .generateAndShareLink(item.assetFingerprint, password);
+          .generateLink(item.assetFingerprint, password);
+      if (!context.mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+      await SharePlus.instance.share(ShareParams(text: url));
     } catch (error) {
       if (!context.mounted) return;
       Navigator.of(context, rootNavigator: true).pop();
       await _showErrorDialog(context, _friendlyCourierError(error));
-      return;
     }
-
-    if (!context.mounted) return;
-    Navigator.of(context, rootNavigator: true).pop();
   }
 
   static Future<String?> _promptForRecipientPassword(BuildContext context) {

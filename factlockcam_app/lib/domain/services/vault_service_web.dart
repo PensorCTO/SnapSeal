@@ -52,6 +52,7 @@ class VaultService {
     required Object chainNotarizer,
     required Object nativeEnclave,
     required Object authRepository,
+    Object? pathResolver,
   });
 
   Future<String> sealAndStore(

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/di/service_providers.dart';
 
@@ -11,10 +10,10 @@ part 'courier_link_provider.g.dart';
 @Riverpod(keepAlive: true)
 class CourierLink extends _$CourierLink {
   @override
-  FutureOr<void> build() {}
+  FutureOr<String> build() => '';
 
-  Future<void> generateAndShareLink(String assetHash, String password) async {
-    state = const AsyncLoading<void>();
+  Future<String> generateLink(String assetHash, String password) async {
+    state = const AsyncLoading<String>();
     try {
       final url = await ref
           .read(vaultServiceProvider)
@@ -22,10 +21,10 @@ class CourierLink extends _$CourierLink {
             assetHash: assetHash,
             verifierPassword: password,
           );
-      await SharePlus.instance.share(ShareParams(text: url));
-      state = const AsyncData<void>(null);
+      state = AsyncData<String>(url);
+      return url;
     } catch (error, stackTrace) {
-      state = AsyncError<void>(error, stackTrace);
+      state = AsyncError<String>(error, stackTrace);
       Error.throwWithStackTrace(error, stackTrace);
     }
   }
