@@ -21,7 +21,8 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses
 
-- [[FactLockCam_Master_Blueprint]] - Current-state application blueprint covering completed capabilities, tab-shell vault hub (IndexedStack + ProfessionalNavBar), media-type-driven archive actions, unfinished work, and working use cases.
+- [[FactLockCam_Master_Blueprint]] - Current-state application blueprint covering completed capabilities, hub-first vault shell (IndexedStack, four-tile launcher, panel back navigation), media-type-driven archive actions, unfinished work, and working use cases.
+- [[iOS_Device_Development_Workflow]] - Physical iOS 26 device QA: build/install vs `flutter run` VM attach failures and recommended dev commands.
 - [[ProofLock_Refactor_Scope]] - Gap analysis and phased effort from ProofLock manifesto to current FactLockCam implementation.
 - [[System_Context_Audit_2026-05-09]] - Archived stub (superseded by [[FactLockCam_Product_Baseline_2026-05]]).
 - [[Master_Context_10MAY2026]] - Archived comprehensive snapshot for 2026-05-10 (superseded by [[Master_Context_11MAY2026]]).

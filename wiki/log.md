@@ -5,6 +5,13 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-05-19
+
+- **Device QA + wiki reconciliation** after hub refactor commit `19269d2`:
+  - Added [[iOS_Device_Development_Workflow]]: physical iOS 26 + Flutter 3.38 `flutter run` VM Service attach failures vs successful build/install/manual launch; recommended `flutter attach` and Xcode paths.
+  - Updated [[FactLockCam_Master_Blueprint]], [[MASTER_CONTEXT16MAY2026]], [[FactLockCam_Product_Baseline_2026-05]], [[glossary]], [[index]], [[overview]] to replace stale **ProfessionalNavBar** / bottom-tab / standalone `/archive` descriptions with **hub-first** `HapticHubPanel` + five `IndexedStack` panels (hub, photo, video, archive omni, account).
+  - Documented May 2026 rollback: uncommitted debug/Polygon WIP stashed; attach issue unchanged — tooling not app regression.
+
 ## 2026-05-17
 
 - Performed comprehensive LLM Wiki review and cleanup: updated stale references across 7 wiki pages for accuracy with the current codebase state.

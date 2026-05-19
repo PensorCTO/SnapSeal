@@ -48,7 +48,7 @@ This page is an **engineering-oriented** blueprint of the **current** FactLockCa
 |------|----------|
 | `/` | Redirects to logon |
 | `/logon` | Email OTP flow |
-| `/vault-home` | Hub: `IndexedStack` shell with `ProfessionalNavBar` (Home / Picture / Video / More). Camera views (photo/video) are tab-embedded; post-capture switches back to Home |
+| `/vault-home` | Hub-first `VaultHomeView`: `IndexedStack` index 0 = four-tile `HapticHubPanel`; 1–2 = photo/video `CameraView`; 3 = `UnifiedArchiveViewport`; 4 = `AccountSettingsPanel`. Panel back → hub; post-capture → hub index 0 |
 | `/archive` | Tabbed photo/video archive |
 | `/vault-dashboard` | **Legacy redirect** → `/vault-home` |
 
