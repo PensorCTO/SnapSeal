@@ -17,7 +17,7 @@ void main() {
     expect(VaultHomeView.routePath, '/vault-home');
   });
 
-  testWidgets('vault hub shows Archive, Picture, and Video actions', (
+  testWidgets('vault hub shows four action tiles without instructional copy', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -32,11 +32,11 @@ void main() {
     );
     await tester.pump(const Duration(seconds: 1));
 
-    expect(find.text('FACTLOCKCAM'), findsOneWidget);
-    expect(find.text('CHOOSE AN ACTION'), findsOneWidget);
+    expect(find.text('CHOOSE AN ACTION'), findsNothing);
     expect(find.text('VAULT'), findsOneWidget);
     expect(find.text('PICTURE'), findsWidgets);
     expect(find.text('VIDEO'), findsWidgets);
+    expect(find.text('ACCOUNT & SETTINGS'), findsOneWidget);
   });
 
   testWidgets('vault hub renders a Stack-based heavy-metal layout', (
@@ -59,7 +59,33 @@ void main() {
       matching: find.byType(Stack),
     );
     expect(stacks, findsWidgets);
-    expect(find.text('CHOOSE AN ACTION'), findsOneWidget);
+  });
+
+  testWidgets('account tile opens account settings panel', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          dashboardControllerProvider.overrideWith(
+            _EmptyVaultDashboardController.new,
+          ),
+        ],
+        child: const MaterialApp(home: VaultHomeView()),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+
+    final accountTile = find.text('ACCOUNT & SETTINGS');
+    await tester.ensureVisible(accountTile);
+    await tester.tap(accountTile);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('End User License Agreement'), findsOneWidget);
+    expect(find.text('BURN ACCOUNT'), findsOneWidget);
+    expect(find.text('LOG OUT'), findsOneWidget);
   });
 
   testWidgets('shows pending sync banner and retry on vault hub', (tester) async {
@@ -73,7 +99,8 @@ void main() {
         child: const MaterialApp(home: VaultHomeView()),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.textContaining('pending sync'), findsOneWidget);
     expect(find.text('RETRY NOW'), findsOneWidget);

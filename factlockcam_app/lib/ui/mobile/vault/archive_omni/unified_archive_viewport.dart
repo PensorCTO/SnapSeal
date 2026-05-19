@@ -7,6 +7,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/services/haptic_service.dart';
 import '../../../../core/ui/widgets/heavy_metal_backdrop.dart';
+import '../../../../core/ui/widgets/vault_panel_navigation_bar.dart';
 import '../../../../data/models/archive_item.dart';
 import '../../../controllers/dashboard_controller.dart';
 import '../../archive_item_actions.dart';
@@ -24,11 +25,17 @@ import 'providers/archive_prefs_provider.dart';
 /// toggling between a date-grouped Grid View and the haptic Chronology View,
 /// with dynamic media-type filtering.
 class UnifiedArchiveViewport extends ConsumerStatefulWidget {
-  const UnifiedArchiveViewport({super.key, this.onCaptureRequested});
+  const UnifiedArchiveViewport({
+    super.key,
+    this.onCaptureRequested,
+    this.onBackToHub,
+  });
 
   /// When set, the Picture and Video empty-state tiles switch the parent
-  /// bottom-nav tab to index 1 or 2 respectively.
+  /// shell index to 1 or 2 respectively.
   final ValueChanged<int>? onCaptureRequested;
+
+  final VoidCallback? onBackToHub;
 
   @override
   ConsumerState<UnifiedArchiveViewport> createState() =>
@@ -83,6 +90,11 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
       body: SafeArea(
         child: Column(
           children: [
+            if (widget.onBackToHub != null)
+              VaultPanelNavigationBar(
+                title: 'Vault',
+                onBack: widget.onBackToHub!,
+              ),
             // ── Logo bar ───────────────────────────────────────
             const HeavyMetalLogoBanner(),
 

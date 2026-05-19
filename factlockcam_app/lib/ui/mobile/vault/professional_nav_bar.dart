@@ -5,10 +5,9 @@ import '../../../app/theme/app_typography.dart';
 
 /// Professional forensic-themed bottom navigation bar for the vault shell.
 ///
-/// Five tabs: Home (hub), Picture (camera photo), Video (camera video),
-/// Archive (chronology cards), More (future settings).
-/// Styled with the project's dark-titanium palette, VerifiedNeon accent,
-/// monospaced uppercase labels, and a thin accent bar on the selected tab.
+/// **Deprecated:** Hub navigation uses centered tiles and panel back buttons.
+/// See [factlockcam-hub-refactor.mdc].
+@Deprecated('Use HapticHubPanel tiles and VaultPanelNavigationBar instead.')
 class ProfessionalNavBar extends StatelessWidget {
   const ProfessionalNavBar({
     super.key,

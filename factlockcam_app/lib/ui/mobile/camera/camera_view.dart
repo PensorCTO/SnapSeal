@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/services/haptic_service.dart';
+import '../../../core/ui/widgets/vault_panel_navigation_bar.dart';
 import '../../../core/ui/painters/reticle_painter.dart';
 import '../../../core/ui/painters/shutter_button_painter.dart';
 import '../../../data/supabase/auth_repository.dart';
@@ -19,13 +21,21 @@ import 'camera_chrome_frame.dart';
 import 'telemetry_overlay.dart';
 
 class CameraView extends ConsumerStatefulWidget {
-  const CameraView({super.key, this.mode = AcquisitionMode.photo, this.onCaptureComplete});
+  const CameraView({
+    super.key,
+    this.mode = AcquisitionMode.photo,
+    this.onCaptureComplete,
+    this.onBackToHub,
+  });
 
   final AcquisitionMode mode;
 
   /// Called after the capture completes and the asset is sealed.
   /// When null, falls back to [Navigator.of(context).pop] (standalone route).
   final VoidCallback? onCaptureComplete;
+
+  /// When set (vault shell), back navigates to the hub instead of popping a route.
+  final VoidCallback? onBackToHub;
 
   static const routePath = '/camera';
 
@@ -247,84 +257,114 @@ class _CameraViewState extends ConsumerState<CameraView> {
     final previewW = preview?.width.round();
     final previewH = preview?.height.round();
 
+    void onBackPressed() {
+      if (widget.onBackToHub != null) {
+        widget.onBackToHub!();
+      } else if (widget.onCaptureComplete != null) {
+        widget.onCaptureComplete!();
+      } else if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go(VaultHomeView.routePath);
+      }
+    }
+
+    final previewStack = Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned.fill(
+          child: CameraChromeFrame(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Positioned.fill(child: _buildCameraLayer(theme)),
+                if (_showViewfinder)
+                  Positioned.fill(
+                    child: RepaintBoundary(
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          CustomPaint(
+                            painter: ReticlePainter(
+                              guideAspectRatio: isVideo ? 2.35 : 16 / 9,
+                            ),
+                          ),
+                          TelemetryOverlay(
+                            acquisitionMode: widget.mode,
+                            isRecording: _isRecording,
+                            isSealing: _isSealing,
+                            verifiedFlashTrigger: _verifiedFlashTrigger,
+                            previewWidth: previewW,
+                            previewHeight: previewH,
+                          ),
+                          if (_isSealing)
+                            const Positioned.fill(child: _SealingOverlay()),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        if (_errorMessage != null)
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 24,
+            child: Card(
+              color: theme.colorScheme.errorContainer,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(_errorMessage!),
+              ),
+            ),
+          ),
+      ],
+    );
+
+    final shutter = CameraShutterButton(
+      enabled: !_isInitializing && !_isSealing,
+      isVideo: isVideo,
+      isRecording: _isRecording,
+      verifiedFlashTrigger: _verifiedFlashTrigger,
+      onEngageHaptic: () => ref.read(hapticServiceProvider).lock(),
+      onPressed: _onShutterPressed,
+    );
+
+    if (widget.onBackToHub != null) {
+      return CupertinoPageScaffold(
+        backgroundColor: Colors.black,
+        navigationBar: VaultPanelNavigationBar(
+          title: isVideo ? 'Video' : 'Picture',
+          onBack: onBackPressed,
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            previewStack,
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 24,
+              child: Center(child: shutter),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (widget.onCaptureComplete != null) {
-              widget.onCaptureComplete!();
-            } else if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go(VaultHomeView.routePath);
-            }
-          },
+          onPressed: onBackPressed,
         ),
         title: Text(isVideo ? 'Capture video' : 'Capture'),
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned.fill(
-            child: CameraChromeFrame(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Positioned.fill(child: _buildCameraLayer(theme)),
-                  if (_showViewfinder)
-                    Positioned.fill(
-                      child: RepaintBoundary(
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            CustomPaint(
-                              painter: ReticlePainter(
-                                guideAspectRatio: isVideo ? 2.35 : 16 / 9,
-                              ),
-                            ),
-                            TelemetryOverlay(
-                              acquisitionMode: widget.mode,
-                              isRecording: _isRecording,
-                              isSealing: _isSealing,
-                              verifiedFlashTrigger: _verifiedFlashTrigger,
-                              previewWidth: previewW,
-                              previewHeight: previewH,
-                            ),
-                            if (_isSealing)
-                              const Positioned.fill(child: _SealingOverlay()),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          if (_errorMessage != null)
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 24,
-              child: Card(
-                color: theme.colorScheme.errorContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Text(_errorMessage!),
-                ),
-              ),
-            ),
-        ],
-      ),
-      floatingActionButton: CameraShutterButton(
-        enabled: !_isInitializing && !_isSealing,
-        isVideo: isVideo,
-        isRecording: _isRecording,
-        verifiedFlashTrigger: _verifiedFlashTrigger,
-        onEngageHaptic: () => ref.read(hapticServiceProvider).lock(),
-        onPressed: _onShutterPressed,
-      ),
+      body: previewStack,
+      floatingActionButton: shutter,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }

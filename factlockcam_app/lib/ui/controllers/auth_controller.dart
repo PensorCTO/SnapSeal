@@ -151,4 +151,24 @@ class AuthController extends Notifier<AuthUiState> {
     await ref.read(authRepositoryProvider).signOut();
     state = state.copyWith(isAuthenticated: false, otpSent: false);
   }
+
+  /// Remote account deletion then local wallet burn. Session may already be invalid.
+  Future<void> performFullBurn() async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      await ref.read(authRepositoryProvider).performFullBurn();
+    } finally {
+      await ref.read(vaultServiceProvider).burnLocalWallet();
+      try {
+        await ref.read(authRepositoryProvider).signOut();
+      } catch (_) {
+        // User row may already be gone after perform_full_burn.
+      }
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        otpSent: false,
+      );
+    }
+  }
 }

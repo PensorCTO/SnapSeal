@@ -46,4 +46,8 @@ class AppConfig {
 
   static bool get usePolygonNotarizer => _usePolygonNotarizer;
   static bool get requireHardwareAttestation => _requireHardwareAttestation;
+
+  /// Placeholder legal URLs — replace before App Store submission.
+  static const legalEulaUrl = 'https://factlockcam.com/eula';
+  static const legalPrivacyUrl = 'https://factlockcam.com/privacy';
 }

@@ -9,17 +9,12 @@ import '../../../core/services/haptic_service.dart';
 import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
 import '../../controllers/dashboard_controller.dart';
 
-/// Heavy Metal hub panel — the Home tab inside the vault shell.
-///
-/// Displays three hardware-styled action tiles (Vault, Picture, Video) over
-/// a paused animated video backdrop ([HeavyMetalBackdropMixin]). Each tile
-/// triggers a heavy haptic and replays the backdrop from its first frame.
+/// Heavy Metal hub panel — centered four-tile launcher for the vault shell.
 class HapticHubPanel extends ConsumerStatefulWidget {
-  const HapticHubPanel({super.key, this.onCaptureRequested});
+  const HapticHubPanel({super.key, this.onHubDestinationSelected});
 
-  /// Called when the user taps the Picture (1) or Video (2) tile to switch
-  /// the parent bottom-nav tab.
-  final ValueChanged<int>? onCaptureRequested;
+  /// Picture=1, Video=2, Vault/archive=3, Account=4.
+  final ValueChanged<int>? onHubDestinationSelected;
 
   @override
   ConsumerState<HapticHubPanel> createState() => _HapticHubPanelState();
@@ -104,53 +99,48 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
                 const TitaniumOverlay(),
                 SafeArea(
                   top: false,
-                  child: Column(
-                    children: [
-                      const Spacer(),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'CHOOSE AN ACTION',
-                              style: AppTextStyles.monoMd(
-                                color:
-                                    AppColors.starkWhite.withValues(alpha: 0.72),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            _HubTile(
-                              icon: Icons.folder_open_outlined,
-                              label: 'Vault',
-                              subtitle: 'Browse photos and videos on this device',
-              onTap: () => _handleHubTap(
-                () => widget.onCaptureRequested?.call(3),
-              ),
-                            ),
-                            const SizedBox(height: 12),
-                            _HubTile(
-                              icon: Icons.photo_camera_outlined,
-                              label: 'Picture',
-                              subtitle: 'Capture a still',
-                              onTap: () => _handleHubTap(
-                                () => widget.onCaptureRequested?.call(1),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            _HubTile(
-                              icon: Icons.videocam_outlined,
-                              label: 'Video',
-                              subtitle: 'Record a clip',
-                              onTap: () => _handleHubTap(
-                                () => widget.onCaptureRequested?.call(2),
-                              ),
-                            ),
-                          ],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _HubTile(
+                          icon: Icons.folder_open_outlined,
+                          label: 'Vault',
+                          subtitle: 'Browse photos and videos on this device',
+                          onTap: () => _handleHubTap(
+                            () => widget.onHubDestinationSelected?.call(3),
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 12),
+                        _HubTile(
+                          icon: Icons.photo_camera_outlined,
+                          label: 'Picture',
+                          subtitle: 'Capture a still',
+                          onTap: () => _handleHubTap(
+                            () => widget.onHubDestinationSelected?.call(1),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _HubTile(
+                          icon: Icons.videocam_outlined,
+                          label: 'Video',
+                          subtitle: 'Record a clip',
+                          onTap: () => _handleHubTap(
+                            () => widget.onHubDestinationSelected?.call(2),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _HubTile(
+                          icon: Icons.settings_outlined,
+                          label: 'Account & Settings',
+                          subtitle: 'Logout, legal, delete account',
+                          onTap: () => _handleHubTap(
+                            () => widget.onHubDestinationSelected?.call(4),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

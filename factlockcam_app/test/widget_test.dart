@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,9 +22,12 @@ void main() {
     expect(find.text('TAMPER-EVIDENT MEDIA VAULT'), findsOneWidget);
   });
 
-  testWidgets('navigation tabs switch between vault home and camera views',
+  testWidgets('hub tiles switch between vault home and camera views',
       (tester) async {
     final buildCounter = ValueNotifier<int>(0);
+
+    await tester.binding.setSurfaceSize(const Size(800, 1600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
       ProviderScope(
@@ -37,23 +41,20 @@ void main() {
     );
     await tester.pump(const Duration(seconds: 1));
 
-    // Home tab is selected by default — verify hub content is visible.
-    expect(find.text('CHOOSE AN ACTION'), findsOneWidget);
+    expect(find.text('CHOOSE AN ACTION'), findsNothing);
+    expect(find.text('VAULT'), findsOneWidget);
     expect(buildCounter.value, 1);
 
-    // Tap Picture tab — camera view should appear.
-    await tester.tap(find.text('PICTURE').last);
+    final pictureTile = find.text('PICTURE');
+    await tester.ensureVisible(pictureTile);
+    await tester.tap(pictureTile);
     await tester.pump(const Duration(milliseconds: 500));
     expect(buildCounter.value, 1);
+    expect(find.byType(CupertinoNavigationBarBackButton), findsOneWidget);
 
-    // Tap Video tab — video camera view should appear.
-    await tester.tap(find.text('VIDEO').last);
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(buildCounter.value, 1);
-
-    // Tap Home tab — back to vault.
-    await tester.tap(find.text('HOME'));
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.byType(CupertinoNavigationBarBackButton));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('VAULT'), findsOneWidget);
     expect(buildCounter.value, 1);
   });
 }

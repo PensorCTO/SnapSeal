@@ -4,16 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/theme/app_colors.dart';
 import 'camera/acquisition_mode.dart';
 import 'camera/camera_view.dart';
+import 'vault/account_settings_panel.dart';
 import 'vault/archive_omni/unified_archive_viewport.dart';
 import 'vault/haptic_hub_panel.dart';
-import 'vault/professional_nav_bar.dart';
 
 /// Post-login vault shell.
 ///
-/// Hosts an [IndexedStack] with four tabs (Home / Picture / Video / Archive)
-/// and a [ProfessionalNavBar] at the bottom. The camera tabs avoid the
-/// "stranded" post-capture flow by switching back to the Home tab after
-/// sealing completes.
+/// Hosts an [IndexedStack] with hub + four destination panels. Navigation is
+/// hub-tile push and panel back buttons (no persistent bottom nav).
 class VaultHomeView extends ConsumerStatefulWidget {
   const VaultHomeView({super.key});
 
@@ -26,15 +24,21 @@ class VaultHomeView extends ConsumerStatefulWidget {
 class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
   int _selectedIndex = 0;
 
+  void _returnToHub() {
+    setState(() {
+      _selectedIndex = 0;
+    });
+  }
+
   void _onCaptureComplete() {
     setState(() {
       _selectedIndex = 0;
     });
   }
 
-  void _onCaptureRequested(int tabIndex) {
+  void _onHubDestinationSelected(int index) {
     setState(() {
-      _selectedIndex = tabIndex;
+      _selectedIndex = index;
     });
   }
 
@@ -46,30 +50,28 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
         index: _selectedIndex,
         children: [
           HapticHubPanel(
-            onCaptureRequested: _onCaptureRequested,
+            onHubDestinationSelected: _onHubDestinationSelected,
           ),
           CameraView(
             key: ValueKey('camera_photo_${_selectedIndex == 1}'),
             mode: AcquisitionMode.photo,
             onCaptureComplete: _onCaptureComplete,
+            onBackToHub: _returnToHub,
           ),
           CameraView(
             key: ValueKey('camera_video_${_selectedIndex == 2}'),
             mode: AcquisitionMode.video,
             onCaptureComplete: _onCaptureComplete,
+            onBackToHub: _returnToHub,
           ),
           UnifiedArchiveViewport(
-            onCaptureRequested: _onCaptureRequested,
+            onCaptureRequested: _onHubDestinationSelected,
+            onBackToHub: _returnToHub,
+          ),
+          AccountSettingsPanel(
+            onBackToHub: _returnToHub,
           ),
         ],
-      ),
-      bottomNavigationBar: ProfessionalNavBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
       ),
     );
   }

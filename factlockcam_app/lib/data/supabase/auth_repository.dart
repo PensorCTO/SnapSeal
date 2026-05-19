@@ -26,4 +26,16 @@ class AuthRepository {
   Future<void> signOut() async {
     await _handle.client?.auth.signOut();
   }
+
+  /// Permanently deletes the authenticated user and remote wallet data (App Store).
+  Future<void> performFullBurn() async {
+    final client = _handle.client;
+    if (client == null) {
+      throw StateError('Supabase is not configured.');
+    }
+    if (client.auth.currentUser == null) {
+      throw StateError('No authenticated user for account deletion.');
+    }
+    await client.rpc('perform_full_burn');
+  }
 }
