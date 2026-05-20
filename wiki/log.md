@@ -5,6 +5,15 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-05-20
+
+- **Polygon Try 1 postmortem audit** after May 19 rollback:
+  - Added repo-root [`POSTMORTEM_POLYGON_TRY1.md`](../POSTMORTEM_POLYGON_TRY1.md) and wiki [[Polygon_Try1_Postmortem]].
+  - Automated bisect on stash snapshot `c87ac99`: Polygon DI alone passes 33/33 tests; UI-only changes fail `widget_test` back-button finder; full WIP builds/installs on device and sim.
+  - Updated root-cause ranking: process failure + device-specific runtime (dual IndexedStack cameras + UI bisect) — Polygon DI rejected as startup cause.
+  - Documented Try 2 PR sequence (PR0 lazy camera → PR1–PR5 Polygon path).
+  - Forensic branch: `audit/polygon-try1-bisect` (worktree `ProofLockCleanup-audit`).
+
 ## 2026-05-19
 
 - **Device QA + wiki reconciliation** after hub refactor commit `19269d2`:
