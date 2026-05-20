@@ -7,12 +7,12 @@ summary: "Authoritative May 2026 baseline: verified hub/archive/capture workflow
 
 ## Core Synthesis
 
-As of this baseline, the **primary product workflow is verified end-to-end** on a correctly migrated hosted Supabase project: **logon** (email OTP) → **vault hub** (`/vault-home`) → **Archive / Picture / Video** → **capture or browse** → **return to local archive** with sealed assets listed as completed when local vault and remote proof work succeed. Detail beyond this snapshot lives in [[FactLockCam_Master_Blueprint]]; ProofLock-class gaps and phased work remain in [[ProofLock_Refactor_Scope]].
+As of this baseline, the **primary product workflow is verified end-to-end** on a correctly migrated hosted Supabase project: **logon** (email OTP) → **vault hub** (`/vault-home`) → **Archive / Picture / Video** → **capture or browse** → **return to local archive** with sealed assets listed as completed when local vault and remote proof work succeed. **Re-verified 2026-05-20** on physical iPhone after PR0 lazy camera mount ([[Polygon_Try1_Postmortem]]). Detail beyond this snapshot lives in [[FactLockCam_Master_Blueprint]]; ProofLock-class gaps remain in [[ProofLock_Refactor_Scope]].
 
 ### Verified workflow (happy path)
 
 1. Authenticate via Magic Number (6-digit email OTP) when Supabase is configured with Dart defines.
-2. From **`/vault-home`**, use the **four-tile hub** (Vault, Picture, Video, Account & Settings). **Picture** and **Video** open embedded `CameraView` panels (`AcquisitionMode.photo` / `video`) inside `VaultHomeView`'s `IndexedStack`; **Vault** opens the unified archive omni-surface. Photo mode uses `ShutterIrisPainter`; video mode enables audio with long-press/toggle recording. **Back** on each panel returns to the hub launcher.
+2. From **`/vault-home`**, use the **four-tile hub** (Vault, Picture, Video, Account & Settings). **Picture** and **Video** open embedded `CameraView` panels (`AcquisitionMode.photo` / `video`) inside `VaultHomeView`'s `IndexedStack` — cameras **lazy-mount** only when that panel is active (PR0). **Vault** opens the unified archive omni-surface. Photo mode uses `ShutterIrisPainter`; video mode enables audio with long-press/toggle recording. **Back** on each panel returns to the hub launcher.
 3. The resulting `XFile` (image or `.mov`/`.mp4`) flows through the **ProofLock-shaped** seal pipeline when online: **`check_proof_status`** preflight (`new` only), **device signature** via `NativeEnclaveChannel` (currently **simulated** on iOS/Android — not production Secure Enclave/Keystore yet), **`simulate_chain_notarize`** via `SimulatedChainNotarizer` (unless `USE_POLYGON_NOTARIZER` is enabled — **Polygon adapter is still unsupported**), local **AES-GCM** vault write + SQLite, then **`proof_ledger`** insert when remote steps succeed; `pending_sync` remains when remote work cannot complete.
 4. Browse sealed media from the **Vault** hub tile (`UnifiedArchiveViewport`: grid/chronology omni-surface with filters), not a separate `/archive` route. Rows render local thumbnails from SQLite metadata; `video/*` rows use native video-frame JPEG thumbnails where possible and retain a play-badge overlay. **Background pending-sync retries** (timer + hub/archive lifecycle hooks) and a **“Retry now”** banner attempt to clear pending rows when connectivity/auth returns. Archive item actions now flow through the **Domain Interaction Contract**: `AssetActionRegistry` maps the asset `mime_type`/`mediaType` to allowed `MediaActionType`s, `UniversalAssetToolbar` renders the Cupertino action surface, and `AssetAction` delegates verify/delete to the vault service layer. Tapping a video row opens `ArchiveVideoView` via the in-memory courier-decrypt path; tapping a photo row can open `ArchivePhotoView` to decrypt, verify, and view the full-size original. Per-item local delete removes SQLite metadata plus encrypted/thumbnail files from the device but does not erase historical remote proof rows.
 
@@ -41,6 +41,7 @@ Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
 ## Related Notes
 
 * [[FactLockCam_Master_Blueprint]]
+* [[Polygon_Try1_Postmortem]]
 * [[ProofLock_Refactor_Scope]]
 * [[ProofLock_Architectural_Manifest]]
 * [[overview]]

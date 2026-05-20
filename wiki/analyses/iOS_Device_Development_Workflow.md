@@ -1,15 +1,15 @@
 ---
 tags: [analysis, factlockcam, ios, flutter, tooling, qa]
-summary: "Physical iOS device development on iOS 26: build/install vs flutter run VM attach, and recommended QA workflow."
+summary: "Physical iOS 26 device QA: build/install/manual launch, flutter run attach caveats, and audit reinstall discipline."
 ---
 
 # iOS Device Development Workflow
 
 ## Core Synthesis
 
-As of **May 2026**, FactLockCam on a **physical iPhone** (iOS 26.x) with **Flutter 3.38.4** and **Xcode 26.x** routinely **builds and installs** debug binaries, but **`flutter run` may fail after launch** when attaching the Dart VM Service (`Error connecting to the service protocol`, `Connection reset by peer`, or `Connection closed before full header was received`). That failure is a **debugger-bridge / toolchain** issue, not evidence that application code at commit `19269d2` failed to start.
+As of **May 2026**, FactLockCam on a **physical iPhone** (iOS 26.x) with **Flutter 3.38.4** and **Xcode 26.x** routinely **builds and installs** debug binaries. **`flutter run` may fail after launch** when attaching the Dart VM Service (`Error connecting to the service protocol`, `Connection reset by peer`, or `Connection closed before full header was received`). That terminal error is often a **debugger-bridge / toolchain** issue — **not** proof the app failed to start. Always verify the **home-screen UI** before treating attach failure as a crash.
 
-**QA gate (May 2026):** Manual device launch after `flutter build ios --debug` + `flutter install` passes full product workflows when Supabase defines are synced from `.env.local`.
+**QA gate (verified 2026-05-20):** After `flutter build ios --debug` + `flutter install` from the **canonical repo** (`ProofLockCleanup`), manual launch passes logon → hub → Picture/Video/Archive on iPhoneTanto when Supabase defines are synced from `.env.local`. Requires **lazy camera mount** in `VaultHomeView` (PR0, [[Polygon_Try1_Postmortem]]) so hidden panels do not initialize dual cameras at hub load.
 
 ### What succeeds vs what fails
 
@@ -29,7 +29,7 @@ As of **May 2026**, FactLockCam on a **physical iPhone** (iOS 26.x) with **Flutt
    ./scripts/factlockcam_supabase_pipeline.sh flutter-defines
    ```
 
-2. Build and install without relying on attach:
+2. Build and install from the **main repo** (not a forensic worktree):
 
    ```bash
    cd factlockcam_app
@@ -46,7 +46,11 @@ As of **May 2026**, FactLockCam on a **physical iPhone** (iOS 26.x) with **Flutt
    flutter attach -d iPhoneTanto --debug
    ```
 
-5. Alternative: **Xcode** → open `factlockcam_app/ios/Runner.xcworkspace` → Run on device (native lldb, bypasses Flutter port forwarding).
+5. Alternative: **Xcode** → open `factlockcam_app/ios/Runner.xcworkspace` → Run on device.
+
+### Audit / forensic discipline
+
+If an agent or developer runs bisect QA from a **git worktree** or applies `stash@{0}` WIP locally, **`flutter install` overwrites the device binary**. After forensic sessions, **reinstall from the canonical branch** before signing off QA. See [[Polygon_Try1_Postmortem]] (2026-05-20 restoration).
 
 ### Environment stack (reference)
 
@@ -59,18 +63,17 @@ As of **May 2026**, FactLockCam on a **physical iPhone** (iOS 26.x) with **Flutt
 
 ### Do not “fix” attach errors in `main.dart`
 
-Per project rule **bootstrap integrity**: do not wrap `main()` in `runZonedGuarded` or add `[CRASH_DIAG]` spam when investigating VM Service errors. A clean `main()` that reaches `runApp()` is sufficient; attach failures occur **after** the process is running.
-
-### Rollback note (May 2026)
-
-A local debug session (crash instrumentation, partial Polygon retrofit, Podfile experiments) was **stashed** and the tree restored to last push `19269d2` (*Hub refactor*). Attach behavior was **unchanged** after restore, confirming the issue is environmental, not those uncommitted edits.
+Do not wrap `main()` in `runZonedGuarded` or add `[CRASH_DIAG]` logging when investigating VM Service errors. A clean `main()` that reaches `runApp()` is sufficient; attach failures often occur **after** the process is running.
 
 ## Provenance Tracking
 
-* *Workflow and symptoms*: Observed during May 2026 device QA on `cursor/wiki-supabase-local-reset-audit` at `19269d2`; rollback stash `pre-rollback: debug session + polygon WIP 2026-05-19`.
+* *Workflow and attach symptoms*: May 2026 device QA on `cursor/wiki-supabase-local-reset-audit`.
+* *Rollback stash*: `pre-rollback: debug session + polygon WIP 2026-05-19`.
+* *Restoration QA + audit reinstall note*: 2026-05-20, [[Polygon_Try1_Postmortem]].
 
 ## Related Notes
 
+* [[Polygon_Try1_Postmortem]]
 * [[FactLockCam_Master_Blueprint]]
 * [[FactLockCam_Product_Baseline_2026-05]]
 * [[MASTER_CONTEXT16MAY2026]]

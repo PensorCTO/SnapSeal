@@ -42,6 +42,23 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
     });
   }
 
+  /// Only mount [CameraView] while its panel is active. [IndexedStack] keeps
+  /// every child in the tree; eager camera init for hidden panels contends on
+  /// iOS hardware and can blank the first frame on physical devices.
+  Widget _cameraPanel(AcquisitionMode mode) {
+    final isPhoto = mode == AcquisitionMode.photo;
+    final panelIndex = isPhoto ? 1 : 2;
+    if (_selectedIndex != panelIndex) {
+      return const SizedBox.shrink();
+    }
+    return CameraView(
+      key: ValueKey('camera_${mode.name}'),
+      mode: mode,
+      onCaptureComplete: _onCaptureComplete,
+      onBackToHub: _returnToHub,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,18 +69,8 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
           HapticHubPanel(
             onHubDestinationSelected: _onHubDestinationSelected,
           ),
-          CameraView(
-            key: ValueKey('camera_photo_${_selectedIndex == 1}'),
-            mode: AcquisitionMode.photo,
-            onCaptureComplete: _onCaptureComplete,
-            onBackToHub: _returnToHub,
-          ),
-          CameraView(
-            key: ValueKey('camera_video_${_selectedIndex == 2}'),
-            mode: AcquisitionMode.video,
-            onCaptureComplete: _onCaptureComplete,
-            onBackToHub: _returnToHub,
-          ),
+          _cameraPanel(AcquisitionMode.photo),
+          _cameraPanel(AcquisitionMode.video),
           UnifiedArchiveViewport(
             onCaptureRequested: _onHubDestinationSelected,
             onBackToHub: _returnToHub,

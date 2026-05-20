@@ -51,6 +51,8 @@ flowchart LR
 
 ## Phased effort (indicative)
 
+**Polygon Try 2 prep (2026-05-20):** PR0 lazy camera mount in `VaultHomeView` is **complete** — prerequisite for stable physical iOS QA before Polygon PRs ([[Polygon_Try1_Postmortem]]). Remaining Polygon work follows stash-backed PR1–PR5 sequencing in that page.
+
 Rough calendar estimates for a **small team**; actuals depend on chain UX, attestation depth, and App Store review.
 
 | Phase | Scope | Order-of-magnitude |
@@ -74,6 +76,7 @@ Rough calendar estimates for a **small team**; actuals depend on chain UX, attes
 
 * [[ProofLock_Architectural_Manifest]]
 * [[FactLockCam_Master_Blueprint]]
+* [[Polygon_Try1_Postmortem]]
 * [[Project_Audit_2026-05-11]]
 * [[overview]]
 * [[glossary]]

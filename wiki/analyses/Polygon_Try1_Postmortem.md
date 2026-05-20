@@ -1,59 +1,52 @@
 ---
 tags: [analysis, polygon, postmortem, factlockcam, blockchain, refactor]
-summary: "May 2026 Polygon retrofit Try 1 postmortem: mixed-batch rollback, bisect evidence clearing Polygon DI, device-specific blank screen, and Try 2 PR sequencing."
+summary: "May 2026 Polygon Try 1: mixed-batch rollback, bisect cleared Polygon DI, PR0 lazy-camera fix restored device QA; Try 2 starts at PR1."
 ---
 
 # Polygon Try 1 Postmortem
 
 ## Core Synthesis
 
-On **2026-05-19** an uncommitted **Polygon Live Retrofit** batch (DI scaffolding for `WalletService`, `VaultBlockchainHandler`, `NotarizationMonitorService`, and an `anchor-relay` Edge Function stub) was combined with **UI shell refactors** and **crash-debug instrumentation** on branch `cursor/wiki-supabase-local-reset-audit`. The user reported the app would not start on a physical **iPhone (iOS 26.4)** — blank/black screen — after a full day of debugging the team rolled back to morning commit **`19269d2`** and preserved the WIP in **`git stash@{0}`**.
+On **2026-05-19** an uncommitted **Polygon Live Retrofit** batch was combined with UI refactors and crash-debug instrumentation. The app failed on a physical **iPhone (iOS 26.4)** with a blank/black screen; the team rolled back to **`19269d2`** and preserved WIP in **`git stash@{0}`**.
 
-A **2026-05-20 audit** (see repo-root [`POSTMORTEM_POLYGON_TRY1.md`](../../POSTMORTEM_POLYGON_TRY1.md)) applied automated bisect on snapshot commit `c87ac99`:
+A **2026-05-20 audit** (repo-root [`POSTMORTEM_POLYGON_TRY1.md`](../../POSTMORTEM_POLYGON_TRY1.md)) proved **Polygon DI alone does not break startup** (33/33 tests). The incident was **process** (mixed batch, misread VM attach errors) plus **device runtime** (eager dual `CameraView` init in `IndexedStack`, worsened when audit accidentally installed the WIP binary on the QA device).
 
-- **Polygon DI alone (B1):** 33/33 tests pass — **not** a startup regression.
-- **UI changes alone (B2):** `widget_test` fails (Cupertino vs Material back button after camera bisect); iOS **simulator** `flutter run` still succeeds.
-- **Full WIP:** compiles and installs on physical device; user-confirmed blank screen on May 19; simulator runtime OK.
+**Status (2026-05-20, restored):** **PR0 complete** — `VaultHomeView._cameraPanel()` lazy-mounts each `CameraView` only when its panel is active. Main-repo **`flutter test` 33/33**; **physical iPhone QA passes** (logon → hub → capture panels). Try 2 Polygon work starts at **PR1** (contracts + DI from stash, flag off).
 
-**Conclusion:** Try 1 failed primarily due to **process** (mixed concerns, misread VM attach errors, bootstrap instrumentation pollution) and a **device-specific runtime issue** likely involving the pre-existing **dual `CameraView` in `IndexedStack`** pattern plus WIP UI/camera layout changes — not the Polygon DI layer itself. Try 2 should sequence **lazy camera mount (PR0)** before any Polygon PRs, keep `USE_POLYGON_NOTARIZER=false`, and use **`app-install` + manual launch** for device QA per [[iOS_Device_Development_Workflow]].
+## Incident vs resolution
 
-## Symptom vs tooling
+| Phase | What happened |
+|-------|----------------|
+| May 19 Try 1 | Mixed Polygon + UI + debug instrumentation; rollback to `19269d2`; stash WIP |
+| May 20 audit | Bisect cleared Polygon DI; documented root causes; **mistakenly installed WIP on iPhoneTanto** from forensic worktree |
+| May 20 restore | Rebuild/install from main repo + PR0 lazy camera; **QA integrity confirmed** |
 
-| Layer | May 19 observation | Audit 2026-05-20 |
-|-------|-------------------|------------------|
-| Terminal VM attach | `Connection closed before full header was received` | Parallel tooling issue; not proof of Dart crash |
-| Device UI | Blank/black screen (user-confirmed) | Build/install succeed; sim runtime OK; points to native/camera/device path |
-| Unit tests | Not run as gate during session | Baseline 33/33; WIP 32/33 (nav icon mismatch) |
+## Bisect summary (2026-05-20)
 
-## Salvageable from stash
+| Variant | `flutter test` |
+|---------|----------------|
+| Baseline / B1 Polygon DI only / B3 Podfile / B4 main instrumentation | 33/33 pass |
+| B2 UI only / Full WIP | 32/33 (`widget_test` back-button mismatch after camera bisect) |
 
-- Domain interfaces and feature-flagged DI (`wallet_service.dart`, `vault_blockchain_handler.dart`, `notarization_monitor_service.dart`, updated `chain_notarizer.dart`, `injection.dart`)
-- `supabase/functions/anchor-relay/index.ts` stub
-- Pipeline `app-install` / `app-attach` in `factlockcam_supabase_pipeline.sh`
-- `bootstrap-integrity.mdc` cursor rule (after frontmatter fix)
+## Try 2 sequencing (updated)
 
-## Discard
+| PR | Status |
+|----|--------|
+| **PR0** Lazy camera mount in `VaultHomeView` | **Done** |
+| **PR1** Polygon contracts + DI (`USE_POLYGON_NOTARIZER=false`) | Next |
+| **PR2** `anchor-relay` Edge Function + contract test | Pending |
+| **PR3** `web3dart` wallet | Pending |
+| **PR4** `VaultService.proofLockFile` integration | Pending |
+| **PR5** Realtime `NotarizationMonitorService` | Pending |
 
-- `[CRASH_DIAG]` / `runZonedGuarded` bootstrap pollution
-- Camera bisect (`BISECT: Always use Scaffold`)
-- Premature `polygon-live-retrofit.mdc` (references non-existent `recordImmediateProof`)
-
-## Try 2 sequencing
-
-1. **PR0** — Lazy-mount cameras in `VaultHomeView` (fix IndexedStack dual-init)
-2. **PR1** — Polygon contracts + DI only (flag off)
-3. **PR2** — `anchor-relay` Edge Function + contract test
-4. **PR3** — `web3dart` wallet implementation
-5. **PR4** — `VaultService.proofLockFile` integration
-6. **PR5** — Realtime `NotarizationMonitorService`
-
-See [[ProofLock_Refactor_Scope]] phase 5 for manifest alignment.
+Salvage from stash: domain interfaces, `anchor-relay` stub, pipeline `app-install`/`app-attach`. Discard: `[CRASH_DIAG]` bootstrap pollution, camera bisect, premature `polygon-live-retrofit.mdc`.
 
 ## Provenance Tracking
 
-* *Incident and rollback*: User report + `git stash@{0}` on `cursor/wiki-supabase-local-reset-audit` (2026-05-19); wiki note in [[log]] 2026-05-19 entry.
-* *Session debug analysis*: `DEEPSEEK_FAILURE.md` in stash commit `33d0fd4` (conclusions partially superseded by user-confirmed blank screen).
-* *Automated bisect and device/sim QA*: Audit 2026-05-20 on commits `bc9a379` (baseline), `c87ac99` (WIP snapshot); iPhoneTanto wireless + iPhone 17 simulator.
+* *Incident and rollback*: `git stash@{0}` (2026-05-19); [[log]] 2026-05-19.
+* *Audit bisect*: `audit/polygon-try1-bisect` @ `c87ac99`; [[log]] 2026-05-20 AM entry.
+* *Restoration + PR0*: `factlockcam_app/lib/ui/mobile/vault_home_view.dart` `_cameraPanel()` (2026-05-20); user QA pass; [[log]] 2026-05-20 PM entry.
+* *Session debug log*: `DEEPSEEK_FAILURE.md` in stash (attach-focused conclusions superseded).
 
 ## Related Notes
 
@@ -61,5 +54,5 @@ See [[ProofLock_Refactor_Scope]] phase 5 for manifest alignment.
 * [[iOS_Device_Development_Workflow]]
 * [[FactLockCam_Master_Blueprint]]
 * [[FactLockCam_Product_Baseline_2026-05]]
-* [[glossary]] — `PolygonChainNotarizer`, `SimulatedChainNotarizer`
-* Repo root: [`POSTMORTEM_POLYGON_TRY1.md`](../../POSTMORTEM_POLYGON_TRY1.md)
+* [[glossary]] — `Lazy camera mount`, `Hub-first vault shell`
+* [`POSTMORTEM_POLYGON_TRY1.md`](../../POSTMORTEM_POLYGON_TRY1.md)

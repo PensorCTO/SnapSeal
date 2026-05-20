@@ -13,13 +13,18 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
   - Updated root-cause ranking: process failure + device-specific runtime (dual IndexedStack cameras + UI bisect) — Polygon DI rejected as startup cause.
   - Documented Try 2 PR sequence (PR0 lazy camera → PR1–PR5 Polygon path).
   - Forensic branch: `audit/polygon-try1-bisect` (worktree `ProofLockCleanup-audit`).
+- **Integrity restoration + wiki refinement** after post-audit device regression:
+  - Root cause of post-audit "broken app": audit worktree installed WIP binary on iPhoneTanto; main repo source was docs-only.
+  - **PR0 landed:** `VaultHomeView._cameraPanel()` lazy-mounts `CameraView` only when Picture/Video panel active — fixes physical-device blank screen from eager dual-camera init.
+  - **QA re-verified:** `flutter test` 33/33 (10 files); iPhoneTanto manual launch passes full hub workflow (user-confirmed).
+  - Refined [[Polygon_Try1_Postmortem]], [[iOS_Device_Development_Workflow]], [[FactLockCam_Master_Blueprint]], [[FactLockCam_Product_Baseline_2026-05]], [[glossary]], [[overview]], repo-root postmortem Resolution section; Try 2 entry point → PR1.
 
 ## 2026-05-19
 
 - **Device QA + wiki reconciliation** after hub refactor commit `19269d2`:
   - Added [[iOS_Device_Development_Workflow]]: physical iOS 26 + Flutter 3.38 `flutter run` VM Service attach failures vs successful build/install/manual launch; recommended `flutter attach` and Xcode paths.
   - Updated [[FactLockCam_Master_Blueprint]], [[MASTER_CONTEXT16MAY2026]], [[FactLockCam_Product_Baseline_2026-05]], [[glossary]], [[index]], [[overview]] to replace stale **ProfessionalNavBar** / bottom-tab / standalone `/archive` descriptions with **hub-first** `HapticHubPanel` + five `IndexedStack` panels (hub, photo, video, archive omni, account).
-  - Documented May 2026 rollback: uncommitted debug/Polygon WIP stashed; attach issue unchanged — tooling not app regression.
+  - Documented May 2026 rollback: uncommitted debug/Polygon WIP stashed. VM attach failures are tooling-layer; blank device screen was addressed by PR0 lazy camera mount (see [[Polygon_Try1_Postmortem]]).
 
 ## 2026-05-17
 

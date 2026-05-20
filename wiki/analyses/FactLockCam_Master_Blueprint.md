@@ -32,7 +32,7 @@ The ingested **ProofLock** manifest ([[ProofLock_Architectural_Manifest]]) descr
 - Email OTP send + 6-digit verify flow with configured/unconfigured UI states.
 - Supabase auth-state listener that drives authenticated routing.
 - Sign-out path that burns local wallet state before Supabase sign-out.
-- Vault hub (`/vault-home`) as `IndexedStack` shell: index 0 = `HapticHubPanel` (four-tile launcher), 1 = photo `CameraView`, 2 = video `CameraView`, 3 = `UnifiedArchiveViewport`, 4 = `AccountSettingsPanel` (burn account, EULA/privacy links). Hub-tile navigation + panel back buttons; post-capture returns to hub index 0. Legacy `/vault-dashboard` redirects to `/vault-home`.
+- Vault hub (`/vault-home`) as `IndexedStack` shell: index 0 = `HapticHubPanel` (four-tile launcher), 1 = photo `CameraView`, 2 = video `CameraView`, 3 = `UnifiedArchiveViewport`, 4 = `AccountSettingsPanel` (burn account, EULA/privacy links). **Lazy camera mount (PR0):** each `CameraView` is constructed only when its panel is active — hidden panels use `SizedBox.shrink()` so iOS does not initialize dual cameras at hub load ([[Polygon_Try1_Postmortem]]). Hub-tile navigation + panel back buttons; post-capture returns to hub index 0.
 - Camera capture screen with rear-camera preference, **dual `AcquisitionMode` (photo / video)** embedded as a tab within the `VaultHomeView` `IndexedStack`; the custom `ShutterIrisPainter` (mechanical six-blade iris motif) replaces the prior plain shutter ring. Video mode enables audio, starts with long press, stops through the shutter toggle, and reuses the same seal pipeline. Sealing state and error display are shared across modes. Post-capture switches back to the Home tab.
 - Forensic viewfinder first pass: `ReticlePainter`, `TelemetryOverlay` with `GoogleFonts.robotoMono`, and metallic `CameraChromeFrame` around the live preview + repaint-bounded overlay stack.
 - Local sealing pipeline: SHA-256 fingerprinting, AES-GCM encryption, image/video thumbnail generation, SQLite metadata, secure local key storage, and temp capture cleanup.
@@ -107,6 +107,7 @@ Developers can run the Supabase helper script to start/reset/lint local Supabase
 - Test coverage is improved but still too thin to protect the full capture, encryption, burn, and Supabase sync failure matrix.
 - **Simulated signing risk:** software-only `signHash` responses are **not** ProofLock-grade hardware provenance; they are development placeholders on the path to Secure Enclave / Keystore.
 - **ProofLock-class risk:** software-delivered camera bytes + simulated signatures do not prove physical sensor origin; enterprise spoofing scenarios remain out of scope until native TEE signing and capture hardening land ([[ProofLock_Refactor_Scope]]).
+- **Hub shell (May 2026):** pre-PR0 eager dual-camera init in `IndexedStack` could blank physical iOS devices; mitigated by lazy mount — see [[Polygon_Try1_Postmortem]].
 
 ## Provenance Tracking
 

@@ -16,7 +16,7 @@ On 2026-05-19 the team attempted to land a **Polygon Live Retrofit framework** (
 
 **Primary lesson:** The failure was **not caused by Polygon DI scaffolding alone**. Automated bisect (2026-05-20) shows Polygon-only changes pass all 33 unit/widget tests and compile cleanly. The incident combined (1) a **process failure** — mixed concerns with no incremental device bisect, (2) **UI shell changes** that broke navigation widget contracts and were being debugged as crash suspects, and (3) a **device-specific runtime issue** — user-confirmed blank/black screen on physical iPhone, while simulator and build/install succeed. A parallel **Flutter VM Service attach failure** on iOS 26 (`Connection closed before full header was received`) was misread as "app won't start," wasting hours on bootstrap instrumentation that introduced its own defects (zone mismatch, `dart:io` in shared `main.dart`).
 
-For Try 2: land Polygon as **small, flag-gated PRs**, fix the **IndexedStack dual-camera mount** first, and use **`app-install` + manual launch** for device QA — never bundle UI refactors with chain integration.
+For Try 2: land Polygon as **small, flag-gated PRs**, use **`app-install` + manual launch** for device QA — never bundle UI refactors with chain integration. **PR0 (lazy camera mount) landed 2026-05-20** — see [Resolution](#resolution-2026-05-20) below.
 
 ---
 
@@ -29,7 +29,7 @@ For Try 2: land Polygon as **small, flag-gated PRs**, fix the **IndexedStack dua
 | **May 19 (day)** | Uncommitted batch: Polygon DI abstractions, `anchor-relay` Edge Function stub, UI nav-bar/camera/account refactors, Podfile Swift-concurrency patch, `[CRASH_DIAG]` / `runZonedGuarded` instrumentation. User reports app "won't start" via `flutter run` on physical iPhone (iOS 26.4). |
 | **May 19 ~15:52** | Full rollback to `19269d2`; WIP stashed as `stash@{0}`. Session analysis captured in stashed `DEEPSEEK_FAILURE.md`. |
 | **May 19 17:15** | Commit `bc9a379` — wiki reconciliation, [[iOS_Device_Development_Workflow]] documents VM attach vs build/install. |
-| **May 20** | This audit: bisect matrix, simulator cross-check, postmortem report. |
+| **May 20 (PM)** | Post-audit **integrity restored**: reinstalled baseline from main repo; **PR0 lazy camera mount** in `VaultHomeView`; physical iPhone QA passes. |
 
 ---
 
@@ -145,7 +145,7 @@ flowchart LR
 
 | PR | Scope | Gate |
 |----|-------|------|
-| **PR0** | Lazy-mount camera panels in `VaultHomeView` (only active `CameraView` constructed) | Device: hub → picture → back on iPhoneTanto |
+| **PR0** | Lazy-mount cameras in `VaultHomeView` | **Done (2026-05-20)** — `_cameraPanel()` |
 | **PR1** | Domain interfaces + DI registrations from stash; `USE_POLYGON_NOTARIZER=false` | `flutter test` 33/33; no VaultService change |
 | **PR2** | `anchor-relay` Edge Function + Deno contract test | Edge Function returns `{ txHash }` for valid POST |
 | **PR3** | `web3dart` wallet in `PolygonWalletService` | Unit test with test key; still flag off |
@@ -176,11 +176,35 @@ flowchart LR
 
 ---
 
+## Resolution (2026-05-20)
+
+After the postmortem audit, the app appeared broken on device because the audit **installed the broken WIP build** from the forensic worktree (`ProofLockCleanup-audit` @ `c87ac99`) onto iPhoneTanto — not because the main-repo source regressed (docs-only commit `636648d`).
+
+**Restoration steps:**
+
+1. `flutter clean` + rebuild from **`ProofLockCleanup`** main tree (not the audit worktree).
+2. **`flutter install`** from main repo to replace the WIP binary on device.
+3. **PR0 fix** — `VaultHomeView._cameraPanel()` mounts `CameraView` only when its panel index is active (`SizedBox.shrink()` otherwise). Prevents dual hidden cameras from initializing on hub load — root cause of physical-device blank screens identified in this postmortem.
+
+**Verification (2026-05-20):**
+
+| Check | Result |
+|-------|--------|
+| `flutter test` (main repo + PR0) | **33/33 pass** (10 test files) |
+| iOS device build + install + manual QA | **Pass** (iPhoneTanto, iOS 26.4) |
+| Hub → Picture → back → Vault flow | **Pass** (user-confirmed) |
+
+**Try 2 entry point:** PR0 complete → start at **PR1** (Polygon contracts + DI, flag off). Stash `stash@{0}` unchanged.
+
+**Audit discipline (added):** Never `flutter install` from a forensic worktree onto a QA device without relabeling the build; always reinstall from the canonical repo after audit sessions.
+
+---
+
 ## Open Questions
 
-1. **Exact native crash signature on device for full WIP** — bisect installed full WIP on iPhoneTanto but automated audit cannot observe home-screen UI; user should confirm whether post-audit WIP install also shows blank screen (would isolate regression to WIP vs environmental state on May 19).
-2. **Whether UI-only subset alone reproduces blank screen on device** — B2 passes simulator; device install of B2-only was not manually verified in this audit.
-3. **Optimal lazy-camera pattern** — defer init vs destroy-on-hide vs single shared `CameraView` with mode toggle; PR0 design decision for strategic session.
+1. ~~**Exact native crash signature on device for full WIP**~~ — **Resolved:** WIP binary on device + eager dual-camera init; not a main-repo source defect.
+2. ~~**Optimal lazy-camera pattern**~~ — **Resolved:** mount-on-active-panel via `_cameraPanel()` (destroy-on-hide when returning to hub).
+3. **Commit PR0 to main** — code fix in `vault_home_view.dart` pending commit on `cursor/wiki-supabase-local-reset-audit`.
 
 ---
 
