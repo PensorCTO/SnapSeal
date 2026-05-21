@@ -1,0 +1,27 @@
+---
+description: Architectural constraints for FactLockCam Home Screen and Apple Compliance
+alwaysApply: true
+---
+
+# FactLockCam Hub Refactor
+
+## Deprecated
+
+- **DEPRECATE** [`factlockcam_app/lib/ui/mobile/vault/professional_nav_bar.dart`](factlockcam_app/lib/ui/mobile/vault/professional_nav_bar.dart): hub layout is fully centralized; navigation uses explicit panel back buttons only.
+
+## HapticHubPanel
+
+- Remove instructional copy ("Choose an action" and similar).
+- Center the tile grid (`MainAxisAlignment.center` or 2×2 grid); exactly four equal-weight tiles: Vault, Picture, Video, Account & Settings.
+- Preserve haptic + backdrop replay on tile tap.
+
+## Routing and navigation
+
+- Every child panel (Vault/archive, Picture, Video, Account & Settings) MUST expose an explicit back control returning hub index 0 in `VaultHomeView`.
+- Prefer `CupertinoNavigationBar` or shared `VaultPanelNavigationBar` for consistency.
+
+## App Store compliance
+
+- Account deletion ("Burn Account") MUST call Supabase RPC `perform_full_burn()`.
+- Burn MUST use double-confirmation dialogs before the RPC fires.
+- EULA and Privacy Policy links MUST be reachable from the Account panel.

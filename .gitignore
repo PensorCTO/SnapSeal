@@ -12,6 +12,8 @@ venv/
 # Secrets and local config
 .env
 .env.local
+factlockcam_app/dart_defines.json
+factlockcam_app/lib/core/config/generated_dart_defines.dart
 .env.*.local
 *.token
 auth.json
@@ -19,6 +21,14 @@ auth.json
 # Cursor local-only files
 .cursor/rules/personal.mdc
 .cursor/mcp.local.json
+.agent/
+.claude/
+.continue/
+.agents/.skill-lock.json
+.agents/skills/flutter-expert/
+
+# External / third-party projects in repo root
+deepseek-cursor-proxy/
 
 # Logs
 *.log

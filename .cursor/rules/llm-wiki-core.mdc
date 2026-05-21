@@ -5,6 +5,8 @@ alwaysApply: true
 
 This project is a Karpathy-style LLM Wiki.
 
+**Project context:** Do not use ContextStream (or similar external session-memory MCP) for workspace grounding, lessons, or decisions. Use this repo’s LLM Wiki instead: read `wiki/index.md` first, then `wiki/overview.md` and linked `wiki/concepts/` / `wiki/analyses/` pages per `AGENTS.md` Query Workflow. Cite wiki paths when answering. After wiki grounding, use normal codebase search and file reads for implementation detail.
+
 Core files:
 - `AGENTS.md`: canonical wiki schema and operating contract.
 - `manifest.md`: ingestion control plane.

@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "factlockcam_app (Supabase from .env.local)",
+      "cwd": "${workspaceFolder}/factlockcam_app",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "preLaunchTask": "factlockcam: sync Flutter dart defines",
+      "toolArgs": [
+        "--dart-define-from-file=${workspaceFolder}/factlockcam_app/dart_defines.json"
+      ]
+    },
+    {
+      "name": "iOS (QA Tunnel)",
+      "cwd": "${workspaceFolder}/factlockcam_app",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "preLaunchTask": "factlockcam: sync Flutter dart defines",
+      "toolArgs": [
+        "--dart-define-from-file=${workspaceFolder}/factlockcam_app/dart_defines.json"
+      ]
+    }
+  ]
+}

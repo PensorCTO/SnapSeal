@@ -1,0 +1,19 @@
+-----
+description: Constraints and patterns for the Unified Archive Omni-Surface.
+globs: lib/ui/mobile/vault/archive_omni/**/*.dart
+---
+# Omni-Surface Architectural Constraints
+
+1.  **Single Source of Truth:** * The `/archive` GoRouter path MUST be removed. 
+    * Tapping "Vault" on the `HapticHubPanel` MUST switch `VaultHomeView`'s `_selectedIndex` to 3.
+2.  **State Segregation:** * Do NOT mutate `DashboardController` for UI concerns (sorting/filtering). 
+    * Create `UnifiedArchivePreferences` (Riverpod `Notifier`) to hold `ArchiveViewMode` (grid/chronology) and `ArchiveFilterType` (all/photos/videos/pending).
+    * Create a computed provider (`filteredArchiveProvider`) that reads both `DashboardController` and `UnifiedArchivePreferences` to yield the final `List<ArchiveItem>`.
+3.  **Performant Composition:** * Use `AnimatedSwitcher` to transition between Grid and Chronology modes.
+    * The Grid mode MUST use `CustomScrollView` with `SliverMainAxisGroup` (or similar) to group items by Date (Month/Year).
+    * Preserve `RepaintBoundary` on all grid cells and chronology cards.
+4.  **Heavy Metal Adherence:**
+    * Filter chips MUST use `kineticGreen` for active state borders and `titaniumHighlight` for inactive backgrounds.
+    * View toggle MUST utilize a Cupertino-style sliding segment control styled with `titaniumDeep` and `starkWhite`.-
+alwaysApply: true
+---

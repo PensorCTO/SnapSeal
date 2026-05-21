@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       deploy:
-        description: "Push migrations to the linked SnapSeal project"
+        description: "Push migrations to the linked FactLockCam project"
         required: true
         default: "false"
         type: choice
@@ -43,8 +43,8 @@ jobs:
 
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.SNAPSEAL_SUPABASE_DB_PASSWORD }}
-      SNAPSEAL_SUPABASE_PROJECT_REF: ${{ secrets.SNAPSEAL_SUPABASE_PROJECT_REF }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.FACTLOCKCAM_SUPABASE_DB_PASSWORD }}
+      FACTLOCKCAM_SUPABASE_PROJECT_REF: ${{ secrets.FACTLOCKCAM_SUPABASE_PROJECT_REF }}
 
     steps:
       - uses: actions/checkout@v4
@@ -53,8 +53,8 @@ jobs:
         with:
           version: latest
 
-      - name: Link SnapSeal project
-        run: supabase link --project-ref "$SNAPSEAL_SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+      - name: Link FactLockCam project
+        run: supabase link --project-ref "$FACTLOCKCAM_SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
 
       - name: Push migrations
         run: supabase db push
