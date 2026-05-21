@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import '../../data/local/vault_database.dart';
 import '../../data/models/archive_item.dart';
 import '../../data/services/local_vault_storage.dart';
+import '../lock/isolate_lock_coordinator.dart';
 import 'journal_repository.dart';
 
 /// Prepare → write staging files → atomic rename → commit journal + archive row.
@@ -11,13 +12,16 @@ class TransactionalVaultPersister {
     required JournalRepository journal,
     required LocalVaultStorage storage,
     required VaultDatabase database,
+    IsolateLockCoordinator? lockCoordinator,
   }) : _journal = journal,
        _storage = storage,
-       _database = database;
+       _database = database,
+       _lockCoordinator = lockCoordinator;
 
   final JournalRepository _journal;
   final LocalVaultStorage _storage;
   final VaultDatabase _database;
+  final IsolateLockCoordinator? _lockCoordinator;
 
   Future<void> persistSealedAsset({
     required String assetFingerprint,
@@ -47,6 +51,7 @@ class TransactionalVaultPersister {
     final transactionId =
         '${assetFingerprint}_${DateTime.now().microsecondsSinceEpoch}';
 
+    _lockCoordinator?.lock(assetFingerprint);
     _journal.prepare(
       transactionId: transactionId,
       assetFingerprint: assetFingerprint,
@@ -60,19 +65,23 @@ class TransactionalVaultPersister {
       await _storage.writeBytesToPath(
         paths.encryptedStagingPath,
         encryptedBytes,
+        assetFingerprint: assetFingerprint,
       );
       await _storage.writeBytesToPath(
         paths.thumbnailStagingPath,
         thumbnailBytes,
+        assetFingerprint: assetFingerprint,
       );
 
       await _storage.commitStagedFile(
         stagingPath: paths.encryptedStagingPath,
         finalPath: paths.encryptedFinalPath,
+        assetFingerprint: assetFingerprint,
       );
       await _storage.commitStagedFile(
         stagingPath: paths.thumbnailStagingPath,
         finalPath: paths.thumbnailFinalPath,
+        assetFingerprint: assetFingerprint,
       );
 
       _journal.commit(
@@ -111,6 +120,8 @@ class TransactionalVaultPersister {
       _journal.markRolledBack(transactionId);
       _journal.removeManifest(assetFingerprint);
       rethrow;
+    } finally {
+      _lockCoordinator?.unlock(assetFingerprint);
     }
   }
 

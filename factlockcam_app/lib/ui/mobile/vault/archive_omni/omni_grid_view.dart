@@ -9,6 +9,7 @@ import '../../../../domain/blockchain/proof_state.dart';
 import '../../../providers/proof_notarization_provider.dart';
 import '../../archive_item_actions.dart';
 import '../../archive_thumbnail.dart';
+import '../widgets/asset_securing_overlay.dart';
 
 /// Date-grouped sliver grid for the Omni-Surface.
 ///
@@ -53,7 +54,9 @@ class OmniGridView extends ConsumerWidget {
                 final item = group.items[index];
                 final isVideo = item.mimeType?.startsWith('video/') ?? false;
                 return RepaintBoundary(
-                  child: GestureDetector(
+                  child: AssetSecuringOverlay(
+                    assetFingerprint: item.assetFingerprint,
+                    child: GestureDetector(
                     onTap: () {
                       ArchiveItemActions.showBottomSheet(
                         context: context,
@@ -111,6 +114,7 @@ class OmniGridView extends ConsumerWidget {
                         ),
                       ],
                     ),
+                  ),
                   ),
                 );
               },

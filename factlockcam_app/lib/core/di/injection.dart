@@ -12,6 +12,8 @@ import '../crypto/vault_encryption_handler.dart';
 import '../journal/journal_database_factory.dart';
 import '../journal/journal_repository.dart';
 import '../journal/transactional_vault_persister.dart';
+import '../lock/isolate_lock_coordinator.dart';
+import '../lock/lock_journal_sync.dart';
 import '../../domain/export/certificate_export_service.dart';
 import '../../domain/blockchain/chain_notarizer.dart';
 import '../../domain/blockchain/vault_blockchain_handler.dart';
@@ -42,7 +44,16 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<SupabaseClientHandle>(SupabaseClientHandle.new);
 
   getIt.registerLazySingleton<VaultDatabase>(VaultDatabase.new);
-  getIt.registerLazySingleton<LocalVaultStorage>(LocalVaultStorage.new);
+  getIt.registerLazySingleton<IsolateLockCoordinator>(
+    IsolateLockCoordinator.new,
+  );
+  if (!kIsWeb) {
+    getIt.registerLazySingleton<LocalVaultStorage>(
+      () => LocalVaultStorage(lockCoordinator: getIt<IsolateLockCoordinator>()),
+    );
+  } else {
+    getIt.registerLazySingleton<LocalVaultStorage>(LocalVaultStorage.new);
+  }
   if (!kIsWeb) {
     getIt.registerLazySingleton<JournalDatabaseFactory>(
       JournalDatabaseFactory.new,
@@ -55,6 +66,7 @@ Future<void> configureDependencies() async {
         journal: getIt<JournalRepository>(),
         storage: getIt<LocalVaultStorage>(),
         database: getIt<VaultDatabase>(),
+        lockCoordinator: getIt<IsolateLockCoordinator>(),
       ),
     );
   }
@@ -142,6 +154,11 @@ Future<void> configureDependencies() async {
   // Eager-open SQLite before hub/dashboard and capture can race on first connect.
   if (!kIsWeb) {
     await getIt<VaultDatabase>().ensureOpen();
-    await getIt<JournalRepository>().open();
+    final journal = getIt<JournalRepository>();
+    await journal.open();
+    syncLocksFromPreparedJournal(
+      journal: journal,
+      coordinator: getIt<IsolateLockCoordinator>(),
+    );
   }
 }

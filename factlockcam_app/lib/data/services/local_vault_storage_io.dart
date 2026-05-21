@@ -7,6 +7,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../../core/di/locator.dart';
+import '../../core/lock/isolate_lock_coordinator.dart';
+import '../../core/lock/locked_io_runner.dart';
 import '../models/archive_item.dart';
 import 'vault_transactional_paths.dart';
 
@@ -15,6 +17,21 @@ final localVaultStorageProvider = Provider<LocalVaultStorage>(
 );
 
 class LocalVaultStorage {
+  LocalVaultStorage({IsolateLockCoordinator? lockCoordinator})
+    : _lockCoordinator = lockCoordinator;
+
+  final IsolateLockCoordinator? _lockCoordinator;
+
+  void _assertReadable(String path, String? assetFingerprint) {
+    final fp = assetFingerprint;
+    final coordinator = _lockCoordinator;
+    if (fp == null || coordinator == null) {
+      return;
+    }
+    if (coordinator.isFileLocked(fp)) {
+      throw AssetFileLockedException(fp);
+    }
+  }
   /// Paths persisted in SQLite are absolute. If the app container moves (reinstall,
   /// simulator reset), those paths break while files still live under the current
   /// canonical vault layout. Prefer existing files at stored paths; otherwise fall
@@ -102,11 +119,23 @@ class LocalVaultStorage {
     );
   }
 
-  Future<void> writeBytesToPath(String path, Uint8List bytes) async {
+  Future<void> writeBytesToPath(
+    String path,
+    Uint8List bytes, {
+    required String assetFingerprint,
+  }) async {
     final file = File(path);
     final parent = file.parent;
     if (!parent.existsSync()) {
       await parent.create(recursive: true);
+    }
+    if (_lockCoordinator != null) {
+      await Isolate.run(
+        () => lockedWriteBytesEntry(
+          LockedWritePayload(path: path, bytes: bytes),
+        ),
+      );
+      return;
     }
     await Isolate.run(
       () => File(path).writeAsBytesSync(bytes, flush: true),
@@ -117,7 +146,19 @@ class LocalVaultStorage {
   Future<void> commitStagedFile({
     required String stagingPath,
     required String finalPath,
+    required String assetFingerprint,
   }) async {
+    if (_lockCoordinator != null) {
+      await Isolate.run(
+        () => lockedRenameEntry(
+          LockedRenamePayload(
+            stagingPath: stagingPath,
+            finalPath: finalPath,
+          ),
+        ),
+      );
+      return;
+    }
     await Isolate.run(() {
       final staging = File(stagingPath);
       if (!staging.existsSync()) {
@@ -176,7 +217,11 @@ class LocalVaultStorage {
     return targetPath;
   }
 
-  Future<Uint8List> readEncryptedOriginal(String path) {
+  Future<Uint8List> readEncryptedOriginal(
+    String path, {
+    String? assetFingerprint,
+  }) {
+    _assertReadable(path, assetFingerprint);
     return Isolate.run(() => File(path).readAsBytesSync());
   }
 

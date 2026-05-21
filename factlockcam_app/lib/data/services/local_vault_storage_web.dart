@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/di/locator.dart';
+import '../../core/lock/isolate_lock_coordinator.dart';
 import '../models/archive_item.dart';
 import 'vault_transactional_paths.dart';
 
@@ -11,6 +12,8 @@ final localVaultStorageProvider = Provider<LocalVaultStorage>(
 );
 
 class LocalVaultStorage {
+  LocalVaultStorage({IsolateLockCoordinator? lockCoordinator});
+
   Future<ArchiveItem> resolveArchivePaths(ArchiveItem item) async => item;
 
   Future<VaultTransactionalPaths> resolveTransactionalPaths(
@@ -19,13 +22,18 @@ class LocalVaultStorage {
     throw UnsupportedError('Transactional vault paths are mobile-only.');
   }
 
-  Future<void> writeBytesToPath(String path, Uint8List bytes) async {
+  Future<void> writeBytesToPath(
+    String path,
+    Uint8List bytes, {
+    required String assetFingerprint,
+  }) async {
     throw UnsupportedError('Transactional vault writes are mobile-only.');
   }
 
   Future<void> commitStagedFile({
     required String stagingPath,
     required String finalPath,
+    required String assetFingerprint,
   }) async {
     throw UnsupportedError('Transactional vault commit is mobile-only.');
   }
@@ -46,7 +54,10 @@ class LocalVaultStorage {
     throw UnsupportedError('Local vault storage is mobile-only.');
   }
 
-  Future<Uint8List> readEncryptedOriginal(String path) async {
+  Future<Uint8List> readEncryptedOriginal(
+    String path, {
+    String? assetFingerprint,
+  }) async {
     throw UnsupportedError('Local vault storage is mobile-only.');
   }
 

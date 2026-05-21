@@ -514,6 +514,7 @@ class VaultService {
 
     final encryptedBytes = await _storage.readEncryptedOriginal(
       resolved.encryptedPath,
+      assetFingerprint: assetHash,
     );
     final keyBytes = await _loadOrCreateKeyBytes();
     final encodedVaultKey = _vaultEncryption.encodeKey(keyBytes);
@@ -603,6 +604,7 @@ class VaultService {
       final keyBytes = await _loadOrCreateKeyBytes();
       final encryptedBytes = await _storage.readEncryptedOriginal(
         item.encryptedPath,
+        assetFingerprint: item.assetFingerprint,
       );
       final clearBytes = await _vaultEncryption.decrypt(
         encryptedPayload: encryptedBytes,
@@ -780,6 +782,7 @@ class VaultService {
     final keyBytes = await _loadOrCreateKeyBytes();
     final encryptedBytes = await _storage.readEncryptedOriginal(
       resolved.encryptedPath,
+      assetFingerprint: assetFingerprint,
     );
     final clearBytes = await CourierCrypto.decryptAndVerifyFingerprint(
       vault: _vaultEncryption,
