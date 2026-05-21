@@ -21,8 +21,8 @@ class AssetAction extends _$AssetAction {
 
       switch (action) {
         case MediaActionType.view:
-          // TODO: Return a verified view payload when archive navigation is
-          // domain-driven instead of owned by the current presentation route.
+          // Navigation to full asset view is owned by presentation routes
+          // (inspector / chronology), not this headless action executor.
           break;
         case MediaActionType.verify:
           try {
@@ -38,12 +38,11 @@ class AssetAction extends _$AssetAction {
           await vaultService.deleteArchiveItem(assetHash);
           break;
         case MediaActionType.share:
-          // TODO: Wire to a sealed-share/courier export service when that
-          // ProofLock package boundary exists.
+          // Send Proof requires [BuildContext]; use [ArchiveItemActions.showSendProofDialog]
+          // from vault UI entry points until this provider accepts a UI delegate.
           break;
         case MediaActionType.export:
-          // TODO: Wire to certificate/PDF export once binary export is
-          // implemented beyond the existing certificate draft text.
+          // Certificate/PDF binary export is not yet available on this action path.
           break;
       }
     });

@@ -124,7 +124,8 @@ class _SwipeActionLayerState extends State<SwipeActionLayer> {
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOut,
-            transform: Matrix4.identity()..translate(_dragOffset),
+            transform: Matrix4.identity()
+              ..translateByDouble(_dragOffset, 0, 0, 1),
             child: widget.child,
           ),
         ],

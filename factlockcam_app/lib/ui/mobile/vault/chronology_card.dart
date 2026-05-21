@@ -120,9 +120,9 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
         child: Transform(
           alignment: Alignment.center,
           transform: Matrix4.identity()
-            ..translate(translateX)
+            ..translateByDouble(translateX, 0, 0, 1)
             ..rotateZ(rotationRad)
-            ..scale(scale),
+            ..scaleByDouble(scale, scale, scale, 1),
           child: Container(
             height: itemHeight,
             margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -178,7 +178,7 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
                                 mimeType: widget.item.mimeType,
                               ),
                             ),
-                      error: (_, __) => _ThumbnailFallback(
+                      error: (error, stackTrace) => _ThumbnailFallback(
                         mimeType: widget.item.mimeType,
                       ),
                       loading: () => _ThumbnailFallback(

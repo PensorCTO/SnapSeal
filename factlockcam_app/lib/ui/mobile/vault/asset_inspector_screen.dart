@@ -412,7 +412,7 @@ class _HeroImage extends StatelessWidget {
                       errorBuilder: (context, error, stackTrace) =>
                           _ThumbnailFallback(mimeType: mimeType),
                     ),
-              error: (_, __) => _ThumbnailFallback(mimeType: mimeType),
+              error: (error, stackTrace) => _ThumbnailFallback(mimeType: mimeType),
               loading: () => _ThumbnailFallback(mimeType: mimeType),
             ),
           ),

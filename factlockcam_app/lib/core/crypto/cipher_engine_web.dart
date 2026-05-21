@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_web_libraries_in_flutter, avoid_dynamic_calls
+// ignore_for_file: avoid_web_libraries_in_flutter, avoid_dynamic_calls, deprecated_member_use
 
 import 'dart:async';
 import 'dart:convert';

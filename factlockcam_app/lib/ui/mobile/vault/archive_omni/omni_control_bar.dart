@@ -36,7 +36,7 @@ class OmniControlBar extends ConsumerWidget {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(vertical: 12),
               itemCount: ArchiveFilterType.values.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 6),
+              separatorBuilder: (context, index) => const SizedBox(width: 6),
               itemBuilder: (context, index) {
                 final filterType = ArchiveFilterType.values[index];
                 final isActive = prefs.filterType == filterType;
