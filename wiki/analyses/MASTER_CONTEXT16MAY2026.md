@@ -1,13 +1,13 @@
 ---
 tags: [analysis, architecture, factlockcam, prooflock, system_context, test_audit, codebase_audit]
-summary: "Comprehensive architecture snapshot for 2026-05-16: audit-verified health (36/36 tests passing, 1 info-level analysis finding, 18 wiki pages validated), web courier infrastructure, web platform architecture, Heavy Metal design system, and status of the Cloud E2EE Vault pivot announced on 2026-05-13."
+summary: "Archived comprehensive architecture snapshot for 2026-05-16 (superseded for day-to-day status by [[FactLockCam_Product_Baseline_2026-05]] and [[Polygon_Saga_Live]])."
 ---
 
 # Master Context (16 MAY 2026)
 
 ## Core Synthesis
 
-This page is the **current** comprehensive architecture snapshot for FactLockCam as of **2026-05-16**. It supersedes [[MASTER_CONTEXT13MAY2026]] for timeline currency. For product workflow and hosted Supabase repair narrative, continue to anchor on [[FactLockCam_Product_Baseline_2026-05]]; for finish-line vs ProofLock manifest, see [[ProofLock_Refactor_Scope]]; for repo-vs-wiki reconciliation, see [[Project_Audit_2026-05-11]]; for the layered engineering blueprint, see [[FactLockCam_Blueprints_14May2026]].
+This page is an **archived** comprehensive architecture snapshot for FactLockCam as of **2026-05-16**. For **current** product status (final QA 2026-05-20, Polygon saga live, app icon), use [[FactLockCam_Product_Baseline_2026-05]] and [[Polygon_Saga_Live]]. It supersedes [[MASTER_CONTEXT13MAY2026]] for timeline currency within the May 2026 snapshot series. For finish-line vs ProofLock manifest, see [[ProofLock_Refactor_Scope]]; for repo-vs-wiki reconciliation, see [[Project_Audit_2026-05-11]]; for the layered engineering blueprint, see [[FactLockCam_Blueprints_14May2026]].
 
 ### Audit-Verified Codebase Health
 

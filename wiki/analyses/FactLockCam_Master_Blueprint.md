@@ -19,7 +19,7 @@ The local vault pipeline is the most complete functional area. Captured camera f
 
 Core Supabase-backed capture and ledger sync are **working on a migrated hosted project** (see [[FactLockCam_Product_Baseline_2026-05]]). Foundation migrations create `profiles` and `seal_ledger`, enable RLS, attach new-user profile creation, and allow authenticated users to insert ledger rows for their wallet. A forward migration (`supabase/migrations/20260510120000_tighten_ledger_select_rls.sql`) replaces earlier **world-readable** `SELECT` on ledger tables with **wallet-scoped** reads for authenticated sessions (aligned with ProofLock tenant-boundary intent). The Flutter client implements **`SealLedgerRepository`**: `check_proof_status`, `simulate_chain_notarize`, **`seal_ledger` sync**, and **`proof_ledger` insert**. When remote work cannot finish, SQLite keeps **`pending_sync`** with exponential backoff fields; **`PendingSyncScheduler`** fire-and-forget retries every ~3 minutes, the hub/archive lifecycle triggers **`syncPendingInBackground`**, and banners offer **Retry now**. Broader gaps (real TEE signing, Polygon, C2PA, courier RPC model) remain below.
 
-The developer pipeline is mostly scaffolded. `scripts/factlockcam_supabase_pipeline.sh` supports local Supabase start/reset/lint, remote login/link/push, push dry-runs, and Flutter app runs with Dart defines. GitHub Actions validates Supabase migrations on pull requests and can manually deploy migrations to a linked project. Test coverage now covers the logon shell, retry behavior, native signing channel shim, hub/archive widgets, forensic viewfinder widgets, archive photo/video actions, action-registry behavior, photo-view rebuild caching, and video-thumbnail MIME extension mapping (36 Flutter tests passing as of the 2026-05-16 audit), but still needs deeper capture/crypto/sync failure-mode coverage.
+The developer pipeline is mostly scaffolded. `scripts/factlockcam_supabase_pipeline.sh` supports local Supabase start/reset/lint, remote login/link/push, push dry-runs, and Flutter app runs with Dart defines. GitHub Actions validates Supabase migrations on pull requests and can manually deploy migrations to a linked project. Test coverage now covers the logon shell, retry behavior, native signing channel shim, hub/archive widgets, forensic viewfinder widgets, archive photo/video actions, action-registry behavior, photo-view rebuild caching, and video-thumbnail MIME extension mapping (**33 Flutter tests passing** as of 2026-05-20 final QA), but still needs deeper capture/crypto/sync failure-mode coverage.
 
 ### Relation to ProofLock manifesto (target architecture)
 
@@ -50,6 +50,7 @@ The ingested **ProofLock** manifest ([[ProofLock_Architectural_Manifest]]) descr
 - Supabase foundation schema for profiles, wallet IDs, ledger tables (`seal_ledger`, repair-aligned `proof_ledger` / `simulated_chain_ledger`), RLS, and new-user profile creation.
 - User metadata editing (title/description) for archive rows from the vault UI.
 - Supabase local/remote pipeline script and CI migration validation workflow.
+- **Branded app icon** across iOS, Android (adaptive), and web via `flutter_launcher_icons` and source asset `assets/images/FactLockCamAppIcon.png` (regenerate: `dart run flutter_launcher_icons`).
 
 ## Needs To Be Finished
 

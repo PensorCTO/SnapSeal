@@ -5,6 +5,14 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-05-20
+
+- **Final QA pass + wiki cleanup** on branch `cursor/wiki-supabase-local-reset-audit`:
+  - User-confirmed QA pass; `flutter test` **33/33**; analyzer warnings cleared in vault UI (`Matrix4.translateByDouble`, unused catch params) and web crypto lint.
+  - **App icon** committed: `FactLockCamAppIcon.png` + `flutter_launcher_icons` for iOS/Android/web (commit `b476f37`).
+  - **Wiki optimized:** [[index]] reorganized — active analyses vs archived snapshots; [[FactLockCam_Product_Baseline_2026-05]] updated with branding + final QA status; [[FactLockCam_Master_Blueprint]] test count corrected (33); [[Polygon_Saga_Live]] QA date aligned; [[glossary]] adds `flutter_launcher_icons`, app icon, fixes `SimulatedChainNotarizer` vs live Polygon saga; [[overview]] points to baseline first.
+  - Validation: `python3 scripts/wiki_ingest.py --validate` — 22/22 pages OK.
+
 ## 2026-05-21
 
 - **Polygon Try 2 live + QA pass** on physical iPhone (~2s proof finalization):

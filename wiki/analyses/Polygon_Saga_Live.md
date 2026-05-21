@@ -7,7 +7,7 @@ summary: "May 2026 Polygon Try 2: event-driven async saga live on hosted Supabas
 
 ## Core Synthesis
 
-**Try 2 is complete and QA-verified (2026-05-21)** on physical iPhone against hosted project `jqvnwtslmoxjwzusmtxs`. Capture uses an **async saga** when `USE_POLYGON_NOTARIZER=true` (default after `scripts/sync_flutter_dart_defines.sh`): hash in isolate → EIP-191 EVM sign → local encrypt + SQLite → `proof_ledger` row with `notarization_status=pending_notarization` → fire-and-forget **`anchor-relay`** Edge Function → RPC `finalize_polygon_notarization` → local `pending_sync` cleared in ~**1–2 seconds** via `ProofSyncNotifier` (Realtime is a fallback, not the sole path).
+**Try 2 is complete and QA-verified** on physical iPhone against hosted project `jqvnwtslmoxjwzusmtxs`. **Final branch QA 2026-05-20:** `flutter test` 33/33, branded app icon, analyzer-clean vault UI. Capture uses an **async saga** when `USE_POLYGON_NOTARIZER=true` (default after `scripts/sync_flutter_dart_defines.sh`): hash in isolate → EIP-191 EVM sign → local encrypt + SQLite → `proof_ledger` row with `notarization_status=pending_notarization` → fire-and-forget **`anchor-relay`** Edge Function → RPC `finalize_polygon_notarization` → local `pending_sync` cleared in ~**1–2 seconds** via `ProofSyncNotifier` (Realtime is a fallback, not the sole path).
 
 Simulated chain remains available when `USE_POLYGON_NOTARIZER=false`.
 

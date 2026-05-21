@@ -54,13 +54,16 @@ summary: "Terminology reference for the LLM Wiki."
 | RPC (Remote Procedure Call) | Supabase PostgREST function calls (`rpc()`) used for gating sensitive operations like `check_proof_status`, `simulate_chain_notarize`, `attempt_courier_unlock`, and `get_or_create_courier_package`. | [[FactLockCam_Blueprints_14May2026]], [[MASTER_CONTEXT13MAY2026]] |
 | SealLedgerRepository | Dart repository class (`data/supabase/seal_ledger_repository.dart`) wrapping Supabase RPC and table operations for proof preflight, notarization simulation, ledger inserts, and courier blob uploads. | [[FactLockCam_Blueprints_14May2026]], [[FactLockCam_Master_Blueprint]] |
 | SHA-256 | Cryptographic hash algorithm used by `VaultService` to fingerprint original media bytes (via `Isolate.run`) for integrity verification, duplicate detection (`check_proof_status`), and chain anchoring. | [[FactLockCam_Blueprints_14May2026]], [[FactLockCam_Master_Blueprint]] |
-| SimulatedChainNotarizer | Active default `ChainNotarizer` that delegates to the `simulate_chain_notarize` Supabase RPC, writing to `simulated_chain_ledger`. Stand-in for Polygon until `PolygonChainNotarizer` is implemented. | `chain_notarizer.dart`, [[ProofLock_Refactor_Scope]] |
+| SimulatedChainNotarizer | Fallback `ChainNotarizer` when `USE_POLYGON_NOTARIZER=false`; delegates to `simulate_chain_notarize` RPC. When flag is **true**, async Polygon saga replaces this path — [[Polygon_Saga_Live]]. | `chain_notarizer.dart`, [[ProofLock_Refactor_Scope]] |
+| flutter_launcher_icons | Dev dependency generating iOS/Android/web launcher icons from `assets/images/FactLockCamAppIcon.png`. Regenerate after icon art changes: `dart run flutter_launcher_icons`. | `pubspec.yaml`, [[FactLockCam_Product_Baseline_2026-05]] |
+| FactLockCam app icon | Branded camera/lock artwork (#0D1B3A navy background) applied to iOS AppIcon, Android adaptive launcher, and web PWA icons. | [[FactLockCam_Product_Baseline_2026-05]] |
 
 ## Provenance Tracking
 
 * *Initial terminology*: Derived from `raw/sample_llm_wiki_source.md` (2026-04-26)
 * *FactLockCam application terminology*: Derived from `wiki/analyses/FactLockCam_Master_Blueprint.md` and `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md` (2026-04-30; updated 2026-05-09; tamper-evident framing 2026-05-10; audit terms 2026-05-11 via [[Project_Audit_2026-05-11]]; dual-mode capture + cold-build defines added 2026-05-11 via [[Master_Context_11MAY2026]]; four-panel vault UX, archive delete, owner-side verified viewing, and `ShutterButtonPainter` added 2026-05-11; Domain Interaction Contract and MIME-aware video thumbnail fallback added 2026-05-12; Heavy Metal UI terms added 2026-05-13 via [[Heavy_Metal_Design_System]])
 * *ProofLock terminology*: Derived from `wiki/sources/ProofLock_Architectural_Manifest.md` and `wiki/analyses/ProofLock_Refactor_Scope.md` (2026-05-03)
+* *Branding + Polygon saga terms*: `flutter_launcher_icons`, app icon, `SimulatedChainNotarizer` fallback clarification (2026-05-20)
 
 ## Related Notes
 
