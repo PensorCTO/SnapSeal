@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:camera/camera.dart';
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:image/image.dart' as img;
 import 'package:postgrest/postgrest.dart';
 import 'package:video_thumbnail/video_thumbnail.dart' as video_thumbnail;
 
@@ -15,7 +17,9 @@ import '../../core/config/app_config.dart';
 import '../../core/crypto/courier_crypto.dart';
 import '../../core/crypto/vault_encryption_handler.dart';
 import '../../core/di/locator.dart';
+import '../../core/journal/journal_repository.dart';
 import '../../core/journal/transactional_vault_persister.dart';
+import '../../core/lock/isolate_lock_coordinator.dart';
 import '../../core/ghost_key/native_enclave_channel.dart';
 import '../../data/local/vault_database.dart';
 import '../../data/models/archive_item.dart';
@@ -141,6 +145,26 @@ class VaultService {
   final AuthRepository _authRepository;
   final TransactionalVaultPersister? _transactionalPersister;
   final VaultPathResolver _pathResolver;
+  Future<void>? _captureSealChain;
+
+  Future<T> _enqueueCaptureSeal<T>(Future<T> Function() action) async {
+    final previous = _captureSealChain;
+    final gate = Completer<void>();
+    _captureSealChain = gate.future;
+    try {
+      if (previous != null) {
+        await previous;
+      }
+      return await action();
+    } finally {
+      if (!gate.isCompleted) {
+        gate.complete();
+      }
+      if (identical(_captureSealChain, gate.future)) {
+        _captureSealChain = null;
+      }
+    }
+  }
 
   /// Courier vault origin embedded in shared links.
   ///
@@ -184,8 +208,25 @@ class VaultService {
   ) async {
     final path = sourceFile.path;
     final mimeType = _inferMimeType(path);
-
     final bundle = await _readFileAndSha256InIsolate(path);
+    try {
+      return await _proofLockBytesSimulated(
+        bundle,
+        userId,
+        mimeType: mimeType,
+        sourcePath: path,
+      );
+    } finally {
+      await _deleteSourceAfterSeal(path);
+    }
+  }
+
+  Future<SealCaptureResult> _proofLockBytesSimulated(
+    ({String hash, Uint8List bytes}) bundle,
+    String userId, {
+    required String mimeType,
+    String? sourcePath,
+  }) async {
     final fileHash = bundle.hash;
     final rawMediaBytes = bundle.bytes;
 
@@ -243,7 +284,7 @@ class VaultService {
       rawMediaBytes,
       mimeType: mimeType,
       assetFingerprint: fileHash,
-      sourcePath: path,
+      sourcePath: sourcePath,
     );
 
     var pendingSync = true;
@@ -286,8 +327,6 @@ class VaultService {
       );
     }
 
-    await _deleteSourceAfterSeal(path);
-
     return SealCaptureResult(
       assetFingerprint: fileHash,
       pendingSync: pendingSync,
@@ -302,8 +341,25 @@ class VaultService {
   ) async {
     final path = sourceFile.path;
     final mimeType = _inferMimeType(path);
-
     final bundle = await _readFileAndSha256InIsolate(path);
+    try {
+      return await _proofLockBytesPolygonSaga(
+        bundle,
+        userId,
+        mimeType: mimeType,
+        sourcePath: path,
+      );
+    } finally {
+      await _deleteSourceAfterSeal(path);
+    }
+  }
+
+  Future<SealCaptureResult> _proofLockBytesPolygonSaga(
+    ({String hash, Uint8List bytes}) bundle,
+    String userId, {
+    required String mimeType,
+    String? sourcePath,
+  }) async {
     final fileHash = bundle.hash;
     final rawMediaBytes = bundle.bytes;
 
@@ -346,7 +402,7 @@ class VaultService {
       rawMediaBytes,
       mimeType: mimeType,
       assetFingerprint: fileHash,
-      sourcePath: path,
+      sourcePath: sourcePath,
     );
 
     var pendingSync = true;
@@ -398,8 +454,6 @@ class VaultService {
         chainTxHash: chainTxHash,
       );
     }
-
-    await _deleteSourceAfterSeal(path);
 
     return SealCaptureResult(
       assetFingerprint: fileHash,
@@ -465,13 +519,31 @@ class VaultService {
   Future<SealCaptureResult> sealAndStoreCapture(
     XFile capturedFile, {
     required String userId,
-  }) async {
-    final path = capturedFile.path;
-    try {
-      return await proofLockFile(File(path), userId);
-    } finally {
-      await _deleteTemporaryCapture(path);
-    }
+    required Uint8List bufferedBytes,
+  }) {
+    final mimeType = _resolveCaptureMimeType(capturedFile.path, bufferedBytes);
+    return _enqueueCaptureSeal(() async {
+      final path = capturedFile.path;
+      try {
+        final bundle = await _hashBytesInIsolate(bufferedBytes);
+        if (AppConfig.usePolygonNotarizer) {
+          return _proofLockBytesPolygonSaga(
+            bundle,
+            userId,
+            mimeType: mimeType,
+            sourcePath: path,
+          );
+        }
+        return _proofLockBytesSimulated(
+          bundle,
+          userId,
+          mimeType: mimeType,
+          sourcePath: path,
+        );
+      } finally {
+        await _deleteTemporaryCapture(path);
+      }
+    });
   }
 
   Future<String> createCourierPackage({
@@ -552,6 +624,58 @@ class VaultService {
     });
   }
 
+  Future<({String hash, Uint8List bytes})> _hashBytesInIsolate(
+    Uint8List bytes,
+  ) {
+    return Isolate.run(() {
+      final hash = crypto.sha256.convert(bytes).toString();
+      return (hash: hash, bytes: bytes);
+    });
+  }
+
+  String _resolveCaptureMimeType(String capturePath, Uint8List bytes) {
+    final fromBytes = _inferMimeTypeFromBytes(bytes);
+    if (fromBytes != 'application/octet-stream') {
+      return fromBytes;
+    }
+    return _inferMimeType(capturePath);
+  }
+
+  String _inferMimeTypeFromBytes(Uint8List bytes) {
+    if (bytes.length >= 3 &&
+        bytes[0] == 0xFF &&
+        bytes[1] == 0xD8 &&
+        bytes[2] == 0xFF) {
+      return 'image/jpeg';
+    }
+    if (bytes.length >= 12 &&
+        bytes[4] == 0x66 &&
+        bytes[5] == 0x74 &&
+        bytes[6] == 0x79 &&
+        bytes[7] == 0x70) {
+      final brand = String.fromCharCodes(bytes.sublist(8, 12));
+      if (brand.startsWith('heic') ||
+          brand.startsWith('heix') ||
+          brand.startsWith('mif1')) {
+        return 'image/heic';
+      }
+      if (brand.startsWith('qt  ') || brand.startsWith('moov')) {
+        return 'video/quicktime';
+      }
+      if (brand.startsWith('isom') || brand.startsWith('mp41')) {
+        return 'video/mp4';
+      }
+    }
+    if (bytes.length >= 8 &&
+        bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47) {
+      return 'image/png';
+    }
+    return 'application/octet-stream';
+  }
+
   /// Persists encrypted media + SQLite row inside a journal-backed transaction.
   Future<void> _persistSealedBytes(
     Uint8List rawMediaBytes, {
@@ -560,14 +684,20 @@ class VaultService {
     String? sourcePath,
   }) async {
     final keyBytes = await _loadOrCreateKeyBytes();
-    final encryptedBytes = await _vaultEncryption.encrypt(
-      bytes: rawMediaBytes,
-      keyBytes: keyBytes,
-    );
     final thumbnailBytes = await _generateThumbnailBytes(
       rawMediaBytes,
       mimeType: mimeType,
       sourcePath: sourcePath,
+    );
+    if (!(mimeType?.startsWith('video/') ?? false) && thumbnailBytes.isEmpty) {
+      throw StateError(
+        'Thumbnail generation failed for captured media ($mimeType).',
+      );
+    }
+
+    final encryptedBytes = await _vaultEncryption.encrypt(
+      bytes: rawMediaBytes,
+      keyBytes: keyBytes,
     );
 
     final persister = _transactionalPersister;
@@ -584,6 +714,41 @@ class VaultService {
       rawByteLength: rawMediaBytes.length,
       mimeType: mimeType,
       pendingSync: true,
+    );
+
+    await _verifyPersistedSealedAsset(
+      assetFingerprint: assetFingerprint,
+      keyBytes: keyBytes,
+      expectedEncryptedLength: encryptedBytes.length,
+    );
+  }
+
+  Future<void> _verifyPersistedSealedAsset({
+    required String assetFingerprint,
+    required Uint8List keyBytes,
+    required int expectedEncryptedLength,
+  }) async {
+    final paths = await _storage.resolveTransactionalPaths(assetFingerprint);
+    final encryptedPath = paths.encryptedFinalPath;
+    final onDiskLength = await File(encryptedPath).length();
+    if (onDiskLength != expectedEncryptedLength) {
+      throw StateError(
+        'Persist verification failed: encrypted payload length mismatch '
+        'for $assetFingerprint (expected $expectedEncryptedLength, '
+        'on disk $onDiskLength).',
+      );
+    }
+
+    final encryptedBytes = await _storage.readEncryptedOriginal(
+      encryptedPath,
+      assetFingerprint: assetFingerprint,
+    );
+
+    await CourierCrypto.decryptAndVerifyFingerprint(
+      vault: _vaultEncryption,
+      encryptedPayload: encryptedBytes,
+      keyBytes: keyBytes,
+      expectedFingerprint: assetFingerprint,
     );
   }
 
@@ -729,7 +894,34 @@ class VaultService {
         sourcePath: sourcePath,
       );
     }
+
+    final normalized = mimeType?.trim().toLowerCase();
+    if (normalized == 'image/heic' || normalized == 'image/heif') {
+      return _generateHeicOrHeifThumbnail(rawMediaBytes);
+    }
+
     return _vaultEncryption.generateThumbnail(rawMediaBytes);
+  }
+
+  /// HEIC/HEIF decoding requires Flutter's engine codec (main isolate only).
+  Future<Uint8List> _generateHeicOrHeifThumbnail(Uint8List bytes) async {
+    final codec = await ui.instantiateImageCodec(bytes, targetWidth: 320);
+    final frame = await codec.getNextFrame();
+    try {
+      final pngData = await frame.image.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+      if (pngData == null) {
+        return Uint8List(0);
+      }
+      final decoded = img.decodeImage(pngData.buffer.asUint8List());
+      if (decoded == null) {
+        return Uint8List(0);
+      }
+      return Uint8List.fromList(img.encodeJpg(decoded, quality: 72));
+    } finally {
+      frame.image.dispose();
+    }
   }
 
   Future<Uint8List> _generateVideoThumbnailBytes(
@@ -806,15 +998,30 @@ class VaultService {
   /// Does **not** delete remote `proof_ledger` / chain artifacts; those may
   /// remain as historical records on Supabase.
   Future<void> deleteArchiveItem(String assetFingerprint) async {
+    getIt<IsolateLockCoordinator>().unlock(assetFingerprint);
+
     final item = await _database.findArchiveItem(assetFingerprint);
     if (item == null) {
       return;
     }
+
     final resolved = await _pathResolver.resolve(item);
-    await _storage.deleteAssetFiles(
-      encryptedPath: resolved.encryptedPath,
-      thumbnailPath: resolved.thumbnailPath,
-    );
+    final transactionalPaths =
+        await _storage.resolveTransactionalPaths(assetFingerprint);
+    await _storage.purgePaths([
+      resolved.encryptedPath,
+      resolved.thumbnailPath,
+      ...transactionalPaths.pathsForPurge,
+    ]);
+
+    try {
+      final journal = getIt<JournalRepository>();
+      if (journal.isAvailable) {
+        await journal.open();
+        journal.purgeAsset(assetFingerprint);
+      }
+    } catch (_) {}
+
     await _database.deleteArchiveItem(assetFingerprint);
   }
 

@@ -102,20 +102,24 @@ String _bytesToHex(List<int> bytes) {
 }
 
 Uint8List _decodeHashBytes(String hash) {
-  var normalized = hash.trim().toLowerCase();
-  if (normalized.startsWith('0x')) {
-    normalized = normalized.substring(2);
-  }
-  if (normalized.length != 64) {
-    throw ArgumentError.value(hash, 'hash', 'Expected 32-byte SHA-256 hex.');
-  }
-  return Uint8List.fromList(
-    List.generate(normalized.length ~/ 2, (index) {
-      final byte = normalized.substring(index * 2, index * 2 + 2);
-      return int.parse(byte, radix: 16);
-    }),
-  );
+  return _hashByteCache.putIfAbsent(hash.trim().toLowerCase(), () {
+    var normalized = hash.trim().toLowerCase();
+    if (normalized.startsWith('0x')) {
+      normalized = normalized.substring(2);
+    }
+    if (normalized.length != 64) {
+      throw ArgumentError.value(hash, 'hash', 'Expected 32-byte SHA-256 hex.');
+    }
+    return Uint8List.fromList(
+      List.generate(normalized.length ~/ 2, (index) {
+        final byte = normalized.substring(index * 2, index * 2 + 2);
+        return int.parse(byte, radix: 16);
+      }),
+    );
+  });
 }
+
+final Map<String, Uint8List> _hashByteCache = <String, Uint8List>{};
 
 final walletServiceProvider = Provider<WalletService>(
   (ref) => getIt<WalletService>(),

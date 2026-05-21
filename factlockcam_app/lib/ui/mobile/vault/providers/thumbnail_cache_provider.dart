@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../data/local/vault_database.dart';
+import '../../../../data/services/local_vault_storage.dart';
 
 /// Off-thread thumbnail cache keyed by [assetFingerprint].
 ///
@@ -22,13 +23,20 @@ final thumbnailCacheProvider =
   }
 
   final db = ref.read(vaultDatabaseProvider);
-  final item = await db.findArchiveItem(assetFingerprint);
-  if (item == null || !_thumbnailFileExists(item.thumbnailPath)) {
+  final rawItem = await db.findArchiveItem(assetFingerprint);
+  if (rawItem == null) {
     return Uint8List(0);
   }
 
+  final storage = ref.read(localVaultStorageProvider);
+  final item = await storage.resolveArchivePaths(rawItem);
+  if (!_thumbnailFileExists(item.thumbnailPath)) {
+    return Uint8List(0);
+  }
+
+  final thumbnailPath = item.thumbnailPath;
   return Isolate.run(() {
-    return File(item.thumbnailPath).readAsBytesSync();
+    return File(thumbnailPath).readAsBytesSync();
   });
 });
 

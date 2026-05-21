@@ -70,6 +70,7 @@ class VaultService {
   Future<SealCaptureResult> sealAndStoreCapture(
     Object capturedFile, {
     required String userId,
+    Uint8List? bufferedBytes,
   }) async {
     throw UnsupportedError('Capture sealing is mobile-only.');
   }

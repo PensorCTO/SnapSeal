@@ -12,7 +12,9 @@ FactLockCam now treats **sealed asset persistence** as a two-database saga on mo
 1. **`factlockcam_journal.db`** (`sqlite3` + WAL) — `journal_log` (prepare → commit / rolled_back) and `asset_manifest` (final paths after commit).
 2. **`factlockcam_vault.db`** (`sqflite`) — `archive_items` UI metadata (unchanged schema v5).
 
-`TransactionalVaultPersister` writes encrypted bytes to **staging `*.part` paths**, atomically renames to vault finals, then commits the journal and **`upsertArchiveItem`**. On failure it purges staging/final files and marks the journal row rolled back.
+`TransactionalVaultPersister` writes encrypted bytes to **staging `*.part` paths**, atomically renames to vault finals (locking a **sidecar `*.part.lock`** — never open staging payloads with `FileMode.write` or promote truncates to 0 bytes), then commits the journal and **`upsertArchiveItem`**. On failure it purges staging/final/sidecar paths and marks the journal row rolled back.
+
+**Vault I/O (May 2026):** Multi-MB ciphertext **writes and reads run on the caller isolate** (`writeAsBytesSync` / `readAsBytes`); crypto stays in `Isolate.run`. Do not copy sealed payloads through worker isolates — truncation caused decrypt/thumbnail QA failures.
 
 **Boot recovery** runs in `main.dart` **before** `configureDependencies()` / `runApp()`: `BootRecoveryService` rolls back any `prepared` journal rows and deletes orphan staging/final files from interrupted seals.
 
@@ -28,7 +30,7 @@ FactLockCam now treats **sealed asset persistence** as a two-database saga on mo
 | Boot runner | `factlockcam_app/lib/core/journal/boot_recovery_runner_io.dart` |
 | Storage staging | `factlockcam_app/lib/data/services/local_vault_storage_io.dart` |
 | DI wiring | `factlockcam_app/lib/core/di/injection.dart` |
-| Tests | `factlockcam_app/test/journal_wal_recovery_test.dart` |
+| Tests | `factlockcam_app/test/journal_wal_recovery_test.dart`, `locked_rename_test.dart` |
 
 Web targets skip the journal layer (`TransactionalVaultPersister` is null on web).
 
@@ -40,6 +42,7 @@ Web targets skip the journal layer (`TransactionalVaultPersister` is null on web
 
 ## Related Notes
 
+* [[App_Store_Prep_Capture_Seal_2026-05]]
 * [[FactLockCam_Product_Baseline_2026-05]]
 * [[FactLockCam_Master_Blueprint]]
 * [[Isolate_Lock_Coordinator]]

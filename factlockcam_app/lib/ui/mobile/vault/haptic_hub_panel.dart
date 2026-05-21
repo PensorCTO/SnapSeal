@@ -166,7 +166,7 @@ class _HubTileLauncher extends StatelessWidget {
     final vault = _HubTile(
       compact: compact,
       icon: Icons.folder_open_outlined,
-      label: 'Vault',
+      label: 'Archive',
       subtitle: 'Browse photos and videos on this device',
       onTap: onVault,
     );

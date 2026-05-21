@@ -9,10 +9,11 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../core/archive/domain/models/media_action_type.dart';
 import '../../core/archive/presentation/widgets/universal_asset_toolbar.dart';
+import '../../core/di/service_providers.dart';
 import '../../data/models/archive_item.dart';
-import '../../domain/export/certificate_export_service.dart';
 import '../controllers/dashboard_controller.dart';
 import 'archive/providers/courier_link_provider.dart';
+import 'vault/providers/thumbnail_cache_provider.dart';
 import 'archive_photo_view.dart';
 import 'archive_video_view.dart';
 
@@ -53,7 +54,10 @@ class ArchiveItemActions {
                     await _showVerifiedDialog(context);
                     break;
                   case MediaActionType.delete:
-                    ref.invalidate(dashboardControllerProvider);
+                    ref.invalidate(thumbnailCacheProvider(item.assetFingerprint));
+                    await ref
+                        .read(dashboardControllerProvider.notifier)
+                        .refreshArchive();
                     break;
                   case MediaActionType.share:
                     if (!context.mounted) return;
@@ -164,9 +168,24 @@ class ArchiveItemActions {
       final url = await ref
           .read(courierLinkProvider.notifier)
           .generateLink(item.assetFingerprint, password);
+      final sealed = await ref
+          .read(vaultServiceProvider)
+          .extractForCourier(item.assetFingerprint);
+      final bundleFile = await ref
+          .read(proofBundleExportServiceProvider)
+          .writeBundleToCache(
+            item: item,
+            sealed: sealed,
+            courierUrl: url,
+          );
       if (!context.mounted) return;
       Navigator.of(context, rootNavigator: true).pop();
-      await SharePlus.instance.share(ShareParams(text: url));
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(bundleFile.path, mimeType: 'application/zip')],
+          text: 'FactLockCam proof bundle\nCourier link: $url',
+        ),
+      );
     } catch (error) {
       if (!context.mounted) return;
       Navigator.of(context, rootNavigator: true).pop();

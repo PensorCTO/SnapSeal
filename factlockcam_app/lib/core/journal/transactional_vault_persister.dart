@@ -111,12 +111,7 @@ class TransactionalVaultPersister {
         ),
       );
     } catch (error) {
-      await _storage.purgePaths([
-        paths.encryptedStagingPath,
-        paths.thumbnailStagingPath,
-        paths.encryptedFinalPath,
-        paths.thumbnailFinalPath,
-      ]);
+      await _storage.purgePaths(paths.pathsForPurge);
       _journal.markRolledBack(transactionId);
       _journal.removeManifest(assetFingerprint);
       rethrow;

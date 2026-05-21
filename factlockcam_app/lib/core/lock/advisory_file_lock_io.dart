@@ -6,9 +6,10 @@ class AdvisoryFileLock {
 
   static void runExclusiveSync(
     String path,
-    void Function(RandomAccessFile raf) action,
-  ) {
-    final raf = File(path).openSync(mode: FileMode.write);
+    void Function(RandomAccessFile raf) action, {
+    FileMode mode = FileMode.write,
+  }) {
+    final raf = File(path).openSync(mode: mode);
     try {
       raf.lockSync(FileLock.exclusive);
       try {
@@ -20,4 +21,7 @@ class AdvisoryFileLock {
       raf.closeSync();
     }
   }
+
+  /// Sidecar lock path used when promoting staging payloads without truncating them.
+  static String sidecarLockPath(String payloadPath) => '$payloadPath.lock';
 }

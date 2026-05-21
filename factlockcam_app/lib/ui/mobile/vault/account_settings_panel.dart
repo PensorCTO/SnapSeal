@@ -9,6 +9,7 @@ import '../../../core/config/app_config.dart';
 import '../../../core/ui/widgets/vault_panel_navigation_bar.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/dashboard_controller.dart';
+import '../settings/legal_document_view.dart';
 import 'providers/thumbnail_cache_provider.dart';
 
 /// Account & Settings panel — logout, account deletion, legal links.
@@ -25,14 +26,25 @@ class AccountSettingsPanel extends ConsumerStatefulWidget {
 class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel> {
   bool _isBurning = false;
 
-  Future<void> _openUrl(String url) async {
-    final uri = Uri.parse(url);
+  Future<void> _openSupportWebsite() async {
+    final uri = Uri.parse(AppConfig.supportWebsiteUrl);
     if (!await canLaunchUrl(uri)) {
       if (!mounted) return;
-      await _showAlert('Unable to open link', url);
+      await _showAlert('Unable to open link', AppConfig.supportWebsiteUrl);
       return;
     }
     await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  void _openLegalDocument({
+    required String title,
+    required String assetPath,
+  }) {
+    Navigator.of(context).push(
+      CupertinoPageRoute<void>(
+        builder: (_) => LegalDocumentView(title: title, assetPath: assetPath),
+      ),
+    );
   }
 
   Future<void> _signOut() async {
@@ -48,7 +60,7 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel> {
         title: const Text('Delete account?'),
         content: const Text(
           'This permanently deletes your account, remote proof data, '
-          'and courier packages. Local vault data on this device will also '
+          'and courier packages. Local archive data on this device will also '
           'be erased. This cannot be undone.',
         ),
         actions: [
@@ -162,13 +174,38 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel> {
                     onPressed: busy ? null : _confirmBurnAccount,
                   ),
                   const SizedBox(height: 32),
+                  Text(
+                    'LEGAL',
+                    style: AppTextStyles.monoSm(
+                      color: AppColors.starkWhite.withValues(alpha: 0.52),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   _LegalTile(
-                    title: 'End User License Agreement',
-                    onTap: () => _openUrl(AppConfig.legalEulaUrl),
+                    title: 'Terms of Service',
+                    onTap: () => _openLegalDocument(
+                      title: 'Terms of Service',
+                      assetPath: LegalDocumentView.termsAssetPath,
+                    ),
                   ),
                   _LegalTile(
                     title: 'Privacy Policy',
-                    onTap: () => _openUrl(AppConfig.legalPrivacyUrl),
+                    onTap: () => _openLegalDocument(
+                      title: 'Privacy Policy',
+                      assetPath: LegalDocumentView.privacyAssetPath,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'SUPPORT',
+                    style: AppTextStyles.monoSm(
+                      color: AppColors.starkWhite.withValues(alpha: 0.52),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _LegalTile(
+                    title: 'Help & Support',
+                    onTap: _openSupportWebsite,
                   ),
                 ],
               ),
@@ -228,8 +265,10 @@ class _LegalTile extends StatelessWidget {
               style: AppTextStyles.monoSm(color: AppColors.starkWhite),
             ),
           ),
-          const Icon(
-            CupertinoIcons.arrow_up_right_square,
+          Icon(
+            title == 'Help & Support'
+                ? CupertinoIcons.arrow_up_right_square
+                : CupertinoIcons.doc_text,
             size: 18,
             color: AppColors.titaniumHighlight,
           ),

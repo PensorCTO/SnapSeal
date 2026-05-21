@@ -26,7 +26,7 @@ void main() {
           body: TelemetryOverlay(
             acquisitionMode: AcquisitionMode.photo,
             isRecording: false,
-            isSealing: false,
+            archivingCount: 0,
             liveHashHex: hash,
           ),
         ),
@@ -48,7 +48,7 @@ void main() {
           body: TelemetryOverlay(
             acquisitionMode: AcquisitionMode.video,
             isRecording: false,
-            isSealing: false,
+            archivingCount: 0,
           ),
         ),
       ),

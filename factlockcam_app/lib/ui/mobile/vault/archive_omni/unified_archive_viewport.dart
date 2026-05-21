@@ -92,7 +92,7 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
           children: [
             if (widget.onBackToHub != null)
               VaultPanelNavigationBar(
-                title: 'Vault',
+                title: 'Archive',
                 onBack: widget.onBackToHub!,
               ),
             // ── Logo bar ───────────────────────────────────────

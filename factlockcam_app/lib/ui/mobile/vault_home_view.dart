@@ -30,12 +30,6 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
     });
   }
 
-  void _onCaptureComplete() {
-    setState(() {
-      _selectedIndex = 0;
-    });
-  }
-
   void _onHubDestinationSelected(int index) {
     setState(() {
       _selectedIndex = index;
@@ -62,7 +56,6 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
     return CameraView(
       key: ValueKey('camera_${mode.name}'),
       mode: mode,
-      onCaptureComplete: _onCaptureComplete,
       onBackToHub: _returnToHub,
     );
   }

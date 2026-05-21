@@ -14,7 +14,9 @@ While `TransactionalVaultPersister` stages `*.part` files and atomically renames
 | `IsolateLockCoordinator` | `lock`/`unlock` around persister transactions; optional `SendPort` maps from workers; `lockStream` + `isFileLocked` cache |
 | `AssetLockNotifier` | `assetLockStateProvider` — watched from `FactLockCamApp` |
 | `AssetSecuringOverlay` | Chronology + omni grid tiles show **SECURING FILE…** while locked |
-| `AdvisoryFileLock` | `RandomAccessFile.lockSync(FileLock.exclusive)` in crypto isolates (POSIX-backed on iOS) |
+| `AdvisoryFileLock` | POSIX `FileLock.exclusive`; **promote/rename** locks a **sidecar** `*.part.lock` (never open staging payload with `FileMode.write` — that truncates bytes before rename) |
+| `lockedWriteBytesEntry` | `writeAsBytesSync` on staging path (caller isolate); length verified after write |
+| `lockedRenameEntry` | Sidecar-locked promote; staging length checked before and after rename |
 | `syncLocksFromPreparedJournal` | After DI journal open, re-locks UI for any surviving `prepared` rows (post–`BootRecoveryService`) |
 | `AssetFileLockedException` | Domain reads with `assetFingerprint` fail fast while locked |
 
@@ -31,17 +33,18 @@ While `TransactionalVaultPersister` stages `*.part` files and atomically renames
 | Riverpod bridge | `factlockcam_app/lib/ui/providers/asset_lock_provider.dart` |
 | Overlay widget | `factlockcam_app/lib/ui/mobile/vault/widgets/asset_securing_overlay.dart` |
 | DI | `factlockcam_app/lib/core/di/injection.dart` |
-| Tests | `factlockcam_app/test/isolate_lock_coordinator_test.dart` |
+| Tests | `factlockcam_app/test/isolate_lock_coordinator_test.dart`, `locked_rename_test.dart` |
 | App Store / QA | `docs/app_store_submission_checklist.md`, `ios/Runner/PrivacyInfo.xcprivacy` |
 
 Web: coordinator registers globally; transactional storage/locks are mobile-only.
 
 ## Provenance Tracking
 
-* *Implementation + fourth QA pass*: Branch `cursor/wiki-supabase-local-reset-audit` (2026-05-21); user-confirmed Sprint 4 QA pass before commit.
+* *Implementation + fourth/fifth QA*: Branch `main` (2026-05-21); Sprint 4 overlays; fifth QA sidecar-lock promote fix ([[App_Store_Prep_Capture_Seal_2026-05]]).
 
 ## Related Notes
 
+* [[App_Store_Prep_Capture_Seal_2026-05]]
 * [[Vault_Transactional_Journal]]
 * [[FactLockCam_Product_Baseline_2026-05]]
 * [[ProofLock_Refactor_Scope]]

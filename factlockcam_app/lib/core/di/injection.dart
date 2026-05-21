@@ -15,6 +15,7 @@ import '../journal/transactional_vault_persister.dart';
 import '../lock/isolate_lock_coordinator.dart';
 import '../lock/lock_journal_sync.dart';
 import '../../domain/export/certificate_export_service.dart';
+import '../../domain/export/proof_bundle_export_service.dart';
 import '../../domain/blockchain/chain_notarizer.dart';
 import '../../domain/blockchain/vault_blockchain_handler.dart';
 import '../../domain/blockchain/wallet_service.dart';
@@ -130,6 +131,14 @@ Future<void> configureDependencies() async {
       sealLedgerRepository: getIt<SealLedgerRepository>(),
     ),
   );
+
+  if (!kIsWeb) {
+    getIt.registerLazySingleton<ProofBundleExportService>(
+      () => ProofBundleExportService(
+        sealLedgerRepository: getIt<SealLedgerRepository>(),
+      ),
+    );
+  }
 
   getIt.registerLazySingleton<VaultService>(
     () => VaultService(

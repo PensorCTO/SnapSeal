@@ -64,7 +64,13 @@ class AppConfig {
 
   static String get webVaultBaseUrl => _webVaultBaseUrl;
 
-  /// Placeholder legal URLs — replace before App Store submission.
+  /// Placeholder support/marketing URL for App Store submission requirements.
+  static const supportWebsiteUrl = 'https://factlockcam.com/support';
+
+  /// Deprecated external legal URLs — native bundled documents are preferred.
+  @Deprecated('Use offline LegalDocumentView assets instead.')
   static const legalEulaUrl = 'https://factlockcam.com/eula';
+
+  @Deprecated('Use offline LegalDocumentView assets instead.')
   static const legalPrivacyUrl = 'https://factlockcam.com/privacy';
 }

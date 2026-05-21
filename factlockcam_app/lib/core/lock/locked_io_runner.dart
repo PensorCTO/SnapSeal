@@ -31,10 +31,14 @@ void lockedWriteBytesEntry(LockedWritePayload payload) {
     if (!parent.existsSync()) {
       parent.createSync(recursive: true);
     }
-    AdvisoryFileLock.runExclusiveSync(payload.path, (raf) {
-      raf.writeFromSync(payload.bytes);
-      raf.flushSync();
-    });
+    File(payload.path).writeAsBytesSync(payload.bytes, flush: true);
+    final writtenLength = File(payload.path).lengthSync();
+    if (writtenLength != payload.bytes.length) {
+      throw StateError(
+        'Vault write length mismatch for ${payload.path}: '
+        'expected ${payload.bytes.length}, got $writtenLength',
+      );
+    }
   } finally {
     if (port != null && fileId != null) {
       port.send({'fileId': fileId, 'isProcessing': false});
@@ -68,13 +72,29 @@ void lockedRenameEntry(LockedRenamePayload payload) {
     if (!staging.existsSync()) {
       throw StateError('Staging file missing: ${payload.stagingPath}');
     }
-    AdvisoryFileLock.runExclusiveSync(payload.stagingPath, (_) {
-      final target = File(payload.finalPath);
-      if (target.existsSync()) {
-        target.deleteSync();
-      }
-      staging.renameSync(payload.finalPath);
-    });
+    final stagingLength = staging.lengthSync();
+    if (stagingLength == 0) {
+      throw StateError(
+        'Staging file is empty before promote: ${payload.stagingPath}',
+      );
+    }
+    AdvisoryFileLock.runExclusiveSync(
+      AdvisoryFileLock.sidecarLockPath(payload.stagingPath),
+      (_) {
+        final target = File(payload.finalPath);
+        if (target.existsSync()) {
+          target.deleteSync();
+        }
+        staging.renameSync(payload.finalPath);
+      },
+    );
+    final finalLength = File(payload.finalPath).lengthSync();
+    if (finalLength != stagingLength) {
+      throw StateError(
+        'Promoted vault file length mismatch for ${payload.finalPath}: '
+        'expected $stagingLength, got $finalLength',
+      );
+    }
   } finally {
     if (port != null && fileId != null) {
       port.send({'fileId': fileId, 'isProcessing': false});

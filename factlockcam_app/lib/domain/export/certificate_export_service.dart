@@ -15,6 +15,7 @@ class CertificateExportService {
             sealLedgerRepository ?? getIt<SealLedgerRepository>();
 
   final SealLedgerRepository _sealLedgerRepository;
+  final Map<String, String?> _chainTxHashCache = <String, String?>{};
 
   /// Draft payload until PDF/printing is wired in Phase 2 follow-ups.
   Future<String> buildCertificateDraft(ArchiveItem item) async {
@@ -25,17 +26,7 @@ class CertificateExportService {
         ? item.description!.trim()
         : 'No description provided.';
 
-    var chainTxHash = item.chainTxHash?.trim();
-    if ((chainTxHash == null || chainTxHash.isEmpty) &&
-        _sealLedgerRepository.isConfigured) {
-      try {
-        chainTxHash = await _sealLedgerRepository.fetchProofChainTxHash(
-          item.assetFingerprint,
-        );
-      } catch (_) {
-        // Certificate still renders without remote lookup.
-      }
-    }
+    final chainTxHash = await _resolveChainTxHash(item);
 
     final ledgerTxLine = chainTxHash != null && chainTxHash.isNotEmpty
         ? 'Ledger Transaction Hash: $chainTxHash'
@@ -52,5 +43,36 @@ Description: $description
 
 $fre902EvidencePackagingDisclaimer
 ''';
+  }
+
+  Future<String?> _resolveChainTxHash(ArchiveItem item) async {
+    final local = item.chainTxHash?.trim();
+    if (local != null && local.isNotEmpty) {
+      return local;
+    }
+
+    final cached = _chainTxHashCache[item.assetFingerprint];
+    if (cached != null && cached.isNotEmpty) {
+      return cached;
+    }
+    if (_chainTxHashCache.containsKey(item.assetFingerprint)) {
+      return null;
+    }
+
+    if (!_sealLedgerRepository.isConfigured) {
+      _chainTxHashCache[item.assetFingerprint] = null;
+      return null;
+    }
+
+    try {
+      final remote = await _sealLedgerRepository.fetchProofChainTxHash(
+        item.assetFingerprint,
+      );
+      _chainTxHashCache[item.assetFingerprint] = remote;
+      return remote;
+    } catch (_) {
+      _chainTxHashCache[item.assetFingerprint] = null;
+      return null;
+    }
   }
 }

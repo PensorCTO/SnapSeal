@@ -33,7 +33,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('CHOOSE AN ACTION'), findsNothing);
-    expect(find.text('VAULT'), findsOneWidget);
+    expect(find.text('ARCHIVE'), findsOneWidget);
     expect(find.text('PICTURE'), findsWidgets);
     expect(find.text('VIDEO'), findsWidgets);
     expect(find.text('ACCOUNT & SETTINGS'), findsOneWidget);
@@ -83,7 +83,9 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('End User License Agreement'), findsOneWidget);
+    expect(find.text('Terms of Service'), findsOneWidget);
+    expect(find.text('Privacy Policy'), findsOneWidget);
+    expect(find.text('Help & Support'), findsOneWidget);
     expect(find.text('BURN ACCOUNT'), findsOneWidget);
     expect(find.text('LOG OUT'), findsOneWidget);
   });

@@ -22,7 +22,7 @@ class VaultPanelNavigationBar extends StatelessWidget
   Size get preferredSize => const Size.fromHeight(44);
 
   @override
-  bool shouldFullyObstruct(BuildContext context) => false;
+  bool shouldFullyObstruct(BuildContext context) => true;
 
   @override
   Widget build(BuildContext context) {

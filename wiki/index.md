@@ -12,6 +12,7 @@ Read this page first when answering questions about the wiki.
 | Page | When to read |
 |------|----------------|
 | [[FactLockCam_Product_Baseline_2026-05]] | **Canonical status** — verified workflow, Supabase ops, branding, open gaps |
+| [[App_Store_Prep_Capture_Seal_2026-05]] | **Fifth QA (2026-05-21)** — App Store legal bundle, multi-shot seal hardening, vault I/O fixes |
 | [[FactLockCam_Master_Blueprint]] | Application capabilities, finished vs unfinished, use cases |
 | [[Polygon_Saga_Live]] | Live Polygon saga (Try 2): await relay at capture, local `chain_tx_hash`, certificate tx line |
 | [[iOS_Device_Development_Workflow]] | Physical iOS build/install when `flutter run` attach fails |
@@ -28,7 +29,8 @@ Read this page first when answering questions about the wiki.
 - [[FactLockCam_Product_Baseline_2026-05]] - Verified hub/archive/capture workflow and compressed Supabase baseline (start here for FactLockCam status).
 - [[Heavy_Metal_Design_System]] - FactLockCam titanium/mono/iris visual system for secure-hardware UI feel.
 - [[Vault_Transactional_Journal]] - Sprint 2 WAL journal, transactional file persist, boot recovery, SQLite open hardening.
-- [[Isolate_Lock_Coordinator]] - Sprint 4 cross-isolate UI lock stream, advisory file locks, securing overlays.
+- [[Isolate_Lock_Coordinator]] - Sprint 4 cross-isolate UI lock stream, sidecar advisory locks, securing overlays.
+- [[App_Store_Prep_Capture_Seal_2026-05]] - Fifth QA: legal bundle, multi-shot capture, vault promote I/O fixes.
 
 ## Analyses (active)
 

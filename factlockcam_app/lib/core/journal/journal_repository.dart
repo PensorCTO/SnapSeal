@@ -153,4 +153,23 @@ class JournalRepository {
       [assetFingerprint],
     );
   }
+
+  int? committedByteLength(String assetFingerprint) {
+    final rows = _db.select(
+      'SELECT byte_length FROM asset_manifest WHERE asset_fingerprint = ?',
+      [assetFingerprint],
+    );
+    if (rows.isEmpty) {
+      return null;
+    }
+    return rows.first['byte_length'] as int;
+  }
+
+  void purgeAsset(String assetFingerprint) {
+    _db.execute(
+      'DELETE FROM journal_log WHERE asset_fingerprint = ?',
+      [assetFingerprint],
+    );
+    removeManifest(assetFingerprint);
+  }
 }

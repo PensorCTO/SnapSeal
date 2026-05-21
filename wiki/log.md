@@ -7,6 +7,12 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 ## 2026-05-21
 
+- **App Store prep + fifth QA pass** (committed to `main`):
+  - **Code:** Bundled legal docs + `LegalDocumentView`; multi-shot capture (`sealAndStoreCapture` buffered bytes, `_enqueueCaptureSeal`); GPS/UTC HUD; archive delete/view/thumbnail fixes; sidecar-lock staging promote (fixes 0-byte `.seal`); caller-isolate vault I/O; proof bundle zip share; `cipher_engine_roundtrip_test`, `locked_rename_test`.
+  - **QA:** User-confirmed pass on physical device (rapid photos, thumbnails, view/decrypt, delete).
+  - **Wiki:** Added [[App_Store_Prep_Capture_Seal_2026-05]]; refreshed [[FactLockCam_Product_Baseline_2026-05]], [[Vault_Transactional_Journal]], [[Isolate_Lock_Coordinator]], [[index]], [[overview]], [[glossary]].
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 - **Sprint 4 reactive UI locks + fourth QA pass** (committed to `main`):
   - **Code:** `IsolateLockCoordinator`, advisory file locks, `AssetSecuringOverlay` on chronology/grid, `PrivacyInfo.xcprivacy`, `docs/app_store_submission_checklist.md`, `integration_test` stub.
   - **QA:** User-confirmed pass on physical device.

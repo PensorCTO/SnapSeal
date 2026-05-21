@@ -9,7 +9,8 @@ summary: "Authoritative May 2026 baseline: verified hub/archive/capture workflow
 
 As of this baseline, the **primary product workflow is verified end-to-end** on hosted Supabase: **logon** → **vault hub** → **capture or browse** → sealed assets with remote proof when online.
 
-- **Fourth QA pass 2026-05-21**: Sprint 4 **isolate lock coordinator** + securing overlays on archive tiles; advisory `FileLock.exclusive` on staging I/O; `PrivacyInfo.xcprivacy` + App Store checklist doc ([[Isolate_Lock_Coordinator]]).
+- **Fifth QA pass 2026-05-21**: App Store prep — bundled ToS/Privacy, support URL, GPS telemetry HUD, multi-shot capture (buffered bytes + seal queue), archive delete/view/thumbnail fixes, proof bundle zip share ([[App_Store_Prep_Capture_Seal_2026-05]]).
+- **Fourth QA pass 2026-05-21**: Sprint 4 **isolate lock coordinator** + securing overlays on archive tiles; sidecar advisory locks on staging promote (not payload truncate); `PrivacyInfo.xcprivacy` + App Store checklist doc ([[Isolate_Lock_Coordinator]]).
 - **Third QA pass 2026-05-21**: Sprint 2 **transactional journal** + SQLite single-flight fix; physical iPhone capture + **Polygon `proof_ledger` insert** verified; hub shell fixes (lazy archive/account panels, unique Cupertino nav `heroTag`, 2×2 hub grid + scroll in landscape).
 - **Second QA pass 2026-05-20**: proof-progress + certificate tx-hash fixes; `flutter test` **33/33** core suite; Polygon saga live (overlay **Generating Proof…**, ~2s relay), **ledger tx hash on certificate**, branded app icon ([[Polygon_Saga_Live]]).
 - PR0 lazy camera mount remains prerequisite ([[Polygon_Try1_Postmortem]]). Journal details: [[Vault_Transactional_Journal]].
@@ -17,9 +18,9 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 ### Verified workflow (happy path)
 
 1. Authenticate via Magic Number (6-digit email OTP) when Supabase is configured with Dart defines.
-2. From **`/vault-home`**, use the **four-tile hub** (Vault, Picture, Video, Account & Settings). **Picture** and **Video** open embedded `CameraView` panels (`AcquisitionMode.photo` / `video`) inside `VaultHomeView`'s `IndexedStack` — cameras **lazy-mount** only when that panel is active (PR0). **Vault** opens the unified archive omni-surface. Photo mode uses `ShutterIrisPainter`; video mode enables audio with long-press/toggle recording. **Back** on each panel returns to the hub launcher.
+2. From **`/vault-home`**, use the **four-tile hub** (Archive, Picture, Video, Account & Settings). **Picture** and **Video** open embedded `CameraView` panels (`AcquisitionMode.photo` / `video`) inside `VaultHomeView`'s `IndexedStack` — cameras **lazy-mount** only when that panel is active (PR0). Photo mode uses `ShutterIrisPainter`, **`ImageFormatGroup.jpeg`**, live GPS/UTC HUD, and **stays on the viewfinder** after each shot (background seal badge). **Archive** opens the unified archive omni-surface. Video mode enables audio with long-press/toggle recording. **Back** on each panel returns to the hub launcher.
 3. When **`USE_POLYGON_NOTARIZER=true`** (default after dart-defines sync), capture runs the **Polygon saga**: **`check_proof_status`** → device sign + **EIP-191 EVM sign** → local **AES-GCM** vault + SQLite → **`proof_ledger`** insert (`pending_notarization`) → **await `anchor-relay`** (camera overlay **Generating Proof…**) → local **`chain_tx_hash`** + `pending_sync` cleared ([[Polygon_Saga_Live]]). **Certificate draft** includes the ledger transaction hash (local SQLite or remote `proof_ledger` fetch). When the flag is **false**, the legacy synchronous **`SimulatedChainNotarizer`** path applies unchanged.
-4. Browse sealed media from the **Vault** hub tile (`UnifiedArchiveViewport`: grid/chronology omni-surface with filters), not a separate `/archive` route. In-flight transactional writes show a **SECURING FILE…** overlay on the affected asset ([[Isolate_Lock_Coordinator]]). Rows render local thumbnails from SQLite metadata; `video/*` rows use native video-frame JPEG thumbnails where possible and retain a play-badge overlay. **Background pending-sync retries** (timer + hub/archive lifecycle hooks) and a **“Retry now”** banner attempt to clear pending rows when connectivity/auth returns. Archive item actions flow through the **Domain Interaction Contract**: `AssetActionRegistry` maps the asset `mime_type`/`mediaType` to allowed `MediaActionType`s, `UniversalAssetToolbar` renders the Cupertino action surface, and `AssetAction` delegates verify/delete to the vault service layer. Tapping a video row opens `ArchiveVideoView` via the in-memory courier-decrypt path; tapping a photo row can open `ArchivePhotoView` to decrypt, verify, and view the full-size original. Per-item local delete removes SQLite metadata plus encrypted/thumbnail files from the device but does not erase historical remote proof rows.
+4. Browse sealed media from the **Archive** hub tile (`UnifiedArchiveViewport`: grid/chronology omni-surface with filters), not a separate `/archive` route. In-flight transactional writes show a **SECURING FILE…** overlay on the affected asset ([[Isolate_Lock_Coordinator]]). Thumbnails load via path-resolved JPEG files; chronology supports long-press delete. **View Full** in the asset inspector decrypts via `extractForCourier` and renders with engine codec (HEIC/JPEG). **Send Proof** shares a zip proof bundle + courier URL. Per-item **DELETE FROM DEVICE** removes local SQLite + encrypted/thumbnail/staging files (remote ledger rows may remain).
 
 ### Branding
 
@@ -51,6 +52,7 @@ Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
 
 ## Related Notes
 
+* [[App_Store_Prep_Capture_Seal_2026-05]]
 * [[FactLockCam_Master_Blueprint]]
 * [[Vault_Transactional_Journal]]
 * [[Isolate_Lock_Coordinator]]

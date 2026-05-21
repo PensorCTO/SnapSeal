@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
@@ -8,7 +9,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
-import '../../../core/config/app_config.dart';
 import '../../../core/services/haptic_service.dart';
 import '../../../core/ui/widgets/vault_panel_navigation_bar.dart';
 import '../../../core/ui/painters/reticle_painter.dart';
@@ -16,9 +16,11 @@ import '../../../core/ui/painters/shutter_button_painter.dart';
 import '../../../data/supabase/auth_repository.dart';
 import '../../../domain/services/vault_service.dart';
 import '../../controllers/dashboard_controller.dart';
+import '../vault/providers/thumbnail_cache_provider.dart';
 import '../vault_home_view.dart';
 import 'acquisition_mode.dart';
 import 'camera_chrome_frame.dart';
+import 'camera_geolocation_stream.dart';
 import 'telemetry_overlay.dart';
 
 class CameraView extends ConsumerStatefulWidget {
@@ -35,7 +37,7 @@ class CameraView extends ConsumerStatefulWidget {
   /// When null, falls back to [Navigator.of(context).pop] (standalone route).
   final VoidCallback? onCaptureComplete;
 
-  /// When set (vault shell), back navigates to the hub instead of popping a route.
+  /// When set (archive shell), back navigates to the hub instead of popping a route.
   final VoidCallback? onBackToHub;
 
   static const routePath = '/camera';
@@ -47,15 +49,22 @@ class CameraView extends ConsumerStatefulWidget {
 class _CameraViewState extends ConsumerState<CameraView> {
   CameraController? _controller;
   bool _isInitializing = true;
-  bool _isSealing = false;
+  int _archivingCount = 0;
+  bool _isCapturing = false;
   bool _isRecording = false;
   int _verifiedFlashTrigger = 0;
   String? _errorMessage;
+  final CameraGeolocationStream _geolocation = CameraGeolocationStream();
 
   @override
   void initState() {
     super.initState();
     _initializeCamera();
+    unawaited(
+      _geolocation.start(() {
+        if (mounted) setState(() {});
+      }),
+    );
   }
 
   void _onCameraValueChanged() {
@@ -77,6 +86,9 @@ class _CameraViewState extends ConsumerState<CameraView> {
         preferred,
         ResolutionPreset.high,
         enableAudio: widget.mode == AcquisitionMode.video,
+        imageFormatGroup: widget.mode == AcquisitionMode.photo
+            ? ImageFormatGroup.jpeg
+            : ImageFormatGroup.bgra8888,
       );
       await controller.initialize();
       if (!mounted) {
@@ -111,24 +123,33 @@ class _CameraViewState extends ConsumerState<CameraView> {
 
   Future<void> _capturePhoto() async {
     final controller = _controller;
-    if (controller == null || !controller.value.isInitialized || _isSealing) {
+    if (controller == null ||
+        !controller.value.isInitialized ||
+        _isCapturing ||
+        _archivingCount > 4) {
       return;
     }
 
     setState(() {
-      _isSealing = true;
+      _isCapturing = true;
       _errorMessage = null;
     });
 
     try {
       final xfile = await controller.takePicture();
-      await _sealCapturedFile(xfile);
+      final bufferedBytes = await xfile.readAsBytes();
+      unawaited(_sealCapturedFile(xfile, bufferedBytes: bufferedBytes));
     } catch (error) {
       if (!mounted) return;
       setState(() {
         _errorMessage = error.toString();
-        _isSealing = false;
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCapturing = false;
+        });
+      }
     }
   }
 
@@ -136,7 +157,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
     final controller = _controller;
     if (controller == null ||
         !controller.value.isInitialized ||
-        _isSealing ||
+        _isCapturing ||
         _isRecording) {
       return;
     }
@@ -159,76 +180,84 @@ class _CameraViewState extends ConsumerState<CameraView> {
 
   Future<void> _stopAndSealVideo() async {
     final controller = _controller;
-    if (controller == null || !controller.value.isInitialized) {
+    if (controller == null || !controller.value.isInitialized || _isCapturing) {
       return;
     }
 
     setState(() {
-      _isSealing = true;
+      _isCapturing = true;
     });
 
     try {
       final xfile = await controller.stopVideoRecording();
+      final bufferedBytes = await xfile.readAsBytes();
       if (!mounted) return;
       setState(() {
         _isRecording = false;
+        _isCapturing = false;
       });
-      await _sealCapturedFile(xfile);
+      unawaited(_sealCapturedFile(xfile, bufferedBytes: bufferedBytes));
     } catch (error) {
       if (!mounted) return;
       setState(() {
         _errorMessage = error.toString();
         _isRecording = false;
-        _isSealing = false;
+        _isCapturing = false;
       });
     }
   }
 
-  Future<void> _sealCapturedFile(XFile xfile) async {
+  Future<void> _sealCapturedFile(
+    XFile xfile, {
+    required Uint8List bufferedBytes,
+  }) async {
+    if (!mounted) return;
+    setState(() {
+      _archivingCount += 1;
+    });
+
     try {
       final userId =
           ref.read(supabaseClientProvider)?.auth.currentUser?.id ?? '';
       final result = await ref
           .read(vaultServiceProvider)
-          .sealAndStoreCapture(xfile, userId: userId);
+          .sealAndStoreCapture(
+            xfile,
+            userId: userId,
+            bufferedBytes: bufferedBytes,
+          );
       if (!mounted) return;
       if (!result.pendingSync) {
         setState(() {
           _verifiedFlashTrigger += 1;
         });
         await ref.read(hapticServiceProvider).lock();
-        if (!mounted) return;
-        await Future<void>.delayed(const Duration(milliseconds: 420));
-        if (!mounted) return;
       }
-      ref.invalidate(dashboardControllerProvider);
-      if (!mounted) return;
-      setState(() {
-        _isSealing = false;
-        _isRecording = false;
-      });
-      widget.onCaptureComplete?.call();
+      ref.invalidate(thumbnailCacheProvider(result.assetFingerprint));
+      await ref.read(dashboardControllerProvider.notifier).refreshArchive();
     } catch (error) {
       if (!mounted) return;
       setState(() {
         _errorMessage = error.toString();
         _isRecording = false;
-        _isSealing = false;
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _archivingCount = (_archivingCount - 1).clamp(0, 999);
+        });
+      }
     }
   }
 
   @override
   void dispose() {
+    unawaited(_geolocation.stop());
     final controller = _controller;
     final wasRecording = _isRecording;
     controller?.removeListener(_onCameraValueChanged);
     _controller = null;
     if (controller != null) {
-      // State.dispose() must stay synchronous, so finalize the platform encoder
-      // and the controller asynchronously in a chained future. The order
-      // `stopVideoRecording` -> `controller.dispose()` is preserved so the
-      // encoder flushes its temp file before the session tears down.
       unawaited(_teardownCamera(controller, wasRecording: wasRecording));
     }
     super.dispose();
@@ -241,10 +270,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
     if (wasRecording && controller.value.isInitialized) {
       try {
         await controller.stopVideoRecording();
-      } catch (_) {
-        // Best-effort: the encoder may already be unwinding; we still want to
-        // proceed with controller disposal below.
-      }
+      } catch (_) {}
     }
     await controller.dispose();
   }
@@ -270,68 +296,71 @@ class _CameraViewState extends ConsumerState<CameraView> {
       }
     }
 
-    final previewStack = Stack(
-      fit: StackFit.expand,
-      children: [
-        Positioned.fill(
-          child: CameraChromeFrame(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Positioned.fill(child: _buildCameraLayer(theme)),
-                if (_showViewfinder)
-                  Positioned.fill(
-                    child: RepaintBoundary(
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          CustomPaint(
-                            painter: ReticlePainter(
-                              guideAspectRatio: isVideo ? 2.35 : 16 / 9,
-                            ),
-                          ),
-                          TelemetryOverlay(
-                            acquisitionMode: widget.mode,
-                            isRecording: _isRecording,
-                            isSealing: _isSealing,
-                            verifiedFlashTrigger: _verifiedFlashTrigger,
-                            previewWidth: previewW,
-                            previewHeight: previewH,
-                          ),
-                          if (_isSealing)
-                            Positioned.fill(
-                              child: _SealingOverlay(
-                                statusLabel: AppConfig.usePolygonNotarizer
-                                    ? 'Generating Proof…'
-                                    : 'Sealing...',
+    final previewStack = Padding(
+      padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned.fill(
+            child: CameraChromeFrame(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Positioned.fill(child: _buildCameraLayer(theme)),
+                  if (_showViewfinder)
+                    Positioned.fill(
+                      child: RepaintBoundary(
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            CustomPaint(
+                              painter: ReticlePainter(
+                                guideAspectRatio: isVideo ? 2.35 : 16 / 9,
                               ),
                             ),
-                        ],
+                            TelemetryOverlay(
+                              acquisitionMode: widget.mode,
+                              isRecording: _isRecording,
+                              archivingCount: _archivingCount,
+                              verifiedFlashTrigger: _verifiedFlashTrigger,
+                              previewWidth: previewW,
+                              previewHeight: previewH,
+                              latitude: _geolocation.latitude,
+                              longitude: _geolocation.longitude,
+                            ),
+                            if (_archivingCount > 0)
+                              Positioned(
+                                left: 12,
+                                bottom: 12,
+                                child: _ArchivingBadge(count: _archivingCount),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-        if (_errorMessage != null)
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 24,
-            child: Card(
-              color: theme.colorScheme.errorContainer,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Text(_errorMessage!),
+                ],
               ),
             ),
           ),
-      ],
+          if (_errorMessage != null)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 24,
+              child: Card(
+                color: theme.colorScheme.errorContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(_errorMessage!),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
 
     final shutter = CameraShutterButton(
-      enabled: !_isInitializing && !_isSealing,
+      enabled: !_isInitializing && !_isCapturing,
       isVideo: isVideo,
       isRecording: _isRecording,
       verifiedFlashTrigger: _verifiedFlashTrigger,
@@ -399,10 +428,37 @@ class _CameraViewState extends ConsumerState<CameraView> {
         ),
       );
     }
-    if (_isSealing) {
-      return const ColoredBox(color: AppColors.titaniumDeep);
-    }
     return CameraPreview(_controller!);
+  }
+}
+
+class _ArchivingBadge extends StatelessWidget {
+  const _ArchivingBadge({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.titaniumPanel.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.kineticGreen.withValues(alpha: 0.65),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Text(
+          'Archiving Asset… [$count]',
+          style: AppTextStyles.monoSm(
+            color: AppColors.kineticGreen,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -604,47 +660,6 @@ class _ShutterButtonState extends State<CameraShutterButton>
                   },
                 ),
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SealingOverlay extends StatelessWidget {
-  const _SealingOverlay({required this.statusLabel});
-
-  final String statusLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    return ColoredBox(
-      color: const Color(0xEE120014),
-      child: Center(
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.94, end: 1.06),
-          duration: const Duration(milliseconds: 900),
-          curve: Curves.easeInOut,
-          builder: (context, scale, child) {
-            return Transform.scale(scale: scale, child: child);
-          },
-          onEnd: () {},
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 260),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.shield, color: AppColors.alertAmber, size: 64),
-                const SizedBox(height: 16),
-                Text(
-                  statusLabel,
-                  style: AppTextStyles.monoLg(color: AppColors.starkWhite),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                const LinearProgressIndicator(minHeight: 8),
-              ],
             ),
           ),
         ),

@@ -129,17 +129,13 @@ class LocalVaultStorage {
     if (!parent.existsSync()) {
       await parent.create(recursive: true);
     }
+    // Keep vault writes on the caller isolate. Copying multi-MB ciphertext into
+    // [Isolate.run] can truncate payloads on some devices, breaking seal verify.
     if (_lockCoordinator != null) {
-      await Isolate.run(
-        () => lockedWriteBytesEntry(
-          LockedWritePayload(path: path, bytes: bytes),
-        ),
-      );
+      lockedWriteBytesEntry(LockedWritePayload(path: path, bytes: bytes));
       return;
     }
-    await Isolate.run(
-      () => File(path).writeAsBytesSync(bytes, flush: true),
-    );
+    await File(path).writeAsBytes(bytes, flush: true);
   }
 
   /// Atomically promotes a staging file to its final vault path (same volume).
@@ -222,7 +218,7 @@ class LocalVaultStorage {
     String? assetFingerprint,
   }) {
     _assertReadable(path, assetFingerprint);
-    return Isolate.run(() => File(path).readAsBytesSync());
+    return File(path).readAsBytes();
   }
 
   Future<void> deleteAssetFiles({

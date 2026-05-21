@@ -84,12 +84,6 @@ void main() {
     );
 
     expect(journal.listByStatus(TransactionStatus.committed), hasLength(1));
-
-    final manifest = factory.database.select(
-      'SELECT byte_length FROM asset_manifest WHERE asset_fingerprint = ?',
-      ['fp_ok'],
-    );
-    expect(manifest, hasLength(1));
-    expect(manifest.first['byte_length'], 42);
+    expect(journal.committedByteLength('fp_ok'), 42);
   });
 }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/local/vault_database.dart';
 import '../../data/models/archive_item.dart';
 import '../../domain/services/vault_service.dart';
+import '../mobile/vault/providers/thumbnail_cache_provider.dart';
 
 final dashboardControllerProvider =
     AsyncNotifierProvider<DashboardController, List<ArchiveItem>>(
@@ -61,6 +62,10 @@ class DashboardController extends AsyncNotifier<List<ArchiveItem>> {
     return ref.read(vaultServiceProvider).listArchiveItems();
   }
 
+  Future<void> refreshArchive() async {
+    state = AsyncData(await _loadResolvedArchive());
+  }
+
   /// Explicit background trigger invoked by the view lifecycle.
   Future<void> syncPendingInBackground() async {
     final coordinator = ref.read(pendingSyncCoordinatorProvider);
@@ -101,6 +106,7 @@ class DashboardController extends AsyncNotifier<List<ArchiveItem>> {
 
   Future<void> deleteArchiveItem(String assetFingerprint) async {
     await ref.read(vaultServiceProvider).deleteArchiveItem(assetFingerprint);
+    ref.invalidate(thumbnailCacheProvider(assetFingerprint));
     state = AsyncData(await _loadResolvedArchive());
   }
 

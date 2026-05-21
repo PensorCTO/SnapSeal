@@ -24,7 +24,8 @@ class CourierCrypto {
       keyBytes: keyBytes,
     );
     final verifiedFingerprint = await vault.generateHash(clearBytes);
-    if (verifiedFingerprint != expectedFingerprint) {
+    final expected = expectedFingerprint.trim().toLowerCase();
+    if (verifiedFingerprint.toLowerCase() != expected) {
       throw StateError('Sealed media failed SHA-256 verification.');
     }
     return clearBytes;

@@ -11,4 +11,14 @@ class VaultTransactionalPaths {
   final String thumbnailFinalPath;
   final String encryptedStagingPath;
   final String thumbnailStagingPath;
+
+  /// All filesystem paths touched by prepare/commit, including rename sidecar locks.
+  List<String> get pathsForPurge => [
+        encryptedFinalPath,
+        thumbnailFinalPath,
+        encryptedStagingPath,
+        thumbnailStagingPath,
+        '$encryptedStagingPath.lock',
+        '$thumbnailStagingPath.lock',
+      ];
 }

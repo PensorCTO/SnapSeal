@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -227,6 +228,8 @@ class _AssetInspectorScreenState extends ConsumerState<AssetInspectorScreen>
         _onViewFull();
       case InspectorAction.viewCertificate:
         _onViewCertificate();
+      case InspectorAction.delete:
+        _onDelete();
       case InspectorAction.exit:
         Navigator.of(context).pop();
     }
@@ -241,6 +244,13 @@ class _AssetInspectorScreenState extends ConsumerState<AssetInspectorScreen>
         widget.item,
       ),
     );
+  }
+
+  Future<void> _onDelete() async {
+    if (!mounted) return;
+    await ArchiveItemActions.confirmAndDelete(context, ref, widget.item);
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
 
   Future<void> _onViewFull() async {
@@ -597,7 +607,7 @@ class _InfoStrip extends StatelessWidget {
 }
 
 /// Action buttons at the bottom of the inspector.
-enum InspectorAction { sendProof, viewFull, viewCertificate, exit }
+enum InspectorAction { sendProof, viewFull, viewCertificate, delete, exit }
 
 class _ActionMatrix extends StatelessWidget {
   const _ActionMatrix({required this.onAction});
@@ -631,9 +641,17 @@ class _ActionMatrix extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         _ActionTile(
+          icon: Icons.delete_outline,
+          label: 'DELETE FROM DEVICE',
+          subtitle: 'Remove this corrupted or unwanted archive item',
+          accentColor: AppColors.alertAmber,
+          onTap: () => onAction(InspectorAction.delete),
+        ),
+        const SizedBox(height: 10),
+        _ActionTile(
           icon: Icons.exit_to_app_outlined,
           label: 'BACK TO DASHBOARD',
-          subtitle: 'Return to the vault overview',
+          subtitle: 'Return to the archive overview',
           onTap: () => onAction(InspectorAction.exit),
         ),
       ],
@@ -647,12 +665,14 @@ class _ActionTile extends StatelessWidget {
     required this.label,
     required this.subtitle,
     required this.onTap,
+    this.accentColor,
   });
 
   final IconData icon;
   final String label;
   final String subtitle;
   final VoidCallback onTap;
+  final Color? accentColor;
 
   @override
   Widget build(BuildContext context) {
@@ -686,7 +706,7 @@ class _ActionTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
               children: [
-                Icon(icon, size: 24, color: AppColors.verifiedNeon),
+                Icon(icon, size: 24, color: accentColor ?? AppColors.verifiedNeon),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
@@ -721,13 +741,54 @@ class _ActionTile extends StatelessWidget {
 }
 
 /// Full-screen image viewer for the decrypted original media.
-class _FullscreenImageViewer extends StatelessWidget {
+class _FullscreenImageViewer extends StatefulWidget {
   const _FullscreenImageViewer({required this.bytes});
 
   final Uint8List bytes;
 
   @override
+  State<_FullscreenImageViewer> createState() => _FullscreenImageViewerState();
+}
+
+class _FullscreenImageViewerState extends State<_FullscreenImageViewer> {
+  ui.Image? _decodedImage;
+  Object? _decodeError;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_decodeBytes());
+  }
+
+  Future<void> _decodeBytes() async {
+    try {
+      final codec = await ui.instantiateImageCodec(widget.bytes);
+      final frame = await codec.getNextFrame();
+      if (!mounted) {
+        frame.image.dispose();
+        return;
+      }
+      setState(() {
+        _decodedImage?.dispose();
+        _decodedImage = frame.image;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _decodeError = error;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _decodedImage?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final decoded = _decodedImage;
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -735,9 +796,16 @@ class _FullscreenImageViewer extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Center(
-        child: InteractiveViewer(
-          child: Image.memory(bytes, fit: BoxFit.contain),
-        ),
+        child: decoded == null
+            ? _decodeError == null
+                ? const CircularProgressIndicator(color: Colors.white54)
+                : Text(
+                    'Unable to render image.',
+                    style: AppTextStyles.monoSm(color: Colors.white70),
+                  )
+            : InteractiveViewer(
+                child: RawImage(image: decoded, fit: BoxFit.contain),
+              ),
       ),
     );
   }

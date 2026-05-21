@@ -11,6 +11,7 @@ import '../../../core/config/app_config.dart';
 import '../../../core/services/haptic_service.dart';
 import '../../../data/models/archive_item.dart';
 import '../../../domain/blockchain/proof_state.dart';
+import '../archive_item_actions.dart';
 import '../../providers/proof_notarization_provider.dart';
 import 'providers/thumbnail_cache_provider.dart';
 import 'widgets/asset_securing_overlay.dart';
@@ -121,6 +122,15 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
         assetFingerprint: widget.item.assetFingerprint,
         child: GestureDetector(
         onTap: widget.onTap,
+        onLongPress: () {
+          unawaited(
+            ArchiveItemActions.showBottomSheet(
+              context: context,
+              ref: ref,
+              item: widget.item,
+            ),
+          );
+        },
         child: Opacity(
         opacity: opacity.clamp(0, 1),
         child: Transform(

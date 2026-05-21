@@ -6,7 +6,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
 import 'acquisition_mode.dart';
 
-/// Forensic HUD: sensor/resolution, UTC clock, GPS placeholder, optional live hash.
+/// Forensic HUD: sensor/resolution, UTC clock, live GPS, optional live hash.
 ///
 /// Typography uses [AppTextStyles.monoSm] per forensic UI standards.
 class TelemetryOverlay extends StatefulWidget {
@@ -14,7 +14,7 @@ class TelemetryOverlay extends StatefulWidget {
     super.key,
     required this.acquisitionMode,
     required this.isRecording,
-    required this.isSealing,
+    this.archivingCount = 0,
     this.verifiedFlashTrigger = 0,
     this.previewWidth,
     this.previewHeight,
@@ -25,7 +25,7 @@ class TelemetryOverlay extends StatefulWidget {
 
   final AcquisitionMode acquisitionMode;
   final bool isRecording;
-  final bool isSealing;
+  final int archivingCount;
   final int verifiedFlashTrigger;
   final int? previewWidth;
   final int? previewHeight;
@@ -54,7 +54,7 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
       duration: const Duration(milliseconds: 720),
     );
     _syncBlink();
-    _clockTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
   }
@@ -62,8 +62,9 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
   @override
   void didUpdateWidget(covariant TelemetryOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final oldActive = oldWidget.isRecording || oldWidget.isSealing;
-    final newActive = widget.isRecording || widget.isSealing;
+    final oldActive =
+        oldWidget.isRecording || oldWidget.archivingCount > 0;
+    final newActive = widget.isRecording || widget.archivingCount > 0;
     if (oldActive != newActive) {
       _syncBlink();
     }
@@ -73,7 +74,7 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
   }
 
   void _syncBlink() {
-    final active = widget.isRecording || widget.isSealing;
+    final active = widget.isRecording || widget.archivingCount > 0;
     if (active) {
       _blinkController.repeat(reverse: true);
     } else {
@@ -114,16 +115,15 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
     final h = dt.hour.toString().padLeft(2, '0');
     final mi = dt.minute.toString().padLeft(2, '0');
     final s = dt.second.toString().padLeft(2, '0');
-    final ms = dt.millisecond.toString().padLeft(3, '0');
-    return '$y-$mo-$d $h:$mi:$s.$ms';
+    return '$y-$mo-$d $h:$mi:$s UTC';
   }
 
   String _gpsLine() {
     if (widget.latitude != null && widget.longitude != null) {
-      return 'GPS ${widget.latitude!.toStringAsFixed(4)}, '
-          '${widget.longitude!.toStringAsFixed(4)}';
+      return 'GPS ${widget.latitude!.toStringAsFixed(6)}, '
+          '${widget.longitude!.toStringAsFixed(6)}';
     }
-    return 'GPS --.----, --.----';
+    return 'GPS --.------, --.------';
   }
 
   String _hashLine() {
@@ -153,11 +153,11 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
         ? '${widget.previewWidth}×${widget.previewHeight} · — Hz'
         : 'preview —×— · — Hz';
 
-    final active = widget.isRecording || widget.isSealing;
+    final active = widget.isRecording || widget.archivingCount > 0;
 
     return IgnorePointer(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 8, 12, 96),
+        padding: const EdgeInsets.fromLTRB(12, 4, 12, 72),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -192,7 +192,7 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
                                 ),
                                 if (_showSealed)
                                   Text(
-                                    '[SEALED]',
+                                    '[ARCHIVED]',
                                     style: mono.copyWith(
                                       color: AppColors.verifiedNeon,
                                       fontWeight: FontWeight.w700,

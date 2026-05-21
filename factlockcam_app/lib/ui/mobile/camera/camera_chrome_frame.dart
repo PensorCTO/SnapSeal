@@ -9,7 +9,7 @@ class CameraChromeFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(10, 6, 10, 0),
+      margin: const EdgeInsets.fromLTRB(8, 2, 8, 0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         gradient: const LinearGradient(
