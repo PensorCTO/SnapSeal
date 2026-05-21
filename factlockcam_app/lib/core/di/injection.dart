@@ -10,6 +10,10 @@ import '../../data/supabase/supabase_client_handle.dart';
 import '../crypto/vault_encryption_handler.dart';
 import '../../domain/export/certificate_export_service.dart';
 import '../../domain/blockchain/chain_notarizer.dart';
+import '../../domain/blockchain/vault_blockchain_handler.dart';
+import '../../domain/blockchain/wallet_service.dart';
+import '../../domain/services/notarization_monitor_service.dart';
+import '../../domain/services/proof_sync_notifier.dart';
 import '../../domain/services/vault_service.dart';
 import '../ghost_key/native_enclave_channel.dart';
 import '../config/app_config.dart';
@@ -62,6 +66,33 @@ Future<void> configureDependencies() async {
         : SimulatedChainNotarizer(getIt<SealLedgerRepository>()),
   );
 
+  getIt.registerLazySingleton<WalletService>(
+    () => AppConfig.usePolygonNotarizer
+        ? PolygonWalletService(
+            secureStorage: getIt<FlutterSecureStorage>(),
+            sealLedgerRepository: getIt<SealLedgerRepository>(),
+          )
+        : SimulatedWalletService(getIt<NativeEnclaveChannel>()),
+  );
+
+  getIt.registerLazySingleton<VaultBlockchainHandler>(
+    () => AppConfig.usePolygonNotarizer
+        ? PolygonBlockchainHandler(getIt<SupabaseClientHandle>())
+        : SimulatedBlockchainHandler(getIt<SealLedgerRepository>()),
+  );
+
+  getIt.registerLazySingleton<ProofSyncNotifier>(ProofSyncNotifier.new);
+
+  getIt.registerLazySingleton<NotarizationMonitorService>(
+    () => AppConfig.usePolygonNotarizer
+        ? PolygonNotarizationMonitorService(
+            handle: getIt<SupabaseClientHandle>(),
+            database: getIt<VaultDatabase>(),
+            proofSyncNotifier: getIt<ProofSyncNotifier>(),
+          )
+        : SimulatedNotarizationMonitorService(),
+  );
+
   getIt.registerLazySingleton<CertificateExportService>(
     CertificateExportService.new,
   );
@@ -74,6 +105,9 @@ Future<void> configureDependencies() async {
       vaultEncryption: getIt<VaultEncryptionHandler>(),
       sealLedgerRepository: getIt<SealLedgerRepository>(),
       chainNotarizer: getIt<ChainNotarizer>(),
+      walletService: getIt<WalletService>(),
+      blockchainHandler: getIt<VaultBlockchainHandler>(),
+      proofSyncNotifier: getIt<ProofSyncNotifier>(),
       nativeEnclave: getIt<NativeEnclaveChannel>(),
       authRepository: getIt<AuthRepository>(),
       pathResolver: getIt<VaultPathResolver>(),

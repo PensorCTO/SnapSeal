@@ -14,6 +14,9 @@ import 'package:factlockcam/data/services/local_vault_storage.dart';
 import 'package:factlockcam/data/supabase/auth_repository.dart';
 import 'package:factlockcam/data/supabase/seal_ledger_repository.dart';
 import 'package:factlockcam/domain/blockchain/chain_notarizer.dart';
+import 'package:factlockcam/domain/blockchain/vault_blockchain_handler.dart';
+import 'package:factlockcam/domain/blockchain/wallet_service.dart';
+import 'package:factlockcam/domain/services/proof_sync_notifier.dart';
 import 'package:factlockcam/domain/services/vault_service.dart';
 
 class _MockVaultDatabase extends Mock implements VaultDatabase {}
@@ -28,6 +31,10 @@ class _MockSealLedgerRepository extends Mock implements SealLedgerRepository {}
 
 class _MockChainNotarizer extends Mock implements ChainNotarizer {}
 
+class _MockWalletService extends Mock implements WalletService {}
+
+class _MockBlockchainHandler extends Mock implements VaultBlockchainHandler {}
+
 class _MockNativeEnclaveChannel extends Mock implements NativeEnclaveChannel {}
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
@@ -39,6 +46,9 @@ void main() {
   late _MockVaultEncryption vaultEncryption;
   late _MockSealLedgerRepository ledger;
   late _MockChainNotarizer chain;
+  late _MockWalletService wallet;
+  late _MockBlockchainHandler blockchain;
+  late ProofSyncNotifier proofSyncNotifier;
   late _MockNativeEnclaveChannel native;
   late _MockAuthRepository auth;
   late VaultService service;
@@ -74,6 +84,9 @@ void main() {
     vaultEncryption = _MockVaultEncryption();
     ledger = _MockSealLedgerRepository();
     chain = _MockChainNotarizer();
+    wallet = _MockWalletService();
+    blockchain = _MockBlockchainHandler();
+    proofSyncNotifier = ProofSyncNotifier();
     native = _MockNativeEnclaveChannel();
     auth = _MockAuthRepository();
 
@@ -84,6 +97,9 @@ void main() {
       vaultEncryption: vaultEncryption,
       sealLedgerRepository: ledger,
       chainNotarizer: chain,
+      walletService: wallet,
+      blockchainHandler: blockchain,
+      proofSyncNotifier: proofSyncNotifier,
       nativeEnclave: native,
       authRepository: auth,
     );

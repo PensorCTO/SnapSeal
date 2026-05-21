@@ -9,7 +9,7 @@ summary: "Master blueprint of the current FactLockCam application state, complet
 
 **Current baseline:** verified primary workflow and compressed Supabase posture are summarized in [[FactLockCam_Product_Baseline_2026-05]] (read that page first for status).
 
-FactLockCam is currently a Flutter application for authenticated capture, local sealing, and Supabase-backed **proof surfaces** (`check_proof_status`, simulated chain notarization, **`proof_ledger`**). The app is framed as a **tamper-evident** media vault (risk reduction / authenticity heuristics) rather than a general secrecy vault or an absolute “proof-of-reality” claim: **`VaultService.proofLockFile`** (used by capture and in-memory seal helpers) hashes in an isolate, runs **`check_proof_status`** when configured, obtains a **device signature** via `NativeEnclaveChannel` (iOS/Android handlers exist but return **simulated dev** signatures until Secure Enclave / Keystore work lands), calls **`ChainNotarizer`** (default **`SimulatedChainNotarizer`** → RPC `simulate_chain_notarize`; **`PolygonChainNotarizer`** is a **stub** that throws), encrypts with **AES-GCM** (`VaultEncryptionHandler`), persists to local storage + SQLite, and inserts **`proof_ledger`** when the remote path completes. **`seal_ledger`** remains in schema and is still touched in **`retryPendingRemoteSync`** as a best-effort replica step. Polygon as **durable** chain truth is still **not** implemented end-to-end.
+FactLockCam is currently a Flutter application for authenticated capture, local sealing, and Supabase-backed **proof surfaces** (`check_proof_status`, **`proof_ledger`**, simulated or **Polygon saga** notarization). When **`USE_POLYGON_NOTARIZER=true`** (default after dart-defines sync), **`VaultService.proofLockFile`** runs an **async saga**: isolate hash → device sign + **EIP-191 EVM sign** (`PolygonWalletService`) → local AES-GCM vault → pending **`proof_ledger`** row → **`anchor-relay`** Edge Function → local `pending_sync` cleared in ~2s via **`ProofSyncNotifier`** ([[Polygon_Saga_Live]]). When the flag is false, the synchronous **`SimulatedChainNotarizer`** / `simulate_chain_notarize` path applies. **`PolygonChainNotarizer`** on `ChainNotarizer` remains an unused stub; durable **mainnet broadcast** (real tx hash) is not wired yet.
 
 The main application shell is functional. `factlockcam_app/lib/main.dart` initializes Supabase only when `SUPABASE_URL` and the rotated public `SUPABASE_ANON_KEY` are supplied as Dart defines (no PKCE / URI session options in the current tree). The Riverpod and GoRouter stack routes unauthenticated users to `/logon` and authenticated users to `/vault-home` (`VaultHomeView`). There is **no persistent bottom navigation bar** in the current hub refactor: a centered **four-tile** `HapticHubPanel` (Vault, Picture, Video, Account & Settings) pushes into `IndexedStack` panels (indices 1–4); each panel exposes an explicit **back to hub** control. Camera and archive are tab-embedded (no standalone `/camera` route). Legacy `/vault-dashboard` redirects to `/vault-home`. Physical iOS QA may require **build + install + manual launch** when `flutter run` VM attach fails — see [[iOS_Device_Development_Workflow]].
 
@@ -53,7 +53,7 @@ The ingested **ProofLock** manifest ([[ProofLock_Architectural_Manifest]]) descr
 
 ## Needs To Be Finished
 
-- Implement **real** Polygon (or other durable chain) submission in **`PolygonChainNotarizer`**; keep `USE_POLYGON_NOTARIZER=false` until then.
+- Wire **live Polygon mainnet/testnet broadcast** in `anchor-relay` (real `chain_tx_hash`; DB saga path is live — [[Polygon_Saga_Live]]).
 - Wire **`REQUIRE_HARDWARE_ATTESTATION`** (and/or stricter gating) once native signing is production-grade.
 - Replace **simulated** `signHash` implementations with **hardware-backed** signing and appropriate attestation/error UX.
 - Add proof **verification** and outsider-facing lookup flows beyond owner session tooling.
@@ -100,7 +100,7 @@ Developers can run the Supabase helper script to start/reset/lint local Supabase
 
 ## Current Risk Register
 
-- The product's durable on-chain proof story is not complete until a real **`PolygonChainNotarizer`** (or equivalent) exists; simulated RPC remains the default.
+- Live **mainnet/testnet tx broadcast** in `anchor-relay` is not complete; DB-finalization saga and ~2s device QA are ([[Polygon_Saga_Live]]). Simulated RPC remains the fallback when `USE_POLYGON_NOTARIZER=false`.
 - `pending_sync` can still linger when auth is missing or errors are non-recoverable; backoff and **silent** best-effort retries may need stronger user-visible diagnostics.
 - Ledger `SELECT` is wallet-scoped after `20260510120000_tighten_ledger_select_rls.sql`; continue to review grants (`anon` vs `authenticated`), RPC surfaces (`check_proof_status`), and privacy posture before production.
 - Local delete is device-local only; product policy for proof-row tombstones or remote erasure remains undecided.
@@ -124,6 +124,7 @@ Developers can run the Supabase helper script to start/reset/lint local Supabase
 ## Related Notes
 
 * [[FactLockCam_Product_Baseline_2026-05]]
+* [[Polygon_Saga_Live]]
 * [[overview]]
 * [[glossary]]
 * [[ProofLock_Architectural_Manifest]]

@@ -24,6 +24,9 @@ import '../../data/services/vault_path_resolver.dart';
 import '../../data/supabase/auth_repository.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
 import '../blockchain/chain_notarizer.dart';
+import '../blockchain/vault_blockchain_handler.dart';
+import '../blockchain/wallet_service.dart';
+import 'proof_sync_notifier.dart';
 
 final vaultServiceProvider = Provider<VaultService>(
   (ref) => getIt<VaultService>(),
@@ -95,6 +98,9 @@ class VaultService {
     required VaultEncryptionHandler vaultEncryption,
     required SealLedgerRepository sealLedgerRepository,
     required ChainNotarizer chainNotarizer,
+    required WalletService walletService,
+    required VaultBlockchainHandler blockchainHandler,
+    required ProofSyncNotifier proofSyncNotifier,
     required NativeEnclaveChannel nativeEnclave,
     required AuthRepository authRepository,
     VaultPathResolver? pathResolver,
@@ -104,6 +110,9 @@ class VaultService {
        _vaultEncryption = vaultEncryption,
        _sealLedgerRepository = sealLedgerRepository,
        _chainNotarizer = chainNotarizer,
+       _walletService = walletService,
+       _blockchainHandler = blockchainHandler,
+       _proofSyncNotifier = proofSyncNotifier,
        _nativeEnclave = nativeEnclave,
        _authRepository = authRepository,
        _pathResolver = pathResolver ?? VaultPathResolver(storage);
@@ -122,6 +131,9 @@ class VaultService {
   final VaultEncryptionHandler _vaultEncryption;
   final SealLedgerRepository _sealLedgerRepository;
   final ChainNotarizer _chainNotarizer;
+  final WalletService _walletService;
+  final VaultBlockchainHandler _blockchainHandler;
+  final ProofSyncNotifier _proofSyncNotifier;
   final NativeEnclaveChannel _nativeEnclave;
   final AuthRepository _authRepository;
   final VaultPathResolver _pathResolver;
@@ -152,6 +164,17 @@ class VaultService {
   /// exits before any encrypted vault files or SQLite archive rows are written, so no
   /// orphan assets are created by that conflict path alone.
   Future<SealCaptureResult> proofLockFile(
+    File sourceFile,
+    String userId,
+  ) async {
+    if (AppConfig.usePolygonNotarizer) {
+      return _proofLockFilePolygonSaga(sourceFile, userId);
+    }
+    return _proofLockFileSimulated(sourceFile, userId);
+  }
+
+  /// Simulated chain: synchronous notarization before local persist (legacy path).
+  Future<SealCaptureResult> _proofLockFileSimulated(
     File sourceFile,
     String userId,
   ) async {
@@ -260,6 +283,136 @@ class VaultService {
       pendingSync: pendingSync,
       chainTxHash: chainTxHash,
     );
+  }
+
+  /// Polygon saga: local persist + pending ledger row, then fire-and-forget relay.
+  Future<SealCaptureResult> _proofLockFilePolygonSaga(
+    File sourceFile,
+    String userId,
+  ) async {
+    final path = sourceFile.path;
+    final mimeType = _inferMimeType(path);
+
+    final bundle = await _readFileAndSha256InIsolate(path);
+    final fileHash = bundle.hash;
+    final rawMediaBytes = bundle.bytes;
+
+    var pendingRemoteSync =
+        !_sealLedgerRepository.isConfigured || userId.trim().isEmpty;
+
+    if (!pendingRemoteSync) {
+      try {
+        final status = await _sealLedgerRepository.checkProofStatus(fileHash);
+        if (status != 'new') {
+          throw ProofLockConflictException(status);
+        }
+      } on ProofLockConflictException {
+        rethrow;
+      } catch (e) {
+        if (_isRecoverableRemoteFailure(e)) {
+          pendingRemoteSync = true;
+        } else {
+          rethrow;
+        }
+      }
+    }
+
+    String? deviceSignature;
+    String? ownerSignature;
+    if (!pendingRemoteSync) {
+      try {
+        deviceSignature = await _nativeEnclave.signHash(fileHash);
+        ownerSignature = await _walletService.signMessageHash(fileHash);
+      } catch (e) {
+        if (_isRecoverableRemoteFailure(e)) {
+          pendingRemoteSync = true;
+        } else {
+          rethrow;
+        }
+      }
+    }
+
+    await _persistSealedBytes(
+      rawMediaBytes,
+      mimeType: mimeType,
+      assetFingerprint: fileHash,
+      sourcePath: path,
+    );
+
+    var pendingSync = true;
+
+    if (!pendingRemoteSync &&
+        deviceSignature != null &&
+        ownerSignature != null) {
+      try {
+        await _sealLedgerRepository.insertPendingProofLedgerRow(
+          assetHash: fileHash,
+          deviceSignature: deviceSignature,
+        );
+        unawaited(
+          _dispatchPolygonRelay(
+            fileHash: fileHash,
+            ownerSignature: ownerSignature,
+            deviceSignature: deviceSignature,
+          ),
+        );
+        pendingSync = true;
+      } on PostgrestException catch (e) {
+        if (e.code == '23505') {
+          pendingSync = false;
+        } else if (_isRecoverableRemoteFailure(e)) {
+          pendingSync = true;
+        } else {
+          rethrow;
+        }
+      } catch (e) {
+        if (_isRecoverableRemoteFailure(e)) {
+          pendingSync = true;
+        } else {
+          rethrow;
+        }
+      }
+    } else {
+      pendingSync = pendingRemoteSync;
+    }
+
+    await _database.setPendingSync(
+      assetFingerprint: fileHash,
+      pendingSync: pendingSync,
+    );
+
+    await _deleteSourceAfterSeal(path);
+
+    return SealCaptureResult(
+      assetFingerprint: fileHash,
+      pendingSync: pendingSync,
+    );
+  }
+
+  Future<void> _dispatchPolygonRelay({
+    required String fileHash,
+    required String ownerSignature,
+    required String deviceSignature,
+  }) async {
+    try {
+      await _blockchainHandler.notarizeFileHash(
+        fileHash: fileHash,
+        ownerSignature: ownerSignature,
+        deviceSignature: deviceSignature,
+      );
+      await _finalizeLocalPolygonSync(fileHash);
+    } catch (_) {
+      // Relay failures retain local ciphertext; retry scheduler recovers.
+    }
+  }
+
+  Future<void> _finalizeLocalPolygonSync(String assetFingerprint) async {
+    final item = await _database.findArchiveItem(assetFingerprint);
+    if (item == null || !item.pendingSync) {
+      return;
+    }
+    await _database.markSyncSucceeded(assetFingerprint: assetFingerprint);
+    _proofSyncNotifier.notifyAssetSynced(assetFingerprint);
   }
 
   Future<String> sealAndStore(
@@ -653,6 +806,75 @@ class VaultService {
   /// Background-friendly: `seal_ledger` active-wallet row + proof ledger completion.
   /// Returns `true` if [pending_sync] was cleared for this asset.
   Future<bool> retryPendingRemoteSync(String assetFingerprint) async {
+    if (AppConfig.usePolygonNotarizer) {
+      return _retryPendingPolygonSync(assetFingerprint);
+    }
+    return _retryPendingSimulatedSync(assetFingerprint);
+  }
+
+  Future<bool> _retryPendingPolygonSync(String assetFingerprint) async {
+    final item = await _database.findArchiveItem(assetFingerprint);
+    if (item == null || !item.pendingSync) {
+      return false;
+    }
+    if (!_sealLedgerRepository.isConfigured) {
+      return false;
+    }
+    final userId = _authRepository.currentUserId;
+    if (userId == null || userId.isEmpty) {
+      return false;
+    }
+
+    try {
+      await _sealLedgerRepository.syncAssetFingerprint(assetFingerprint);
+    } catch (_) {}
+
+    try {
+      final remoteStatus = await _sealLedgerRepository.fetchProofNotarizationStatus(
+        assetFingerprint,
+      );
+      if (remoteStatus == 'notarized') {
+        await _finalizeLocalPolygonSync(assetFingerprint);
+        return true;
+      }
+    } catch (e) {
+      if (!_isRecoverableRemoteFailure(e)) {
+        return false;
+      }
+    }
+
+    String? deviceSignature;
+    String? ownerSignature;
+    try {
+      deviceSignature = await _nativeEnclave.signHash(assetFingerprint);
+      ownerSignature = await _walletService.signMessageHash(assetFingerprint);
+    } catch (e) {
+      if (_isRecoverableRemoteFailure(e)) {
+        await _database.markSyncDeferred(
+          assetFingerprint: assetFingerprint,
+          nextRetryAt: _nextRetryAt(item.syncAttemptCount + 1),
+        );
+        return false;
+      }
+      return false;
+    }
+
+    unawaited(
+      _dispatchPolygonRelay(
+        fileHash: assetFingerprint,
+        ownerSignature: ownerSignature,
+        deviceSignature: deviceSignature,
+      ),
+    );
+
+    await _database.markSyncDeferred(
+      assetFingerprint: assetFingerprint,
+      nextRetryAt: _nextRetryAt(item.syncAttemptCount + 1),
+    );
+    return false;
+  }
+
+  Future<bool> _retryPendingSimulatedSync(String assetFingerprint) async {
     final item = await _database.findArchiveItem(assetFingerprint);
     if (item == null || !item.pendingSync) {
       return false;

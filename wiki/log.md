@@ -5,6 +5,14 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-05-21
+
+- **Polygon Try 2 live + QA pass** on physical iPhone (~2s proof finalization):
+  - Landed PR1–PR5: `WalletService`, `VaultBlockchainHandler`, async `VaultService` saga, `anchor-relay` Edge Function, migrations (`notarization_status`, `evm_address`, finalize RPCs), Realtime monitor, `ProofSyncNotifier` local pending clear.
+  - Fixed indefinite pending UI: relay HTTP 200 did not call `markSyncSucceeded` until `ProofSyncNotifier` + `_finalizeLocalPolygonSync`.
+  - Hosted deploy: `supabase db push`, `supabase functions deploy anchor-relay`; `USE_POLYGON_NOTARIZER` default **true** in dart-defines sync.
+  - Added [[Polygon_Saga_Live]]; updated [[Polygon_Try1_Postmortem]], [[FactLockCam_Product_Baseline_2026-05]], [[glossary]], [[index]], [[overview]], [[ProofLock_Refactor_Scope]] (partial).
+
 ## 2026-05-20
 
 - **Polygon Try 1 postmortem audit** after May 19 rollback:

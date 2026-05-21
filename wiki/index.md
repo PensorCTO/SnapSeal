@@ -22,7 +22,8 @@ Read this page first when answering questions about the wiki.
 ## Analyses
 
 - [[FactLockCam_Master_Blueprint]] - Current-state application blueprint covering completed capabilities, hub-first vault shell (IndexedStack, four-tile launcher, panel back navigation), media-type-driven archive actions, unfinished work, and working use cases.
-- [[Polygon_Try1_Postmortem]] - May 2026 Polygon Try 1 rollback audit, PR0 lazy-camera restoration, bisect evidence, Try 2 PR sequencing (`POSTMORTEM_POLYGON_TRY1.md` at repo root).
+- [[Polygon_Saga_Live]] - **Live** async Polygon saga (Try 2): anchor-relay, wallet/handler/monitor, ~2s device QA (2026-05-21).
+- [[Polygon_Try1_Postmortem]] - May 2026 Try 1 rollback audit, PR0 lazy-camera, Try 2 completion pointer.
 - [[iOS_Device_Development_Workflow]] - Physical iOS 26 device QA: build/install vs `flutter run` VM attach failures and recommended dev commands.
 - [[ProofLock_Refactor_Scope]] - Gap analysis and phased effort from ProofLock manifesto to current FactLockCam implementation.
 - [[System_Context_Audit_2026-05-09]] - Archived stub (superseded by [[FactLockCam_Product_Baseline_2026-05]]).

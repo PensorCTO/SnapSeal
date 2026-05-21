@@ -41,7 +41,7 @@ flowchart LR
 | Isolate SHA-256 + UI perf | `VaultService` uses `Isolate.run` for temp file read/delete; hashing via `CipherEngine` | Align naming/docs with manifest; optional dedicated hash worker file |
 | Pre-flight `check_proof_status` | **`SealLedgerRepository.checkProofStatus`** + **`VaultService.proofLockFile`** / retry path | Hardening, UX for non-`new` status, policy review |
 | Hardware enclave signing | **`MethodChannel` `com.factlockcam.app/enclave`** with **TODO-simulated** `signHash` in iOS/Android | Replace with Secure Enclave / Keystore; wire **`REQUIRE_HARDWARE_ATTESTATION`** |
-| Polygon notarization | **`proof_ledger.chain_tx_hash`** filled from **simulated** RPC; **`PolygonChainNotarizer`** throws **`UnsupportedError`** | Implement adapter; set **`USE_POLYGON_NOTARIZER`** only when viable |
+| Polygon notarization | **Live async saga** when `USE_POLYGON_NOTARIZER=true`: `PolygonWalletService` + `anchor-relay` + `notarization_status`; sim `chain_tx_hash` until mainnet RPC wired ([[Polygon_Saga_Live]]) | Wire real Polygon contract broadcast + persist on-chain hash |
 | `proof_ledger` vs `seal_ledger` | **`proof_ledger`** + **`seal_ledger`** + **`profiles`** (retry path still touches `seal_ledger`) | Consolidate naming/semantics if product wants a single ledger story |
 | Courier black-box (`courier_packages`, no SELECT) | `extractForCourier` is local-only; no Supabase courier table | Schema + SECURITY DEFINER RPCs + policy review |
 | C2PA FFI | Not present | FFI build, licensing, binary size, CI matrix |
@@ -51,7 +51,7 @@ flowchart LR
 
 ## Phased effort (indicative)
 
-**Polygon Try 2 prep (2026-05-20):** PR0 lazy camera mount in `VaultHomeView` is **complete** — prerequisite for stable physical iOS QA before Polygon PRs ([[Polygon_Try1_Postmortem]]). Remaining Polygon work follows stash-backed PR1–PR5 sequencing in that page.
+**Polygon Try 2 (2026-05-21):** PR0–PR5 **complete**; physical iPhone QA passes. See [[Polygon_Saga_Live]]. Remaining gap: live mainnet/testnet broadcast (not DB-finalization stub).
 
 Rough calendar estimates for a **small team**; actuals depend on chain UX, attestation depth, and App Store review.
 
@@ -76,6 +76,7 @@ Rough calendar estimates for a **small team**; actuals depend on chain UX, attes
 
 * [[ProofLock_Architectural_Manifest]]
 * [[FactLockCam_Master_Blueprint]]
+* [[Polygon_Saga_Live]]
 * [[Polygon_Try1_Postmortem]]
 * [[Project_Audit_2026-05-11]]
 * [[overview]]

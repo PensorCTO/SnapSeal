@@ -104,7 +104,50 @@ class SealLedgerRepository {
       'wallet_id': walletId,
       'device_signature': deviceSignature,
       'chain_tx_hash': chainTxHash,
+      'notarization_status': 'notarized',
     });
+  }
+
+  /// Polygon saga: insert a pending row before the relay finalizes `chain_tx_hash`.
+  Future<void> insertPendingProofLedgerRow({
+    required String assetHash,
+    required String deviceSignature,
+  }) async {
+    final client = _requiredClient();
+    final userId = client.auth.currentUser?.id;
+    if (userId == null) {
+      throw StateError('No authenticated user for proof ledger sync.');
+    }
+    final walletId = await _getWalletId(client, userId);
+    await client.from('proof_ledger').insert(<String, dynamic>{
+      'asset_hash': assetHash,
+      'wallet_id': walletId,
+      'device_signature': deviceSignature,
+      'chain_tx_hash': null,
+      'notarization_status': 'pending_notarization',
+    });
+  }
+
+  Future<String?> fetchProofNotarizationStatus(String assetHash) async {
+    final client = _requiredClient();
+    final row = await client
+        .from('proof_ledger')
+        .select('notarization_status')
+        .eq('asset_hash', assetHash)
+        .maybeSingle();
+    return row?['notarization_status'] as String?;
+  }
+
+  Future<void> syncEvmAddress(String evmAddress) async {
+    final client = _requiredClient();
+    final userId = client.auth.currentUser?.id;
+    if (userId == null) {
+      throw StateError('No authenticated user for EVM address sync.');
+    }
+    await client
+        .from('profiles')
+        .update(<String, dynamic>{'evm_address': evmAddress})
+        .eq('id', userId);
   }
 
   Future<void> uploadCourierEncryptedBlob({

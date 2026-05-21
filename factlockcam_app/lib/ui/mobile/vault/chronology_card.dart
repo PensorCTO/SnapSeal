@@ -7,8 +7,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/services/haptic_service.dart';
 import '../../../data/models/archive_item.dart';
+import '../../../domain/blockchain/proof_state.dart';
+import '../../providers/proof_notarization_provider.dart';
 import 'providers/thumbnail_cache_provider.dart';
 
 /// Single asset plate in the chronology scroll view.
@@ -96,6 +99,18 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
     final thumbnailAsync = ref.watch(
       thumbnailCacheProvider(widget.item.assetFingerprint),
     );
+    final proofStateAsync = AppConfig.usePolygonNotarizer
+        ? ref.watch(
+            proofNotarizationStateProvider(widget.item.assetFingerprint),
+          )
+        : null;
+    final pendingLabel = widget.item.pendingSync
+        ? (AppConfig.usePolygonNotarizer
+              ? (proofStateAsync?.value ?? ProofState.pendingNotarization)
+                    .processingLabel
+              : 'SYNC')
+            .toUpperCase()
+        : null;
 
     return RepaintBoundary(
       child: GestureDetector(
@@ -227,7 +242,7 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
                 ),
 
                 // ── Pending sync badge ───────────────────────────────────
-                if (widget.item.pendingSync)
+                if (widget.item.pendingSync && pendingLabel != null)
                   Positioned(
                     top: 10,
                     right: 10,
@@ -241,7 +256,7 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        'SYNC',
+                        pendingLabel,
                         style: AppTextStyles.monoSm(
                           color: Colors.black,
                           fontWeight: FontWeight.w800,

@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 REQUIRED_KEYS = ("SUPABASE_URL", "SUPABASE_ANON_KEY")
-OPTIONAL_KEYS = ("LOCAL_ANON_KEY", "WEB_VAULT_BASE_URL")
+OPTIONAL_KEYS = ("LOCAL_ANON_KEY", "WEB_VAULT_BASE_URL", "USE_POLYGON_NOTARIZER")
 ALLOWED_KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
 
 
@@ -60,6 +60,8 @@ def resolve_values(env_file: Path | None) -> dict[str, str]:
     for url_key in ("SUPABASE_URL", "WEB_VAULT_BASE_URL"):
         if url_key in merged:
             merged[url_key] = _normalize_https_dup_scheme(merged[url_key])
+    if "USE_POLYGON_NOTARIZER" not in merged:
+        merged["USE_POLYGON_NOTARIZER"] = "true"
     return merged
 
 

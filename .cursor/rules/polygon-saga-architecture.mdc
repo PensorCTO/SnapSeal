@@ -1,0 +1,25 @@
+---
+description: Architectural constraints for the Polygon Live Retrofit (Try 2).
+globs: ["lib/**/*.dart", "supabase/functions/**/*.ts"]
+alwaysApply: true
+---
+
+# Polygon Saga Architecture Rules
+
+## 1. Strict PR Sequencing (Do not mix concerns)
+- **PR1**: Domain interfaces (`VaultBlockchainHandler`, `WalletService`, `NotarizationMonitorService`) + DI registrations ONLY. Feature flag `USE_POLYGON_NOTARIZER=false` defaults to simulated path.
+- **PR2**: `anchor-relay` Edge Function + Deno tests.
+- **PR3**: `web3dart` implementation in `PolygonWalletService`.
+- **PR4**: `VaultService.proofLockFile` integration (Async Saga).
+- **PR5**: `NotarizationMonitorService` Realtime subscription + Riverpod UI bridge.
+
+## 2. Dependency Boundaries
+- **NEVER** import `package:web3dart` into the `lib/ui/` directory.
+- **NEVER** inject `SupabaseClient` directly into widgets. All data access flows through GetIt services bridged to Riverpod.
+
+## 3. UI Thread Protection
+- Heavy cryptography (SHA-256) and EVM signing MUST utilize Dart `Isolate.run()`.
+
+## 4. State Semantics
+- Cryptographic records follow a saga: `Draft` → `Pending Notarization` → `Notarized` / `Collision`.
+- UI copy: use "Generating Proof…" instead of "Waiting for Blockchain Tx".
