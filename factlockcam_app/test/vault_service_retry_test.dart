@@ -119,14 +119,20 @@ void main() {
       () => ledger.checkProofStatus(assetFingerprint),
     ).thenAnswer((_) async => 'owned_by_me');
     when(
-      () => database.markSyncSucceeded(assetFingerprint: assetFingerprint),
+      () => database.markSyncSucceeded(
+        assetFingerprint: assetFingerprint,
+        chainTxHash: any(named: 'chainTxHash'),
+      ),
     ).thenAnswer((_) async {});
 
     final result = await service.retryPendingRemoteSync(assetFingerprint);
 
     expect(result, isTrue);
     verify(
-      () => database.markSyncSucceeded(assetFingerprint: assetFingerprint),
+      () => database.markSyncSucceeded(
+        assetFingerprint: assetFingerprint,
+        chainTxHash: any(named: 'chainTxHash'),
+      ),
     ).called(1);
   });
 
@@ -227,14 +233,20 @@ void main() {
         () => ledger.checkProofStatus(assetFingerprint),
       ).thenAnswer((_) async => 'anonymous');
       when(
-        () => database.markSyncSucceeded(assetFingerprint: assetFingerprint),
+        () => database.markSyncSucceeded(
+        assetFingerprint: assetFingerprint,
+        chainTxHash: any(named: 'chainTxHash'),
+      ),
       ).thenAnswer((_) async {});
 
       final result = await service.retryPendingRemoteSync(assetFingerprint);
 
       expect(result, isTrue);
       verify(
-        () => database.markSyncSucceeded(assetFingerprint: assetFingerprint),
+        () => database.markSyncSucceeded(
+        assetFingerprint: assetFingerprint,
+        chainTxHash: any(named: 'chainTxHash'),
+      ),
       ).called(1);
       verifyNever(() => native.signHash(any()));
       verifyNever(
@@ -417,14 +429,20 @@ void main() {
         const PostgrestException(message: 'duplicate key', code: '23505'),
       );
       when(
-        () => database.markSyncSucceeded(assetFingerprint: assetFingerprint),
+        () => database.markSyncSucceeded(
+        assetFingerprint: assetFingerprint,
+        chainTxHash: any(named: 'chainTxHash'),
+      ),
       ).thenAnswer((_) async {});
 
       final result = await service.retryPendingRemoteSync(assetFingerprint);
 
       expect(result, isTrue);
       verify(
-        () => database.markSyncSucceeded(assetFingerprint: assetFingerprint),
+        () => database.markSyncSucceeded(
+        assetFingerprint: assetFingerprint,
+        chainTxHash: any(named: 'chainTxHash'),
+      ),
       ).called(1);
     },
   );

@@ -7,6 +7,12 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 ## 2026-05-20
 
+- **Polygon proof UX + certificate tx hash** (user-confirmed QA pass) on branch `cursor/wiki-supabase-local-reset-audit`:
+  - **Code:** Await `anchor-relay` during capture (fixes missing post-capture progress); persist `chain_tx_hash` in SQLite v5; `CertificateExportService` includes ledger tx hash; monitor seeds initial `ProofState`; vault badges use **Generating Proof…** copy.
+  - **Tests:** `vault_service_retry_test.dart` updated for `markSyncSucceeded(chainTxHash:)`; 33/33 pass.
+  - **Wiki:** Refreshed [[Polygon_Saga_Live]] (await-relay sequence, QA table); [[FactLockCam_Product_Baseline_2026-05]], [[FactLockCam_Master_Blueprint]], [[overview]], [[glossary]], [[index]] aligned.
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 - **Final QA pass + wiki cleanup** on branch `cursor/wiki-supabase-local-reset-audit`:
   - User-confirmed QA pass; `flutter test` **33/33**; analyzer warnings cleared in vault UI (`Matrix4.translateByDouble`, unused catch params) and web crypto lint.
   - **App icon** committed: `FactLockCamAppIcon.png` + `flutter_launcher_icons` for iOS/Android/web (commit `b476f37`).

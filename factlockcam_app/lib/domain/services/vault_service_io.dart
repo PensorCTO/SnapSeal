@@ -275,6 +275,12 @@ class VaultService {
       assetFingerprint: fileHash,
       pendingSync: pendingSync,
     );
+    if (!pendingSync && chainTxHash != null) {
+      await _database.markSyncSucceeded(
+        assetFingerprint: fileHash,
+        chainTxHash: chainTxHash,
+      );
+    }
 
     await _deleteSourceAfterSeal(path);
 
@@ -285,7 +291,7 @@ class VaultService {
     );
   }
 
-  /// Polygon saga: local persist + pending ledger row, then fire-and-forget relay.
+  /// Polygon saga: local persist + pending ledger row, then await relay.
   Future<SealCaptureResult> _proofLockFilePolygonSaga(
     File sourceFile,
     String userId,
@@ -340,6 +346,7 @@ class VaultService {
     );
 
     var pendingSync = true;
+    String? chainTxHash;
 
     if (!pendingRemoteSync &&
         deviceSignature != null &&
@@ -349,17 +356,18 @@ class VaultService {
           assetHash: fileHash,
           deviceSignature: deviceSignature,
         );
-        unawaited(
-          _dispatchPolygonRelay(
-            fileHash: fileHash,
-            ownerSignature: ownerSignature,
-            deviceSignature: deviceSignature,
-          ),
+        chainTxHash = await _dispatchPolygonRelay(
+          fileHash: fileHash,
+          ownerSignature: ownerSignature,
+          deviceSignature: deviceSignature,
         );
-        pendingSync = true;
+        pendingSync = chainTxHash == null;
       } on PostgrestException catch (e) {
         if (e.code == '23505') {
-          pendingSync = false;
+          chainTxHash = await _sealLedgerRepository.fetchProofChainTxHash(
+            fileHash,
+          );
+          pendingSync = chainTxHash == null;
         } else if (_isRecoverableRemoteFailure(e)) {
           pendingSync = true;
         } else {
@@ -380,38 +388,57 @@ class VaultService {
       assetFingerprint: fileHash,
       pendingSync: pendingSync,
     );
+    if (chainTxHash != null) {
+      await _database.markSyncSucceeded(
+        assetFingerprint: fileHash,
+        chainTxHash: chainTxHash,
+      );
+    }
 
     await _deleteSourceAfterSeal(path);
 
     return SealCaptureResult(
       assetFingerprint: fileHash,
       pendingSync: pendingSync,
+      chainTxHash: chainTxHash,
     );
   }
 
-  Future<void> _dispatchPolygonRelay({
+  /// Returns the relay transaction hash when notarization completes.
+  Future<String?> _dispatchPolygonRelay({
     required String fileHash,
     required String ownerSignature,
     required String deviceSignature,
   }) async {
     try {
-      await _blockchainHandler.notarizeFileHash(
+      final txHash = await _blockchainHandler.notarizeFileHash(
         fileHash: fileHash,
         ownerSignature: ownerSignature,
         deviceSignature: deviceSignature,
       );
-      await _finalizeLocalPolygonSync(fileHash);
+      await _finalizeLocalPolygonSync(fileHash, chainTxHash: txHash);
+      return txHash;
     } catch (_) {
       // Relay failures retain local ciphertext; retry scheduler recovers.
+      return null;
     }
   }
 
-  Future<void> _finalizeLocalPolygonSync(String assetFingerprint) async {
+  Future<void> _finalizeLocalPolygonSync(
+    String assetFingerprint, {
+    String? chainTxHash,
+  }) async {
     final item = await _database.findArchiveItem(assetFingerprint);
-    if (item == null || !item.pendingSync) {
+    if (item == null) {
       return;
     }
-    await _database.markSyncSucceeded(assetFingerprint: assetFingerprint);
+    if (!item.pendingSync && item.chainTxHash != null) {
+      return;
+    }
+    await _database.markSyncSucceeded(
+      assetFingerprint: assetFingerprint,
+      chainTxHash: chainTxHash,
+    );
     _proofSyncNotifier.notifyAssetSynced(assetFingerprint);
   }
 
@@ -834,7 +861,13 @@ class VaultService {
         assetFingerprint,
       );
       if (remoteStatus == 'notarized') {
-        await _finalizeLocalPolygonSync(assetFingerprint);
+        final chainTxHash = await _sealLedgerRepository.fetchProofChainTxHash(
+          assetFingerprint,
+        );
+        await _finalizeLocalPolygonSync(
+          assetFingerprint,
+          chainTxHash: chainTxHash,
+        );
         return true;
       }
     } catch (e) {
@@ -859,13 +892,14 @@ class VaultService {
       return false;
     }
 
-    unawaited(
-      _dispatchPolygonRelay(
-        fileHash: assetFingerprint,
-        ownerSignature: ownerSignature,
-        deviceSignature: deviceSignature,
-      ),
+    final chainTxHash = await _dispatchPolygonRelay(
+      fileHash: assetFingerprint,
+      ownerSignature: ownerSignature,
+      deviceSignature: deviceSignature,
     );
+    if (chainTxHash != null) {
+      return true;
+    }
 
     await _database.markSyncDeferred(
       assetFingerprint: assetFingerprint,
@@ -957,11 +991,17 @@ class VaultService {
         deviceSignature: signature,
         chainTxHash: chainTxHash,
       );
-      await _database.markSyncSucceeded(assetFingerprint: assetFingerprint);
+      await _database.markSyncSucceeded(
+        assetFingerprint: assetFingerprint,
+        chainTxHash: chainTxHash,
+      );
       return true;
     } on PostgrestException catch (e) {
       if (e.code == '23505') {
-        await _database.markSyncSucceeded(assetFingerprint: assetFingerprint);
+        await _database.markSyncSucceeded(
+          assetFingerprint: assetFingerprint,
+          chainTxHash: chainTxHash,
+        );
         return true;
       }
       if (_isRecoverableRemoteFailure(e)) {

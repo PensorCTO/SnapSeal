@@ -13,6 +13,7 @@ class ArchiveItem {
     required this.byteLength,
     required this.createdAt,
     this.pendingSync = false,
+    this.chainTxHash,
     this.mimeType,
     this.title,
     this.description,
@@ -27,6 +28,7 @@ class ArchiveItem {
   final int byteLength;
   final DateTime createdAt;
   final bool pendingSync;
+  final String? chainTxHash;
   final String? mimeType;
   final String? title;
   final String? description;
@@ -41,6 +43,7 @@ class ArchiveItem {
     int? byteLength,
     DateTime? createdAt,
     bool? pendingSync,
+    Object? chainTxHash = _archiveCopyUnset,
     Object? mimeType = _archiveCopyUnset,
     Object? title = _archiveCopyUnset,
     Object? description = _archiveCopyUnset,
@@ -54,6 +57,9 @@ class ArchiveItem {
     byteLength: byteLength ?? this.byteLength,
     createdAt: createdAt ?? this.createdAt,
     pendingSync: pendingSync ?? this.pendingSync,
+    chainTxHash: identical(chainTxHash, _archiveCopyUnset)
+        ? this.chainTxHash
+        : chainTxHash as String?,
     mimeType: identical(mimeType, _archiveCopyUnset)
         ? this.mimeType
         : mimeType as String?,
@@ -78,6 +84,7 @@ class ArchiveItem {
     'mime_type': mimeType,
     'created_at': createdAt.toIso8601String(),
     'pending_sync': pendingSync ? 1 : 0,
+    'chain_tx_hash': chainTxHash,
     'title': title,
     'description': description,
     'sync_attempt_count': syncAttemptCount,
@@ -93,6 +100,7 @@ class ArchiveItem {
     mimeType: row['mime_type'] as String?,
     createdAt: DateTime.parse(row['created_at']! as String),
     pendingSync: ((row['pending_sync'] as int?) ?? 0) == 1,
+    chainTxHash: row['chain_tx_hash'] as String?,
     title: row['title'] as String?,
     description: row['description'] as String?,
     syncAttemptCount: (row['sync_attempt_count'] as int?) ?? 0,

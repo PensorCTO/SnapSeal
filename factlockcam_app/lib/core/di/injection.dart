@@ -89,12 +89,15 @@ Future<void> configureDependencies() async {
             handle: getIt<SupabaseClientHandle>(),
             database: getIt<VaultDatabase>(),
             proofSyncNotifier: getIt<ProofSyncNotifier>(),
+            sealLedgerRepository: getIt<SealLedgerRepository>(),
           )
         : SimulatedNotarizationMonitorService(),
   );
 
   getIt.registerLazySingleton<CertificateExportService>(
-    CertificateExportService.new,
+    () => CertificateExportService(
+      sealLedgerRepository: getIt<SealLedgerRepository>(),
+    ),
   );
 
   getIt.registerLazySingleton<VaultService>(

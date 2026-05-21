@@ -23,7 +23,10 @@ class VaultDatabase {
     required bool pendingSync,
   }) async {}
 
-  Future<void> markSyncSucceeded({required String assetFingerprint}) async {}
+  Future<void> markSyncSucceeded({
+    required String assetFingerprint,
+    String? chainTxHash,
+  }) async {}
 
   Future<void> markSyncDeferred({
     required String assetFingerprint,

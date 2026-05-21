@@ -321,7 +321,7 @@ class _AssetInspectorScreenState extends ConsumerState<AssetInspectorScreen>
 
   Future<void> _onViewCertificate() async {
     final certService = ref.read(certificateExportServiceProvider);
-    final draft = certService.buildCertificateDraft(widget.item);
+    final draft = await certService.buildCertificateDraft(widget.item);
 
     if (!mounted) return;
     showDialog(

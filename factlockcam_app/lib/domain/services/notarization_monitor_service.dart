@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/di/locator.dart';
 import '../../data/local/vault_database.dart';
+import '../../data/supabase/seal_ledger_repository.dart';
 import '../../data/supabase/supabase_client_handle.dart';
 import '../blockchain/proof_state.dart';
 import '../services/proof_sync_notifier.dart';
@@ -39,16 +40,21 @@ class PolygonNotarizationMonitorService
     required SupabaseClientHandle handle,
     required VaultDatabase database,
     required ProofSyncNotifier proofSyncNotifier,
+    SealLedgerRepository? sealLedgerRepository,
   })  : _handle = handle,
         _database = database,
-        _proofSyncNotifier = proofSyncNotifier;
+        _proofSyncNotifier = proofSyncNotifier,
+        _sealLedgerRepository =
+            sealLedgerRepository ?? getIt<SealLedgerRepository>();
 
   final SupabaseClientHandle _handle;
   final VaultDatabase _database;
   final ProofSyncNotifier _proofSyncNotifier;
+  final SealLedgerRepository _sealLedgerRepository;
 
   RealtimeChannel? _channel;
   final _assetControllers = <String, StreamController<ProofState>>{};
+  final _seededAssets = <String>{};
 
   @override
   void startMonitoring() {
@@ -82,17 +88,65 @@ class PolygonNotarizationMonitorService
       unawaited(controller.close());
     }
     _assetControllers.clear();
+    _seededAssets.clear();
   }
 
   @override
   Stream<ProofState> watchAsset(String assetHash) {
     final normalized = assetHash.trim();
-    return _assetControllers
-        .putIfAbsent(
-          normalized,
-          () => StreamController<ProofState>.broadcast(),
-        )
-        .stream;
+    final controller = _assetControllers.putIfAbsent(
+      normalized,
+      () => StreamController<ProofState>.broadcast(),
+    );
+    if (!_seededAssets.contains(normalized)) {
+      _seededAssets.add(normalized);
+      unawaited(_seedAssetState(normalized, controller));
+    }
+    return controller.stream;
+  }
+
+  Future<void> _seedAssetState(
+    String assetHash,
+    StreamController<ProofState> controller,
+  ) async {
+    if (controller.isClosed) {
+      return;
+    }
+
+    final local = await _database.findArchiveItem(assetHash);
+    if (local?.chainTxHash != null && local!.chainTxHash!.isNotEmpty) {
+      _emitTo(controller, ProofState.notarized);
+      return;
+    }
+    if (local != null && !local.pendingSync) {
+      _emitTo(controller, ProofState.notarized);
+      return;
+    }
+
+    if (!_sealLedgerRepository.isConfigured) {
+      _emitTo(controller, ProofState.pendingNotarization);
+      return;
+    }
+
+    try {
+      final remoteStatus = await _sealLedgerRepository.fetchProofNotarizationStatus(
+        assetHash,
+      );
+      if (remoteStatus == null) {
+        _emitTo(controller, ProofState.pendingNotarization);
+        return;
+      }
+      final proofState = _mapStatus(remoteStatus);
+      _emitTo(controller, proofState);
+      if (proofState == ProofState.notarized) {
+        final chainTxHash = await _sealLedgerRepository.fetchProofChainTxHash(
+          assetHash,
+        );
+        await _clearLocalPending(assetHash, chainTxHash: chainTxHash);
+      }
+    } catch (_) {
+      _emitTo(controller, ProofState.pendingNotarization);
+    }
   }
 
   Future<void> _handleLedgerUpdate(Map<String, dynamic> record) async {
@@ -109,15 +163,26 @@ class PolygonNotarizationMonitorService
       return;
     }
 
-    await _clearLocalPending(assetHash);
+    final chainTxHash = record['chain_tx_hash'] as String?;
+    await _clearLocalPending(assetHash, chainTxHash: chainTxHash);
   }
 
-  Future<void> _clearLocalPending(String assetHash) async {
+  Future<void> _clearLocalPending(
+    String assetHash, {
+    String? chainTxHash,
+  }) async {
     final item = await _database.findArchiveItem(assetHash);
-    if (item != null && item.pendingSync) {
-      await _database.markSyncSucceeded(assetFingerprint: assetHash);
-      _proofSyncNotifier.notifyAssetSynced(assetHash);
+    if (item == null) {
+      return;
     }
+    if (!item.pendingSync && item.chainTxHash != null) {
+      return;
+    }
+    await _database.markSyncSucceeded(
+      assetFingerprint: assetHash,
+      chainTxHash: chainTxHash ?? item.chainTxHash,
+    );
+    _proofSyncNotifier.notifyAssetSynced(assetHash);
   }
 
   ProofState _mapStatus(String status) {
@@ -136,6 +201,12 @@ class PolygonNotarizationMonitorService
   void _emit(String assetHash, ProofState state) {
     final controller = _assetControllers[assetHash];
     if (controller != null && !controller.isClosed) {
+      controller.add(state);
+    }
+  }
+
+  void _emitTo(StreamController<ProofState> controller, ProofState state) {
+    if (!controller.isClosed) {
       controller.add(state);
     }
   }

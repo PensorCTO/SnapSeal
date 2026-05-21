@@ -104,10 +104,13 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
             proofNotarizationStateProvider(widget.item.assetFingerprint),
           )
         : null;
-    final pendingLabel = widget.item.pendingSync
+    final proofState = proofStateAsync?.value;
+    final showPendingBadge = widget.item.pendingSync ||
+        (AppConfig.usePolygonNotarizer &&
+            proofState == ProofState.pendingNotarization);
+    final pendingLabel = showPendingBadge
         ? (AppConfig.usePolygonNotarizer
-              ? (proofStateAsync?.value ?? ProofState.pendingNotarization)
-                    .processingLabel
+              ? (proofState ?? ProofState.pendingNotarization).processingLabel
               : 'SYNC')
             .toUpperCase()
         : null;
@@ -242,7 +245,7 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
                 ),
 
                 // ── Pending sync badge ───────────────────────────────────
-                if (widget.item.pendingSync && pendingLabel != null)
+                if (showPendingBadge && pendingLabel != null)
                   Positioned(
                     top: 10,
                     right: 10,

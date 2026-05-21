@@ -377,9 +377,10 @@ class ArchiveItemActions {
     WidgetRef ref,
     ArchiveItem item,
   ) async {
-    final draft = ref
+    final draft = await ref
         .read(certificateExportServiceProvider)
         .buildCertificateDraft(item);
+    if (!context.mounted) return;
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(

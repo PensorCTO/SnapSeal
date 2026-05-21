@@ -9,7 +9,8 @@ import '../../data/supabase/supabase_client_handle.dart';
 /// Polygon path is fire-and-forget from [VaultService]; callers must not
 /// block UI on completion.
 abstract class VaultBlockchainHandler {
-  Future<void> notarizeFileHash({
+  /// Returns the ledger transaction hash after notarization completes.
+  Future<String> notarizeFileHash({
     required String fileHash,
     required String ownerSignature,
     required String deviceSignature,
@@ -24,12 +25,12 @@ class SimulatedBlockchainHandler implements VaultBlockchainHandler {
   final SealLedgerRepository _ledger;
 
   @override
-  Future<void> notarizeFileHash({
+  Future<String> notarizeFileHash({
     required String fileHash,
     required String ownerSignature,
     required String deviceSignature,
-  }) async {
-    await _ledger.simulateChainNotarize(
+  }) {
+    return _ledger.simulateChainNotarize(
       fileHash: fileHash,
       deviceSignature: deviceSignature,
     );
@@ -43,7 +44,7 @@ class PolygonBlockchainHandler implements VaultBlockchainHandler {
   final SupabaseClientHandle _handle;
 
   @override
-  Future<void> notarizeFileHash({
+  Future<String> notarizeFileHash({
     required String fileHash,
     required String ownerSignature,
     required String deviceSignature,
@@ -68,6 +69,15 @@ class PolygonBlockchainHandler implements VaultBlockchainHandler {
         'anchor-relay failed (${response.status}): $detail',
       );
     }
+
+    final data = response.data;
+    if (data is Map) {
+      final txHash = data['tx_hash'];
+      if (txHash is String && txHash.trim().isNotEmpty) {
+        return txHash.trim();
+      }
+    }
+    throw StateError('anchor-relay returned no tx_hash.');
   }
 }
 

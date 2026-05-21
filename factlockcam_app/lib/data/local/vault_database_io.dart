@@ -50,7 +50,7 @@ class VaultDatabase {
 
     return _database = await openDatabase(
       databasePath,
-      version: 4,
+      version: 5,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE archive_items (
@@ -61,6 +61,7 @@ class VaultDatabase {
             mime_type TEXT,
             created_at TEXT NOT NULL,
             pending_sync INTEGER NOT NULL DEFAULT 0,
+            chain_tx_hash TEXT,
             title TEXT,
             description TEXT,
             sync_attempt_count INTEGER NOT NULL DEFAULT 0,
@@ -98,6 +99,12 @@ class VaultDatabase {
           await db.execute('''
             ALTER TABLE archive_items
             ADD COLUMN next_retry_at TEXT
+          ''');
+        }
+        if (oldVersion < 5) {
+          await db.execute('''
+            ALTER TABLE archive_items
+            ADD COLUMN chain_tx_hash TEXT
           ''');
         }
       },
@@ -162,17 +169,24 @@ class VaultDatabase {
     );
   }
 
-  Future<void> markSyncSucceeded({required String assetFingerprint}) async {
+  Future<void> markSyncSucceeded({
+    required String assetFingerprint,
+    String? chainTxHash,
+  }) async {
     final db = await _db;
     final nowIso = DateTime.now().toUtc().toIso8601String();
+    final update = <String, Object?>{
+      'pending_sync': 0,
+      'sync_attempt_count': 0,
+      'last_sync_attempt_at': nowIso,
+      'next_retry_at': null,
+    };
+    if (chainTxHash != null && chainTxHash.trim().isNotEmpty) {
+      update['chain_tx_hash'] = chainTxHash.trim();
+    }
     await db.update(
       'archive_items',
-      {
-        'pending_sync': 0,
-        'sync_attempt_count': 0,
-        'last_sync_attempt_at': nowIso,
-        'next_retry_at': null,
-      },
+      update,
       where: 'asset_fingerprint = ?',
       whereArgs: [assetFingerprint],
     );

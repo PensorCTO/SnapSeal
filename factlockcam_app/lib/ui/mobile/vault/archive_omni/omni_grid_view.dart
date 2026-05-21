@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/config/app_config.dart';
 import '../../../../data/models/archive_item.dart';
+import '../../../../domain/blockchain/proof_state.dart';
+import '../../../providers/proof_notarization_provider.dart';
 import '../../archive_item_actions.dart';
 import '../../archive_thumbnail.dart';
 
@@ -74,23 +77,7 @@ class OmniGridView extends ConsumerWidget {
                           Positioned(
                             top: 4,
                             right: 4,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.alertAmber,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                'SYNC',
-                                style: AppTextStyles.monoSm(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
+                            child: _OmniPendingBadge(item: item),
                           ),
                         // Bottom hash label
                         Positioned(
@@ -220,6 +207,43 @@ class _VideoPlayBadge extends StatelessWidget {
         Icons.play_arrow,
         color: AppColors.starkWhite,
         size: 28,
+      ),
+    );
+  }
+}
+
+class _OmniPendingBadge extends ConsumerWidget {
+  const _OmniPendingBadge({required this.item});
+
+  final ArchiveItem item;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final proofStateAsync = AppConfig.usePolygonNotarizer
+        ? ref.watch(proofNotarizationStateProvider(item.assetFingerprint))
+        : null;
+    final proofState = proofStateAsync?.value;
+    final label = AppConfig.usePolygonNotarizer
+        ? (proofState ?? ProofState.pendingNotarization)
+            .processingLabel
+            .toUpperCase()
+        : 'SYNC';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 6,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.alertAmber,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        style: AppTextStyles.monoSm(
+          color: Colors.black,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }

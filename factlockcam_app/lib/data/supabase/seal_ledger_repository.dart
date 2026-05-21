@@ -138,6 +138,28 @@ class SealLedgerRepository {
     return row?['notarization_status'] as String?;
   }
 
+  /// Returns the finalized ledger transaction hash when present.
+  Future<String?> fetchProofChainTxHash(String assetHash) async {
+    final client = _requiredClient();
+    final row = await client
+        .from('proof_ledger')
+        .select('chain_tx_hash, notarization_status')
+        .eq('asset_hash', assetHash)
+        .maybeSingle();
+    if (row == null) {
+      return null;
+    }
+    final status = row['notarization_status'] as String?;
+    if (status != null && status != 'notarized') {
+      return null;
+    }
+    final txHash = row['chain_tx_hash'] as String?;
+    if (txHash == null || txHash.trim().isEmpty) {
+      return null;
+    }
+    return txHash.trim();
+  }
+
   Future<void> syncEvmAddress(String evmAddress) async {
     final client = _requiredClient();
     final userId = client.auth.currentUser?.id;

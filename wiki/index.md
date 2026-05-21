@@ -13,7 +13,7 @@ Read this page first when answering questions about the wiki.
 |------|----------------|
 | [[FactLockCam_Product_Baseline_2026-05]] | **Canonical status** — verified workflow, Supabase ops, branding, open gaps |
 | [[FactLockCam_Master_Blueprint]] | Application capabilities, finished vs unfinished, use cases |
-| [[Polygon_Saga_Live]] | Live async Polygon saga (Try 2), anchor-relay, ~2s device QA |
+| [[Polygon_Saga_Live]] | Live Polygon saga (Try 2): await relay at capture, local `chain_tx_hash`, certificate tx line |
 | [[iOS_Device_Development_Workflow]] | Physical iOS build/install when `flutter run` attach fails |
 
 ## Sources

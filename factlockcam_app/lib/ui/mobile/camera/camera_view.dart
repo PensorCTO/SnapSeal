@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/services/haptic_service.dart';
 import '../../../core/ui/widgets/vault_panel_navigation_bar.dart';
 import '../../../core/ui/painters/reticle_painter.dart';
@@ -298,7 +299,13 @@ class _CameraViewState extends ConsumerState<CameraView> {
                             previewHeight: previewH,
                           ),
                           if (_isSealing)
-                            const Positioned.fill(child: _SealingOverlay()),
+                            Positioned.fill(
+                              child: _SealingOverlay(
+                                statusLabel: AppConfig.usePolygonNotarizer
+                                    ? 'Generating Proof…'
+                                    : 'Sealing...',
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -606,7 +613,9 @@ class _ShutterButtonState extends State<CameraShutterButton>
 }
 
 class _SealingOverlay extends StatelessWidget {
-  const _SealingOverlay();
+  const _SealingOverlay({required this.statusLabel});
+
+  final String statusLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -629,8 +638,9 @@ class _SealingOverlay extends StatelessWidget {
                 const Icon(Icons.shield, color: AppColors.alertAmber, size: 64),
                 const SizedBox(height: 16),
                 Text(
-                  'Sealing...',
+                  statusLabel,
                   style: AppTextStyles.monoLg(color: AppColors.starkWhite),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 const LinearProgressIndicator(minHeight: 8),
