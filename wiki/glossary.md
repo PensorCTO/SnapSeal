@@ -71,6 +71,11 @@ summary: "Terminology reference for the LLM Wiki."
 | SimulatedChainNotarizer | Fallback `ChainNotarizer` when `USE_POLYGON_NOTARIZER=false`; delegates to `simulate_chain_notarize` RPC. When flag is **true**, async Polygon saga replaces this path — [[Polygon_Saga_Live]]. | `chain_notarizer.dart`, [[ProofLock_Refactor_Scope]] |
 | flutter_launcher_icons | Dev dependency generating iOS/Android/web launcher icons from `assets/images/FactLockCamAppIcon.png`. Regenerate after icon art changes: `dart run flutter_launcher_icons`. | `pubspec.yaml`, [[FactLockCam_Product_Baseline_2026-05]] |
 | FactLockCam app icon | Branded camera/lock artwork (#0D1B3A navy background) applied to iOS AppIcon, Android adaptive launcher, and web PWA icons. | [[FactLockCam_Product_Baseline_2026-05]] |
+| wallet_history | Supabase table archiving prior `profiles.evm_address` values on rotation; `owner_id → profiles.id ON DELETE CASCADE`. | [[Identity_Lifecycle_And_Data_Lineage]] |
+| Historical archive placeholder | UI state when local `wallet_address != profiles.evm_address`; missing local file shows `RestoreArchiveBanner`. | [[Identity_Lifecycle_And_Data_Lineage]], `archive_grid_item.dart` |
+| ProofCourierService | JIT courier blob upload: isolate byte copy + Supabase Storage inside iOS `beginBackgroundTask` scope. | [[Identity_Lifecycle_And_Data_Lineage]], `proof_courier_service.dart` |
+| PlatformChannelCoordinator | MethodChannel `com.factlockcam.app/platform` for background tasks and iOS backup restore picker. | [[Identity_Lifecycle_And_Data_Lineage]] |
+| perform_full_burn | RPC deleting courier storage blobs then `auth.users` row; cascade purges profile-linked tables (App Store 5.1.1). | [[Identity_Lifecycle_And_Data_Lineage]], migration `20260521120000_identity_lifecycle.sql` |
 
 ## Provenance Tracking
 
@@ -79,11 +84,13 @@ summary: "Terminology reference for the LLM Wiki."
 * *ProofLock terminology*: Derived from `wiki/sources/ProofLock_Architectural_Manifest.md` and `wiki/analyses/ProofLock_Refactor_Scope.md` (2026-05-03)
 * *Branding + Polygon saga terms*: `flutter_launcher_icons`, app icon, `SimulatedChainNotarizer` fallback clarification (2026-05-20)
 * *App Store prep + capture seal terms*: sidecar staging lock, `sealAndStoreCapture`, Archive UX label, legal bundle (2026-05-21) via [[App_Store_Prep_Capture_Seal_2026-05]]
+* *Identity lifecycle terms*: `wallet_history`, historical placeholder, `ProofCourierService`, `perform_full_burn` cascade (2026-05-21) via [[Identity_Lifecycle_And_Data_Lineage]]
 
 ## Related Notes
 
 * [[LLM_Wiki_Pattern]]
 * [[App_Store_Prep_Capture_Seal_2026-05]]
+* [[Identity_Lifecycle_And_Data_Lineage]]
 * [[FactLockCam_Product_Baseline_2026-05]]
 * [[FactLockCam_Master_Blueprint]]
 * [[ProofLock_Architectural_Manifest]]

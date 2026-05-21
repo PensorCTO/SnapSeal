@@ -31,6 +31,7 @@ import '../../data/supabase/seal_ledger_repository.dart';
 import '../blockchain/chain_notarizer.dart';
 import '../blockchain/vault_blockchain_handler.dart';
 import '../blockchain/wallet_service.dart';
+import '../../features/archive/application/proof_courier_service.dart';
 import 'proof_sync_notifier.dart';
 
 final vaultServiceProvider = Provider<VaultService>(
@@ -108,6 +109,7 @@ class VaultService {
     required ProofSyncNotifier proofSyncNotifier,
     required NativeEnclaveChannel nativeEnclave,
     required AuthRepository authRepository,
+    ProofCourierService? proofCourierService,
     TransactionalVaultPersister? transactionalPersister,
     VaultPathResolver? pathResolver,
   }) : _database = database,
@@ -121,6 +123,7 @@ class VaultService {
        _proofSyncNotifier = proofSyncNotifier,
        _nativeEnclave = nativeEnclave,
        _authRepository = authRepository,
+       _proofCourierService = proofCourierService,
        _transactionalPersister = transactionalPersister,
        _pathResolver = pathResolver ?? VaultPathResolver(storage);
 
@@ -143,6 +146,7 @@ class VaultService {
   final ProofSyncNotifier _proofSyncNotifier;
   final NativeEnclaveChannel _nativeEnclave;
   final AuthRepository _authRepository;
+  final ProofCourierService? _proofCourierService;
   final TransactionalVaultPersister? _transactionalPersister;
   final VaultPathResolver _pathResolver;
   Future<void>? _captureSealChain;
@@ -385,10 +389,12 @@ class VaultService {
 
     String? deviceSignature;
     String? ownerSignature;
+    String? sealingWalletAddress;
     if (!pendingRemoteSync) {
       try {
         deviceSignature = await _nativeEnclave.signHash(fileHash);
         ownerSignature = await _walletService.signMessageHash(fileHash);
+        sealingWalletAddress = await _walletService.ensureEvmAddress();
       } catch (e) {
         if (_isRecoverableRemoteFailure(e)) {
           pendingRemoteSync = true;
@@ -403,6 +409,7 @@ class VaultService {
       mimeType: mimeType,
       assetFingerprint: fileHash,
       sourcePath: sourcePath,
+      walletAddress: sealingWalletAddress,
     );
 
     var pendingSync = true;
@@ -595,10 +602,14 @@ class VaultService {
       '$userId/$assetHash$fileExtension.seal',
     );
 
-    await _sealLedgerRepository.uploadCourierEncryptedBlob(
-      storagePath: storagePath,
-      encryptedBytes: encryptedBytes,
-    );
+    await (_proofCourierService?.uploadEncryptedCourierBlob(
+          storagePath: storagePath,
+          encryptedBytes: encryptedBytes,
+        ) ??
+        _sealLedgerRepository.uploadCourierEncryptedBlob(
+          storagePath: storagePath,
+          encryptedBytes: encryptedBytes,
+        ));
 
     final packageId = await _sealLedgerRepository.getOrCreateCourierPackage(
       assetHash: assetHash,
@@ -682,6 +693,7 @@ class VaultService {
     required String? mimeType,
     required String assetFingerprint,
     String? sourcePath,
+    String? walletAddress,
   }) async {
     final keyBytes = await _loadOrCreateKeyBytes();
     final thumbnailBytes = await _generateThumbnailBytes(
@@ -714,6 +726,7 @@ class VaultService {
       rawByteLength: rawMediaBytes.length,
       mimeType: mimeType,
       pendingSync: true,
+      walletAddress: walletAddress,
     );
 
     await _verifyPersistedSealedAsset(

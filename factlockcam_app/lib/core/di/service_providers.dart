@@ -10,6 +10,12 @@ export '../../domain/export/certificate_export_service.dart'
 export '../../domain/export/proof_bundle_export_service.dart'
     show proofBundleExportServiceProvider;
 export '../../domain/services/vault_service.dart' show vaultServiceProvider;
+export '../../features/archive/application/proof_courier_service.dart'
+    show proofCourierServiceProvider;
+export '../../features/archive/data/archive_repository.dart'
+    show archiveRepositoryProvider, archiveAssetManifestProvider;
+export '../../features/identity/presentation/providers/current_profile_provider.dart'
+    show currentProfileProvider;
 
 /// ProofLock-facing bridge for archive interactions.
 ///

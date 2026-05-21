@@ -30,5 +30,17 @@ class MainActivity : FlutterActivity() {
         else -> result.notImplemented()
       }
     }
+
+    MethodChannel(
+      flutterEngine.dartExecutor.binaryMessenger,
+      "com.factlockcam.app/platform",
+    ).setMethodCallHandler { call, result ->
+      when (call.method) {
+        "beginBackgroundTask" -> result.success(0)
+        "endBackgroundTask" -> result.success(null)
+        "pickEncryptedBackupBytes" -> result.success(null)
+        else -> result.notImplemented()
+      }
+    }
   }
 }

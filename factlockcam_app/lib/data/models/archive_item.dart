@@ -20,6 +20,8 @@ class ArchiveItem {
     this.syncAttemptCount = 0,
     this.lastSyncAttemptAt,
     this.nextRetryAt,
+    this.walletAddress,
+    this.isLocallyAvailable = true,
   });
 
   final String assetFingerprint;
@@ -36,6 +38,12 @@ class ArchiveItem {
   final DateTime? lastSyncAttemptAt;
   final DateTime? nextRetryAt;
 
+  /// EVM signing key active when the asset was sealed (Polygon path).
+  final String? walletAddress;
+
+  /// Whether encrypted bytes still exist in the on-device archive sandbox.
+  final bool isLocallyAvailable;
+
   ArchiveItem copyWith({
     String? assetFingerprint,
     String? encryptedPath,
@@ -50,6 +58,8 @@ class ArchiveItem {
     int? syncAttemptCount,
     Object? lastSyncAttemptAt = _archiveCopyUnset,
     Object? nextRetryAt = _archiveCopyUnset,
+    Object? walletAddress = _archiveCopyUnset,
+    bool? isLocallyAvailable,
   }) => ArchiveItem(
     assetFingerprint: assetFingerprint ?? this.assetFingerprint,
     encryptedPath: encryptedPath ?? this.encryptedPath,
@@ -74,6 +84,10 @@ class ArchiveItem {
     nextRetryAt: identical(nextRetryAt, _archiveCopyUnset)
         ? this.nextRetryAt
         : nextRetryAt as DateTime?,
+    walletAddress: identical(walletAddress, _archiveCopyUnset)
+        ? this.walletAddress
+        : walletAddress as String?,
+    isLocallyAvailable: isLocallyAvailable ?? this.isLocallyAvailable,
   );
 
   Map<String, Object?> toDatabase() => {
@@ -90,6 +104,8 @@ class ArchiveItem {
     'sync_attempt_count': syncAttemptCount,
     'last_sync_attempt_at': lastSyncAttemptAt?.toIso8601String(),
     'next_retry_at': nextRetryAt?.toIso8601String(),
+    'wallet_address': walletAddress,
+    'is_locally_available': isLocallyAvailable ? 1 : 0,
   };
 
   factory ArchiveItem.fromDatabase(Map<String, Object?> row) => ArchiveItem(
@@ -110,5 +126,7 @@ class ArchiveItem {
     nextRetryAt: (row['next_retry_at'] as String?) == null
         ? null
         : DateTime.parse(row['next_retry_at']! as String),
+    walletAddress: row['wallet_address'] as String?,
+    isLocallyAvailable: ((row['is_locally_available'] as int?) ?? 1) == 1,
   );
 }

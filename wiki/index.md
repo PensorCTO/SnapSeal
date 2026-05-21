@@ -13,6 +13,7 @@ Read this page first when answering questions about the wiki.
 |------|----------------|
 | [[FactLockCam_Product_Baseline_2026-05]] | **Canonical status** — verified workflow, Supabase ops, branding, open gaps |
 | [[App_Store_Prep_Capture_Seal_2026-05]] | **Fifth QA (2026-05-21)** — App Store legal bundle, multi-shot seal hardening, vault I/O fixes |
+| [[Identity_Lifecycle_And_Data_Lineage]] | **Sixth QA (2026-05-21)** — Wallet lineage, EVM key rotation, JIT courier upload, archive placeholders |
 | [[FactLockCam_Master_Blueprint]] | Application capabilities, finished vs unfinished, use cases |
 | [[Polygon_Saga_Live]] | Live Polygon saga (Try 2): await relay at capture, local `chain_tx_hash`, certificate tx line |
 | [[iOS_Device_Development_Workflow]] | Physical iOS build/install when `flutter run` attach fails |
@@ -31,6 +32,7 @@ Read this page first when answering questions about the wiki.
 - [[Vault_Transactional_Journal]] - Sprint 2 WAL journal, transactional file persist, boot recovery, SQLite open hardening.
 - [[Isolate_Lock_Coordinator]] - Sprint 4 cross-isolate UI lock stream, sidecar advisory locks, securing overlays.
 - [[App_Store_Prep_Capture_Seal_2026-05]] - Fifth QA: legal bundle, multi-shot capture, vault promote I/O fixes.
+- [[Identity_Lifecycle_And_Data_Lineage]] - Sixth QA: wallet history, EVM lineage on ledger, JIT courier, restore placeholders.
 
 ## Analyses (active)
 

@@ -88,6 +88,24 @@ class SealLedgerRepository {
     return response;
   }
 
+  Future<String?> fetchActiveEvmAddress() async {
+    final client = _requiredClient();
+    final userId = client.auth.currentUser?.id;
+    if (userId == null) {
+      return null;
+    }
+    final row = await client
+        .from('profiles')
+        .select('evm_address')
+        .eq('id', userId)
+        .maybeSingle();
+    final address = row?['evm_address'] as String?;
+    if (address == null || address.trim().isEmpty) {
+      return null;
+    }
+    return address.trim();
+  }
+
   Future<void> insertProofLedgerRow({
     required String assetHash,
     required String deviceSignature,
@@ -99,12 +117,14 @@ class SealLedgerRepository {
       throw StateError('No authenticated user for proof ledger sync.');
     }
     final walletId = await _getWalletId(client, userId);
+    final evmAddress = await fetchActiveEvmAddress();
     await client.from('proof_ledger').insert(<String, dynamic>{
       'asset_hash': assetHash,
       'wallet_id': walletId,
       'device_signature': deviceSignature,
       'chain_tx_hash': chainTxHash,
       'notarization_status': 'notarized',
+      if (evmAddress != null) 'evm_address': evmAddress,
     });
   }
 
@@ -119,12 +139,14 @@ class SealLedgerRepository {
       throw StateError('No authenticated user for proof ledger sync.');
     }
     final walletId = await _getWalletId(client, userId);
+    final evmAddress = await fetchActiveEvmAddress();
     await client.from('proof_ledger').insert(<String, dynamic>{
       'asset_hash': assetHash,
       'wallet_id': walletId,
       'device_signature': deviceSignature,
       'chain_tx_hash': null,
       'notarization_status': 'pending_notarization',
+      if (evmAddress != null) 'evm_address': evmAddress,
     });
   }
 

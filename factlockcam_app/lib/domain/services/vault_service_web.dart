@@ -55,6 +55,7 @@ class VaultService {
     required Object proofSyncNotifier,
     required Object nativeEnclave,
     required Object authRepository,
+    Object? proofCourierService,
     Object? pathResolver,
     Object? transactionalPersister,
   });

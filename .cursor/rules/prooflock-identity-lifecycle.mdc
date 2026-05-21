@@ -1,0 +1,23 @@
+---
+description: Strict state isolation protocols enforcing marketing terminology boundaries, account burn compliance, and multi-wallet retention.
+globs: ["factlockcam_app/lib/core/ghost_key/**/*.dart", "factlockcam_app/lib/features/identity/**/*.dart", "factlockcam_app/lib/features/archive/**/*.dart", "supabase/migrations/**/*.sql"]
+---
+
+# ProofLock Identity Lifecycle & Lexicon Constraints
+
+## 1. Terminology Compliance (Hard Constraint)
+- ALL user-facing strings, logs, configurations, and comments MUST use "Archive" or "Digital Archive".
+- EXCLUSION ZONE: The term "Vault" is forbidden in standard domain code to eliminate regulatory exposures.
+- Exception: Lower-level system file-paths may retain structural `prooflock_vault` directories for legacy OS compatibility.
+
+## 2. Multi-Wallet State Mapping
+- When an asset's matching entry in `archive_items` has `wallet_address != profiles.evm_address`, state management MUST mark the component as `HistoricalAssetPlaceholder`.
+- UI layers MUST evaluate the `is_locally_available` Boolean state. If `false`, strip media playback controls and substitute an interactive `RestoreArchiveBanner`.
+
+## 3. Account Eradication (App Store Guideline 5.1.1)
+- Code pathways routing through account destruction handlers must execute a unified database drop.
+- Ensure all custom asset table creation scripts implement explicit `ON DELETE CASCADE` strategies bound directly to `profiles.id`. Wiping `auth.users` must result in a clean structural vacuum on the remote server instance.
+
+## 4. JIT Transmission Restrictions
+- Remote upload streams inside `ProofCourierService` are forbidden from holding application state references outside transient isolates.
+- Ensure any file IO streams generated during link execution utilize `beginBackgroundTask` primitives to prevent premature Dart event-loop suspension under iOS background policies.

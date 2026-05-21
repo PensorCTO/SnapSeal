@@ -23,6 +23,10 @@ import '../../domain/services/notarization_monitor_service.dart';
 import '../../domain/services/proof_sync_notifier.dart';
 import '../../domain/services/vault_service.dart';
 import '../ghost_key/native_enclave_channel.dart';
+import '../../core/platform/platform_channel_coordinator.dart';
+import '../../features/archive/application/proof_courier_service.dart';
+import '../../features/archive/data/archive_repository.dart';
+import '../../features/archive/domain/repositories/i_archive_repository.dart';
 import '../config/app_config.dart';
 import 'locator.dart';
 
@@ -92,6 +96,27 @@ Future<void> configureDependencies() async {
     () => CourierRepository(getIt<SupabaseClientHandle>()),
   );
 
+  if (!kIsWeb) {
+    getIt.registerLazySingleton<IPlatformChannelCoordinator>(
+      PlatformChannelCoordinator.new,
+    );
+    getIt.registerLazySingleton<ProofCourierService>(
+      () => ProofCourierService(
+        handle: getIt<SupabaseClientHandle>(),
+        channelCoordinator: getIt<IPlatformChannelCoordinator>(),
+      ),
+    );
+    getIt.registerLazySingleton<ArchiveRepository>(
+      () => ArchiveRepository(
+        database: getIt<VaultDatabase>(),
+        storage: getIt<LocalVaultStorage>(),
+      ),
+    );
+    getIt.registerLazySingleton<IArchiveRepository>(
+      () => getIt<ArchiveRepository>(),
+    );
+  }
+
   getIt.registerLazySingleton<ChainNotarizer>(
     () => AppConfig.usePolygonNotarizer
         ? PolygonChainNotarizer()
@@ -153,6 +178,7 @@ Future<void> configureDependencies() async {
       proofSyncNotifier: getIt<ProofSyncNotifier>(),
       nativeEnclave: getIt<NativeEnclaveChannel>(),
       authRepository: getIt<AuthRepository>(),
+      proofCourierService: kIsWeb ? null : getIt<ProofCourierService>(),
       pathResolver: getIt<VaultPathResolver>(),
       transactionalPersister: kIsWeb
           ? null

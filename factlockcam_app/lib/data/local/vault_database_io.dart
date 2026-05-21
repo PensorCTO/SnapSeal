@@ -76,7 +76,7 @@ class VaultDatabase {
 
     return openDatabase(
       databasePath,
-      version: 5,
+      version: 6,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE archive_items (
@@ -92,7 +92,9 @@ class VaultDatabase {
             description TEXT,
             sync_attempt_count INTEGER NOT NULL DEFAULT 0,
             last_sync_attempt_at TEXT,
-            next_retry_at TEXT
+            next_retry_at TEXT,
+            wallet_address TEXT,
+            is_locally_available INTEGER NOT NULL DEFAULT 1
           )
         ''');
       },
@@ -131,6 +133,16 @@ class VaultDatabase {
           await db.execute('''
             ALTER TABLE archive_items
             ADD COLUMN chain_tx_hash TEXT
+          ''');
+        }
+        if (oldVersion < 6) {
+          await db.execute('''
+            ALTER TABLE archive_items
+            ADD COLUMN wallet_address TEXT
+          ''');
+          await db.execute('''
+            ALTER TABLE archive_items
+            ADD COLUMN is_locally_available INTEGER NOT NULL DEFAULT 1
           ''');
         }
       },

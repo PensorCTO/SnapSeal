@@ -7,6 +7,7 @@ import '../../../../core/config/app_config.dart';
 import '../../../../data/models/archive_item.dart';
 import '../../../../domain/blockchain/proof_state.dart';
 import '../../../providers/proof_notarization_provider.dart';
+import '../../../../features/archive/presentation/widgets/archive_grid_item.dart';
 import '../../archive_item_actions.dart';
 import '../../archive_thumbnail.dart';
 import '../widgets/asset_securing_overlay.dart';
@@ -56,15 +57,16 @@ class OmniGridView extends ConsumerWidget {
                 return RepaintBoundary(
                   child: AssetSecuringOverlay(
                     assetFingerprint: item.assetFingerprint,
-                    child: GestureDetector(
-                    onTap: () {
-                      ArchiveItemActions.showBottomSheet(
-                        context: context,
-                        ref: ref,
-                        item: item,
-                      );
-                    },
-                    child: Stack(
+                    child: ArchiveGridItem(
+                      item: item,
+                      onTap: () {
+                        ArchiveItemActions.showBottomSheet(
+                          context: context,
+                          ref: ref,
+                          item: item,
+                        );
+                      },
+                      thumbnail: Stack(
                       fit: StackFit.expand,
                       children: [
                         ArchiveThumbnail(

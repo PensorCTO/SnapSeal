@@ -9,6 +9,7 @@ summary: "Authoritative May 2026 baseline: verified hub/archive/capture workflow
 
 As of this baseline, the **primary product workflow is verified end-to-end** on hosted Supabase: **logon** → **vault hub** → **capture or browse** → sealed assets with remote proof when online.
 
+- **Sixth QA pass 2026-05-21**: **Identity lifecycle** — `wallet_history`, `proof_ledger.evm_address`, cascade `perform_full_burn`, local SQLite v6 wallet lineage, `ProofCourierService` JIT upload + iOS background scope, historical archive placeholders + restore banner ([[Identity_Lifecycle_And_Data_Lineage]]).
 - **Fifth QA pass 2026-05-21**: App Store prep — bundled ToS/Privacy, support URL, GPS telemetry HUD, multi-shot capture (buffered bytes + seal queue), archive delete/view/thumbnail fixes, proof bundle zip share ([[App_Store_Prep_Capture_Seal_2026-05]]).
 - **Fourth QA pass 2026-05-21**: Sprint 4 **isolate lock coordinator** + securing overlays on archive tiles; sidecar advisory locks on staging promote (not payload truncate); `PrivacyInfo.xcprivacy` + App Store checklist doc ([[Isolate_Lock_Coordinator]]).
 - **Third QA pass 2026-05-21**: Sprint 2 **transactional journal** + SQLite single-flight fix; physical iPhone capture + **Polygon `proof_ledger` insert** verified; hub shell fixes (lazy archive/account panels, unique Cupertino nav `heroTag`, 2×2 hub grid + scroll in landscape).
@@ -31,7 +32,7 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 - **Remote drift (May 2026):** Hosted databases could diverge from repo migrations (legacy `proof_ledger` shapes, missing `simulated_chain_ledger`, missing or mismatched RPCs such as `simulate_chain_notarize` / `check_proof_status`). **Repair:** `supabase/migrations/20260509160000_repair_remote_prooflock_schema.sql` drops and recreates the canonical simulated-chain + `proof_ledger` surface and RPCs to match `20260503120000_prooflock_simulated_chain.sql`. **Destructive:** prior rows in old `proof_ledger` tables are not preserved across that repair.
 - **Profiles gap:** Historic `auth.users` rows sometimes had no `public.profiles` row (trigger timing/failures), blocking `wallet_id` and ledger/RPC paths. **Repair:** `supabase/migrations/20260509200000_backfill_profiles_from_auth_users.sql` inserts missing profiles and ensures non-null `wallet_id`.
 - **Flutter runtime:** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, optional **`USE_POLYGON_NOTARIZER`** (sync script defaults **true**), `WEB_VAULT_BASE_URL`, `REQUIRE_HARDWARE_ATTESTATION` (latter **not wired**). See `scripts/write_flutter_dart_defines.py` and `scripts/sync_flutter_dart_defines.sh` (also emits gitignored `generated_dart_defines.dart` so plain `flutter run` works after sync; stub template committed).
-- **Polygon saga migrations:** `20260520120000_polygon_saga_proof_ledger.sql`, `20260521000000_proof_ledger_replica_identity.sql`; Edge Function **`anchor-relay`** must be deployed on hosted projects.
+- **Polygon saga migrations:** `20260520120000_polygon_saga_proof_ledger.sql`, `20260521000000_proof_ledger_replica_identity.sql`, **`20260521120000_identity_lifecycle.sql`** (`wallet_history`, `proof_ledger.evm_address`, burn trigger); Edge Function **`anchor-relay`** must be deployed on hosted projects.
 - **CLI / ops:** Bare `supabase` CLI does not load repo root `.env.local`; use `scripts/factlockcam_supabase_pipeline.sh` (or source `.env.local`) for linked push and consistent env when operating against remote projects.
 
 ### Still not product-complete (pointers)
@@ -53,6 +54,7 @@ Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
 ## Related Notes
 
 * [[App_Store_Prep_Capture_Seal_2026-05]]
+* [[Identity_Lifecycle_And_Data_Lineage]]
 * [[FactLockCam_Master_Blueprint]]
 * [[Vault_Transactional_Journal]]
 * [[Isolate_Lock_Coordinator]]

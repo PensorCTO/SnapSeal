@@ -31,6 +31,7 @@ class TransactionalVaultPersister {
     String? mimeType,
     required bool pendingSync,
     String? chainTxHash,
+    String? walletAddress,
   }) async {
     if (!_journal.isAvailable) {
       await _legacyPersist(
@@ -41,6 +42,7 @@ class TransactionalVaultPersister {
         mimeType: mimeType,
         pendingSync: pendingSync,
         chainTxHash: chainTxHash,
+        walletAddress: walletAddress,
       );
       return;
     }
@@ -108,6 +110,7 @@ class TransactionalVaultPersister {
           lastSyncAttemptAt: null,
           nextRetryAt: null,
           chainTxHash: chainTxHash,
+          walletAddress: walletAddress,
         ),
       );
     } catch (error) {
@@ -128,6 +131,7 @@ class TransactionalVaultPersister {
     String? mimeType,
     required bool pendingSync,
     String? chainTxHash,
+    String? walletAddress,
   }) async {
     final encryptedPath = await _storage.writeEncryptedOriginal(
       assetFingerprint: assetFingerprint,
@@ -154,6 +158,7 @@ class TransactionalVaultPersister {
           lastSyncAttemptAt: null,
           nextRetryAt: null,
           chainTxHash: chainTxHash,
+          walletAddress: walletAddress,
         ),
       );
     } catch (_) {

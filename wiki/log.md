@@ -7,6 +7,12 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 ## 2026-05-21
 
+- **Identity lifecycle + sixth QA pass** (committed to `main`):
+  - **Code:** `wallet_history` + `proof_ledger.evm_address` migration; SQLite v6 wallet lineage columns; `ArchiveRepository`, `ProofCourierService`, `PlatformChannelCoordinator`, `ArchiveGridItem` / restore banner; iOS background task + document picker; `.cursor/rules/prooflock-identity-lifecycle.mdc`.
+  - **Ops:** `supabase db push` to hosted project; iOS simulator startup verified (`Supabase init completed`).
+  - **Wiki:** Added [[Identity_Lifecycle_And_Data_Lineage]]; refreshed [[FactLockCam_Product_Baseline_2026-05]], [[index]], [[overview]], [[glossary]].
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 - **App Store prep + fifth QA pass** (committed to `main`):
   - **Code:** Bundled legal docs + `LegalDocumentView`; multi-shot capture (`sealAndStoreCapture` buffered bytes, `_enqueueCaptureSeal`); GPS/UTC HUD; archive delete/view/thumbnail fixes; sidecar-lock staging promote (fixes 0-byte `.seal`); caller-isolate vault I/O; proof bundle zip share; `cipher_engine_roundtrip_test`, `locked_rename_test`.
   - **QA:** User-confirmed pass on physical device (rapid photos, thumbnails, view/decrypt, delete).
