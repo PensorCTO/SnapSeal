@@ -32,6 +32,8 @@ FactLockCam now treats **sealed asset persistence** as a two-database saga on mo
 
 Web targets skip the journal layer (`TransactionalVaultPersister` is null on web).
 
+**Sprint 4 (reactive UI):** `TransactionalVaultPersister` calls `IsolateLockCoordinator.lock`/`unlock` around each transaction; see [[Isolate_Lock_Coordinator]].
+
 ## Provenance Tracking
 
 * *Design and implementation*: Conversation + branch `cursor/wiki-supabase-local-reset-audit` (2026-05-21); QA-verified capture + Polygon insert on physical iPhone after SQLite race fix.
@@ -40,5 +42,6 @@ Web targets skip the journal layer (`TransactionalVaultPersister` is null on web
 
 * [[FactLockCam_Product_Baseline_2026-05]]
 * [[FactLockCam_Master_Blueprint]]
+* [[Isolate_Lock_Coordinator]]
 * [[Polygon_Saga_Live]]
 * [[Polygon_Try1_Postmortem]]

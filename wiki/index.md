@@ -28,6 +28,7 @@ Read this page first when answering questions about the wiki.
 - [[FactLockCam_Product_Baseline_2026-05]] - Verified hub/archive/capture workflow and compressed Supabase baseline (start here for FactLockCam status).
 - [[Heavy_Metal_Design_System]] - FactLockCam titanium/mono/iris visual system for secure-hardware UI feel.
 - [[Vault_Transactional_Journal]] - Sprint 2 WAL journal, transactional file persist, boot recovery, SQLite open hardening.
+- [[Isolate_Lock_Coordinator]] - Sprint 4 cross-isolate UI lock stream, advisory file locks, securing overlays.
 
 ## Analyses (active)
 

@@ -7,6 +7,12 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 ## 2026-05-21
 
+- **Sprint 4 reactive UI locks + fourth QA pass** (committed to `main`):
+  - **Code:** `IsolateLockCoordinator`, advisory file locks, `AssetSecuringOverlay` on chronology/grid, `PrivacyInfo.xcprivacy`, `docs/app_store_submission_checklist.md`, `integration_test` stub.
+  - **QA:** User-confirmed pass on physical device.
+  - **Wiki:** Refined [[Isolate_Lock_Coordinator]]; cross-links in [[Vault_Transactional_Journal]], [[FactLockCam_Product_Baseline_2026-05]], [[overview]], [[glossary]], [[index]].
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 - **Sprint 2 vault integrity + third device QA** on `cursor/wiki-supabase-local-reset-audit`:
   - **Code:** WAL journal (`factlockcam_journal.db`), `TransactionalVaultPersister`, boot recovery before `runApp`, sqflite single-flight + eager open, hub lazy archive/account panels, unique `VaultPanelNavigationBar` hero tags, landscape 2×2 hub grid, dart-defines sync → `GeneratedDartDefines` (gitignored generated file).
   - **QA:** User-confirmed physical iPhone capture + Polygon ledger insert after SQLite race fix; hub RenderFlex overflow fixed.
