@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../data/local/vault_database.dart';
@@ -8,6 +9,9 @@ import '../../data/supabase/seal_ledger_repository.dart';
 import '../../data/supabase/courier_repository.dart';
 import '../../data/supabase/supabase_client_handle.dart';
 import '../crypto/vault_encryption_handler.dart';
+import '../journal/journal_database_factory.dart';
+import '../journal/journal_repository.dart';
+import '../journal/transactional_vault_persister.dart';
 import '../../domain/export/certificate_export_service.dart';
 import '../../domain/blockchain/chain_notarizer.dart';
 import '../../domain/blockchain/vault_blockchain_handler.dart';
@@ -39,6 +43,21 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<VaultDatabase>(VaultDatabase.new);
   getIt.registerLazySingleton<LocalVaultStorage>(LocalVaultStorage.new);
+  if (!kIsWeb) {
+    getIt.registerLazySingleton<JournalDatabaseFactory>(
+      JournalDatabaseFactory.new,
+    );
+    getIt.registerLazySingleton<JournalRepository>(
+      () => JournalRepository(getIt<JournalDatabaseFactory>()),
+    );
+    getIt.registerLazySingleton<TransactionalVaultPersister>(
+      () => TransactionalVaultPersister(
+        journal: getIt<JournalRepository>(),
+        storage: getIt<LocalVaultStorage>(),
+        database: getIt<VaultDatabase>(),
+      ),
+    );
+  }
   getIt.registerLazySingleton<VaultPathResolver>(
     () => VaultPathResolver(getIt<LocalVaultStorage>()),
   );
@@ -114,6 +133,15 @@ Future<void> configureDependencies() async {
       nativeEnclave: getIt<NativeEnclaveChannel>(),
       authRepository: getIt<AuthRepository>(),
       pathResolver: getIt<VaultPathResolver>(),
+      transactionalPersister: kIsWeb
+          ? null
+          : getIt<TransactionalVaultPersister>(),
     ),
   );
+
+  // Eager-open SQLite before hub/dashboard and capture can race on first connect.
+  if (!kIsWeb) {
+    await getIt<VaultDatabase>().ensureOpen();
+    await getIt<JournalRepository>().open();
+  }
 }

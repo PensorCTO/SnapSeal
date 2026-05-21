@@ -32,10 +32,10 @@ The ingested **ProofLock** manifest ([[ProofLock_Architectural_Manifest]]) descr
 - Email OTP send + 6-digit verify flow with configured/unconfigured UI states.
 - Supabase auth-state listener that drives authenticated routing.
 - Sign-out path that burns local wallet state before Supabase sign-out.
-- Vault hub (`/vault-home`) as `IndexedStack` shell: index 0 = `HapticHubPanel` (four-tile launcher), 1 = photo `CameraView`, 2 = video `CameraView`, 3 = `UnifiedArchiveViewport`, 4 = `AccountSettingsPanel` (burn account, EULA/privacy links). **Lazy camera mount (PR0):** each `CameraView` is constructed only when its panel is active — hidden panels use `SizedBox.shrink()` so iOS does not initialize dual cameras at hub load ([[Polygon_Try1_Postmortem]]). Hub-tile navigation + panel back buttons; post-capture returns to hub index 0.
+- Vault hub (`/vault-home`) as `IndexedStack` shell: index 0 = `HapticHubPanel` (four-tile launcher), 1 = photo `CameraView`, 2 = video `CameraView`, 3 = `UnifiedArchiveViewport`, 4 = `AccountSettingsPanel` (burn account, EULA/privacy links). **Lazy panel mount:** inactive camera, archive, and account panels use `SizedBox.shrink()` (PR0 cameras; 2026-05-21 archive/account) to avoid dual-camera contention and duplicate Cupertino nav Hero tags. Hub uses 2×2 compact grid + scroll in landscape. Hub-tile navigation + panel back buttons; post-capture returns to hub index 0.
 - Camera capture screen with rear-camera preference, **dual `AcquisitionMode` (photo / video)** embedded as a tab within the `VaultHomeView` `IndexedStack`; the custom `ShutterIrisPainter` (mechanical six-blade iris motif) replaces the prior plain shutter ring. Video mode enables audio, starts with long press, stops through the shutter toggle, and reuses the same seal pipeline. Sealing state and error display are shared across modes. Post-capture switches back to the Home tab.
 - Forensic viewfinder first pass: `ReticlePainter`, `TelemetryOverlay` with `GoogleFonts.robotoMono`, and metallic `CameraChromeFrame` around the live preview + repaint-bounded overlay stack.
-- Local sealing pipeline: SHA-256 fingerprinting, AES-GCM encryption, image/video thumbnail generation, SQLite metadata, secure local key storage, and temp capture cleanup.
+- Local sealing pipeline: SHA-256 fingerprinting, AES-GCM encryption, image/video thumbnail generation, **transactional journal** staging + boot recovery ([[Vault_Transactional_Journal]]), SQLite metadata, secure local key storage, and temp capture cleanup.
 - Split archive (`/archive`) listing from SQLite using local thumbnails and pending-sync badges, separated into Photos and Videos tabs.
 - Full-size owner-side photo viewing (`ArchivePhotoView`) and verified video playback (`ArchiveVideoView`) through `extractForCourier`.
 - Domain Interaction Contract for archive actions: `MediaActionType`, `AssetActionRegistry`, `AssetAction`, and `UniversalAssetToolbar` render view/verify/delete/share/export affordances from the asset `mediaType` string instead of custom per-view action buttons.
@@ -45,7 +45,7 @@ The ingested **ProofLock** manifest ([[ProofLock_Architectural_Manifest]]) descr
 - **ProofLock RPC surface** from Flutter: `check_proof_status`, `simulate_chain_notarize`, `proof_ledger` insert (via `SealLedgerRepository`).
 - **Native signing channel** (`NativeEnclaveChannel` / `com.factlockcam.app/enclave`) with **simulated** `signHash` on iOS and Android (placeholders marked TODO for real enclave/Keystore).
 - **Pending-sync reconciliation**: periodic scheduler + hub/archive lifecycle hooks + UI “Retry now”; `retryPendingRemoteSync` walks replica + proof path with backoff.
-- **Compensating local cleanup** if SQLite upsert fails after encrypted/thumbnail files are written.
+- **Transactional persist + compensating cleanup** via `TransactionalVaultPersister` (journal prepare/commit/rollback; legacy path if journal unavailable on web).
 - **Certificate draft** dialog from archive actions (async text draft via `CertificateExportService` including **ledger transaction hash**; legal copy in `lib/core/legal/disclaimers.dart`).
 - Supabase foundation schema for profiles, wallet IDs, ledger tables (`seal_ledger`, repair-aligned `proof_ledger` / `simulated_chain_ledger`), RLS, and new-user profile creation.
 - User metadata editing (title/description) for archive rows from the vault UI.
@@ -125,6 +125,7 @@ Developers can run the Supabase helper script to start/reset/lint local Supabase
 ## Related Notes
 
 * [[FactLockCam_Product_Baseline_2026-05]]
+* [[Vault_Transactional_Journal]]
 * [[Polygon_Saga_Live]]
 * [[overview]]
 * [[glossary]]

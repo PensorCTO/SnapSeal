@@ -5,6 +5,14 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-05-21
+
+- **Sprint 2 vault integrity + third device QA** on `cursor/wiki-supabase-local-reset-audit`:
+  - **Code:** WAL journal (`factlockcam_journal.db`), `TransactionalVaultPersister`, boot recovery before `runApp`, sqflite single-flight + eager open, hub lazy archive/account panels, unique `VaultPanelNavigationBar` hero tags, landscape 2×2 hub grid, dart-defines sync → `GeneratedDartDefines` (gitignored generated file).
+  - **QA:** User-confirmed physical iPhone capture + Polygon ledger insert after SQLite race fix; hub RenderFlex overflow fixed.
+  - **Wiki:** Added [[Vault_Transactional_Journal]]; refreshed [[FactLockCam_Product_Baseline_2026-05]], [[FactLockCam_Master_Blueprint]], [[Polygon_Saga_Live]], [[index]], [[overview]], [[glossary]].
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 ## 2026-05-20
 
 - **Polygon proof UX + certificate tx hash** (user-confirmed QA pass) on branch `cursor/wiki-supabase-local-reset-audit`:

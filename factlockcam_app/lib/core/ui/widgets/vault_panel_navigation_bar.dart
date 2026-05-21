@@ -10,10 +10,13 @@ class VaultPanelNavigationBar extends StatelessWidget
     super.key,
     required this.title,
     required this.onBack,
-  });
+    /// Unique per panel; avoids Hero collisions when multiple bars share a route.
+    String? heroTag,
+  }) : heroTag = heroTag ?? 'vault_panel_nav_$title';
 
   final String title;
   final VoidCallback onBack;
+  final String heroTag;
 
   @override
   Size get preferredSize => const Size.fromHeight(44);
@@ -24,6 +27,8 @@ class VaultPanelNavigationBar extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     return CupertinoNavigationBar(
+      heroTag: heroTag,
+      transitionBetweenRoutes: false,
       backgroundColor: AppColors.titaniumDeep.withValues(alpha: 0.94),
       border: Border(
         bottom: BorderSide(

@@ -99,48 +99,39 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
                 const TitaniumOverlay(),
                 SafeArea(
                   top: false,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _HubTile(
-                          icon: Icons.folder_open_outlined,
-                          label: 'Vault',
-                          subtitle: 'Browse photos and videos on this device',
-                          onTap: () => _handleHubTap(
-                            () => widget.onHubDestinationSelected?.call(3),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
+                          ),
+                          child: Center(
+                            child: _HubTileLauncher(
+                              compact: constraints.maxHeight < 420 ||
+                                  constraints.maxWidth >
+                                      constraints.maxHeight * 1.1,
+                              onVault: () => _handleHubTap(
+                                () => widget.onHubDestinationSelected?.call(3),
+                              ),
+                              onPicture: () => _handleHubTap(
+                                () => widget.onHubDestinationSelected?.call(1),
+                              ),
+                              onVideo: () => _handleHubTap(
+                                () => widget.onHubDestinationSelected?.call(2),
+                              ),
+                              onAccount: () => _handleHubTap(
+                                () => widget.onHubDestinationSelected?.call(4),
+                              ),
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        _HubTile(
-                          icon: Icons.photo_camera_outlined,
-                          label: 'Picture',
-                          subtitle: 'Capture a still',
-                          onTap: () => _handleHubTap(
-                            () => widget.onHubDestinationSelected?.call(1),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _HubTile(
-                          icon: Icons.videocam_outlined,
-                          label: 'Video',
-                          subtitle: 'Record a clip',
-                          onTap: () => _handleHubTap(
-                            () => widget.onHubDestinationSelected?.call(2),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _HubTile(
-                          icon: Icons.settings_outlined,
-                          label: 'Account & Settings',
-                          subtitle: 'Logout, legal, delete account',
-                          onTap: () => _handleHubTap(
-                            () => widget.onHubDestinationSelected?.call(4),
-                          ),
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -148,6 +139,95 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Four hub destinations — 2×2 grid when space is tight (landscape), else column.
+class _HubTileLauncher extends StatelessWidget {
+  const _HubTileLauncher({
+    required this.compact,
+    required this.onVault,
+    required this.onPicture,
+    required this.onVideo,
+    required this.onAccount,
+  });
+
+  final bool compact;
+  final VoidCallback onVault;
+  final VoidCallback onPicture;
+  final VoidCallback onVideo;
+  final VoidCallback onAccount;
+
+  static const _spacing = 12.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final vault = _HubTile(
+      compact: compact,
+      icon: Icons.folder_open_outlined,
+      label: 'Vault',
+      subtitle: 'Browse photos and videos on this device',
+      onTap: onVault,
+    );
+    final picture = _HubTile(
+      compact: compact,
+      icon: Icons.photo_camera_outlined,
+      label: 'Picture',
+      subtitle: 'Capture a still',
+      onTap: onPicture,
+    );
+    final video = _HubTile(
+      compact: compact,
+      icon: Icons.videocam_outlined,
+      label: 'Video',
+      subtitle: 'Record a clip',
+      onTap: onVideo,
+    );
+    final account = _HubTile(
+      compact: compact,
+      icon: Icons.settings_outlined,
+      label: 'Account & Settings',
+      subtitle: 'Logout, legal, delete account',
+      onTap: onAccount,
+    );
+
+    if (compact) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: vault),
+              const SizedBox(width: _spacing),
+              Expanded(child: picture),
+            ],
+          ),
+          const SizedBox(height: _spacing),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: video),
+              const SizedBox(width: _spacing),
+              Expanded(child: account),
+            ],
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        vault,
+        const SizedBox(height: _spacing),
+        picture,
+        const SizedBox(height: _spacing),
+        video,
+        const SizedBox(height: _spacing),
+        account,
+      ],
     );
   }
 }
@@ -161,12 +241,14 @@ class _HubTile extends StatelessWidget {
     required this.label,
     required this.subtitle,
     required this.onTap,
+    this.compact = false,
   });
 
   final IconData icon;
   final String label;
   final String subtitle;
   final VoidCallback onTap;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -213,34 +295,47 @@ class _HubTile extends StatelessWidget {
             splashColor: AppColors.verifiedNeon.withValues(alpha: 0.14),
             highlightColor: AppColors.verifiedNeon.withValues(alpha: 0.06),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+              padding: EdgeInsets.symmetric(
+                horizontal: compact ? 12 : 18,
+                vertical: compact ? 12 : 22,
+              ),
               child: Row(
                 children: [
-                  _HardwareIcon(icon: icon),
-                  const SizedBox(width: 18),
+                  _HardwareIcon(icon: icon, compact: compact),
+                  SizedBox(width: compact ? 10 : 18),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           label.toUpperCase(),
-                          style: AppTextStyles.monoMd(
-                            color: AppColors.starkWhite,
-                          ),
+                          style: compact
+                              ? AppTextStyles.monoSm(
+                                  color: AppColors.starkWhite,
+                                )
+                              : AppTextStyles.monoMd(
+                                  color: AppColors.starkWhite,
+                                ),
+                          maxLines: compact ? 2 : 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           subtitle,
+                          maxLines: compact ? 2 : 3,
+                          overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color:
                                 AppColors.starkWhite.withValues(alpha: 0.62),
+                            fontSize: compact ? 11 : null,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.chevron_right,
+                    size: compact ? 20 : 24,
                     color: AppColors.titaniumHighlight,
                   ),
                 ],
@@ -254,15 +349,18 @@ class _HubTile extends StatelessWidget {
 }
 
 class _HardwareIcon extends StatelessWidget {
-  const _HardwareIcon({required this.icon});
+  const _HardwareIcon({required this.icon, this.compact = false});
 
   final IconData icon;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    final size = compact ? 40.0 : 52.0;
+    final iconSize = compact ? 20.0 : 26.0;
     return Container(
-      width: 52,
-      height: 52,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const RadialGradient(
@@ -280,7 +378,7 @@ class _HardwareIcon extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(icon, size: 26, color: AppColors.verifiedNeon),
+      child: Icon(icon, size: iconSize, color: AppColors.verifiedNeon),
     );
   }
 }

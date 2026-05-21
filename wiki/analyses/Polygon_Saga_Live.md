@@ -7,7 +7,10 @@ summary: "May 2026 Polygon Try 2: synchronous capture-time relay, local chain_tx
 
 ## Core Synthesis
 
-**Try 2 is complete and QA-verified** on physical iPhone against hosted project `jqvnwtslmoxjwzusmtxs`. **Second QA pass 2026-05-20:** user-confirmed after fixing post-capture proof progress regression and certificate tx-hash omission.
+**Try 2 is complete and QA-verified** on physical iPhone against hosted project `jqvnwtslmoxjwzusmtxs`.
+
+- **Third QA 2026-05-21:** capture + Polygon ledger insert re-verified after Sprint 2 local persist ([[Vault_Transactional_Journal]]) and SQLite open race fix.
+- **Second QA 2026-05-20:** post-capture proof progress regression and certificate tx-hash omission fixed.
 
 When `USE_POLYGON_NOTARIZER=true` (default after `scripts/sync_flutter_dart_defines.sh`), capture runs:
 
@@ -36,7 +39,7 @@ sequenceDiagram
 
     UI->>VS: proofLockFile (overlay: Generating Proof…)
     VS->>WS: signMessageHash (EIP-191, isolate)
-    VS->>VS: local vault encrypt
+    VS->>VS: transactional journal + local vault encrypt
     VS->>DB: INSERT pending_notarization
     VS->>ER: invoke anchor-relay (await)
     ER->>DB: finalize_polygon_notarization (tx_hash)

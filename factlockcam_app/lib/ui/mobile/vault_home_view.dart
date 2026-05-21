@@ -42,9 +42,17 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
     });
   }
 
-  /// Only mount [CameraView] while its panel is active. [IndexedStack] keeps
-  /// every child in the tree; eager camera init for hidden panels contends on
-  /// iOS hardware and can blank the first frame on physical devices.
+  /// [IndexedStack] keeps every child in the tree. Mount heavy / Hero-bearing
+  /// panels only while selected (cameras, archive, settings).
+  Widget _panelWhenSelected(int panelIndex, Widget child) {
+    if (_selectedIndex != panelIndex) {
+      return const SizedBox.shrink();
+    }
+    return child;
+  }
+
+  /// Only mount [CameraView] while its panel is active; eager camera init for
+  /// hidden panels contends on iOS hardware and can blank the first frame.
   Widget _cameraPanel(AcquisitionMode mode) {
     final isPhoto = mode == AcquisitionMode.photo;
     final panelIndex = isPhoto ? 1 : 2;
@@ -71,12 +79,18 @@ class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
           ),
           _cameraPanel(AcquisitionMode.photo),
           _cameraPanel(AcquisitionMode.video),
-          UnifiedArchiveViewport(
-            onCaptureRequested: _onHubDestinationSelected,
-            onBackToHub: _returnToHub,
+          _panelWhenSelected(
+            3,
+            UnifiedArchiveViewport(
+              onCaptureRequested: _onHubDestinationSelected,
+              onBackToHub: _returnToHub,
+            ),
           ),
-          AccountSettingsPanel(
-            onBackToHub: _returnToHub,
+          _panelWhenSelected(
+            4,
+            AccountSettingsPanel(
+              onBackToHub: _returnToHub,
+            ),
           ),
         ],
       ),

@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../core/di/locator.dart';
 import '../models/archive_item.dart';
+import 'vault_transactional_paths.dart';
 
 final localVaultStorageProvider = Provider<LocalVaultStorage>(
   (ref) => getIt<LocalVaultStorage>(),
@@ -86,6 +87,59 @@ class LocalVaultStorage {
     }
     await modern.create(recursive: true);
     return modern;
+  }
+
+  Future<VaultTransactionalPaths> resolveTransactionalPaths(
+    String assetFingerprint,
+  ) async {
+    final encryptedFinal = await _canonicalEncryptedPath(assetFingerprint);
+    final thumbnailFinal = await _canonicalThumbnailPath(assetFingerprint);
+    return VaultTransactionalPaths(
+      encryptedFinalPath: encryptedFinal,
+      thumbnailFinalPath: thumbnailFinal,
+      encryptedStagingPath: '$encryptedFinal.part',
+      thumbnailStagingPath: '$thumbnailFinal.part',
+    );
+  }
+
+  Future<void> writeBytesToPath(String path, Uint8List bytes) async {
+    final file = File(path);
+    final parent = file.parent;
+    if (!parent.existsSync()) {
+      await parent.create(recursive: true);
+    }
+    await Isolate.run(
+      () => File(path).writeAsBytesSync(bytes, flush: true),
+    );
+  }
+
+  /// Atomically promotes a staging file to its final vault path (same volume).
+  Future<void> commitStagedFile({
+    required String stagingPath,
+    required String finalPath,
+  }) async {
+    await Isolate.run(() {
+      final staging = File(stagingPath);
+      if (!staging.existsSync()) {
+        throw StateError('Staging file missing: $stagingPath');
+      }
+      final target = File(finalPath);
+      if (target.existsSync()) {
+        target.deleteSync();
+      }
+      staging.renameSync(finalPath);
+    });
+  }
+
+  Future<void> purgePaths(List<String> paths) async {
+    await Isolate.run(() {
+      for (final path in paths) {
+        final file = File(path);
+        if (file.existsSync()) {
+          file.deleteSync();
+        }
+      }
+    });
   }
 
   Future<String> writeEncryptedOriginal({

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,6 +38,10 @@ Future<void> _migrateLegacyVaultDatabaseIfNeeded(String documentsPath) async {
 
 class VaultDatabase {
   Database? _database;
+  Completer<Database>? _opening;
+
+  /// Opens the vault database once before UI traffic (hub list + capture upsert).
+  Future<void> ensureOpen() => _db;
 
   Future<Database> get _db async {
     final existing = _database;
@@ -44,11 +49,32 @@ class VaultDatabase {
       return existing;
     }
 
+    final inFlight = _opening;
+    if (inFlight != null) {
+      return inFlight.future;
+    }
+
+    final opening = Completer<Database>();
+    _opening = opening;
+    try {
+      final db = await _openVaultDatabase();
+      _database = db;
+      opening.complete(db);
+      return db;
+    } catch (error, stackTrace) {
+      opening.completeError(error, stackTrace);
+      rethrow;
+    } finally {
+      _opening = null;
+    }
+  }
+
+  Future<Database> _openVaultDatabase() async {
     final documents = await getApplicationDocumentsDirectory();
     await _migrateLegacyVaultDatabaseIfNeeded(documents.path);
     final databasePath = p.join(documents.path, 'factlockcam_vault.db');
 
-    return _database = await openDatabase(
+    return openDatabase(
       databasePath,
       version: 5,
       onCreate: (db, version) async {
@@ -112,12 +138,31 @@ class VaultDatabase {
   }
 
   Future<void> upsertArchiveItem(ArchiveItem item) async {
-    final db = await _db;
-    await db.insert(
-      'archive_items',
-      item.toDatabase(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await _withBusyRetry(() async {
+      final db = await _db;
+      await db.insert(
+        'archive_items',
+        item.toDatabase(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    });
+  }
+
+  Future<void> _withBusyRetry(Future<void> Function() action) async {
+    const maxAttempts = 4;
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        await action();
+        return;
+      } on DatabaseException catch (e) {
+        final message = e.toString().toLowerCase();
+        final isBusy = message.contains('locked') || message.contains('busy');
+        if (!isBusy || attempt == maxAttempts - 1) {
+          rethrow;
+        }
+        await Future<void>.delayed(Duration(milliseconds: 40 * (attempt + 1)));
+      }
+    }
   }
 
   Future<List<ArchiveItem>> listArchiveItems() async {

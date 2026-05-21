@@ -6,6 +6,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="${FACTLOCKCAM_ENV_FILE:-$ROOT_DIR/.env.local}"
 OUT="${FACTLOCKCAM_FLUTTER_DEFINES_OUT:-$ROOT_DIR/factlockcam_app/dart_defines.json}"
+DART_OUT="${FACTLOCKCAM_FLUTTER_DART_OUT:-$ROOT_DIR/factlockcam_app/lib/core/config/generated_dart_defines.dart}"
 
 if [[ -f "$ENV_FILE" ]]; then
   set -a
@@ -16,4 +17,5 @@ fi
 
 exec python3 "$ROOT_DIR/scripts/write_flutter_dart_defines.py" \
   --env-file "$ENV_FILE" \
-  --out "$OUT"
+  --out "$OUT" \
+  --dart-out "$DART_OUT"

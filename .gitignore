@@ -13,6 +13,7 @@ venv/
 .env
 .env.local
 factlockcam_app/dart_defines.json
+factlockcam_app/lib/core/config/generated_dart_defines.dart
 .env.*.local
 *.token
 auth.json

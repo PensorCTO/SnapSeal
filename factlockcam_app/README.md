@@ -21,10 +21,17 @@ secrets such as `SUPABASE_DB_PASSWORD` stay out of the binary) and runs Flutter:
 ../scripts/factlockcam_supabase_pipeline.sh app-run
 ```
 
-**IDE / plain `flutter run`:** sync defines from `.env.local`, then run with the generated file:
+**IDE / plain `flutter run`:** sync defines from `.env.local` once (writes `dart_defines.json`
+and `lib/core/config/generated_dart_defines.dart` so plain `flutter run` picks up keys):
 
 ```bash
 ../scripts/sync_flutter_dart_defines.sh
+flutter run
+```
+
+Optional explicit defines file (overrides generated fallbacks):
+
+```bash
 flutter run --dart-define-from-file dart_defines.json
 ```
 

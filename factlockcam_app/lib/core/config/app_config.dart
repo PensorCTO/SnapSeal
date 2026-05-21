@@ -1,18 +1,33 @@
 import 'package:flutter/foundation.dart';
 
+import 'generated_dart_defines.dart';
+
 class AppConfig {
-  static const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-  static const _supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+  static const supabaseUrl = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: GeneratedDartDefines.supabaseUrl,
+  );
+  static const _supabaseAnonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue: GeneratedDartDefines.supabaseAnonKey,
+  );
   /// Local Supabase REST/Kong URL; port must match `supabase/config.toml` `[api].port`.
   static const localSupabaseUrl = 'http://127.0.0.1:54325';
-  static const _localAnonKey = String.fromEnvironment('LOCAL_ANON_KEY');
+  static const _localAnonKey = String.fromEnvironment(
+    'LOCAL_ANON_KEY',
+    defaultValue: GeneratedDartDefines.localAnonKey,
+  );
   static const _usePolygonNotarizer = bool.fromEnvironment(
     'USE_POLYGON_NOTARIZER',
-    defaultValue: false,
+    defaultValue: GeneratedDartDefines.usePolygonNotarizer,
   );
   static const _requireHardwareAttestation = bool.fromEnvironment(
     'REQUIRE_HARDWARE_ATTESTATION',
     defaultValue: false,
+  );
+  static const _webVaultBaseUrl = String.fromEnvironment(
+    'WEB_VAULT_BASE_URL',
+    defaultValue: GeneratedDartDefines.webVaultBaseUrl,
   );
 
   static String get supabaseAnonKey => _supabaseAnonKey;
@@ -46,6 +61,8 @@ class AppConfig {
 
   static bool get usePolygonNotarizer => _usePolygonNotarizer;
   static bool get requireHardwareAttestation => _requireHardwareAttestation;
+
+  static String get webVaultBaseUrl => _webVaultBaseUrl;
 
   /// Placeholder legal URLs — replace before App Store submission.
   static const legalEulaUrl = 'https://factlockcam.com/eula';

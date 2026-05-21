@@ -7,7 +7,11 @@ summary: "Authoritative May 2026 baseline: verified hub/archive/capture workflow
 
 ## Core Synthesis
 
-As of this baseline, the **primary product workflow is verified end-to-end** on hosted Supabase: **logon** → **vault hub** → **capture or browse** → sealed assets with remote proof when online. **Second QA pass 2026-05-20** on branch `cursor/wiki-supabase-local-reset-audit`: user-confirmed after proof-progress + certificate tx-hash fixes; `flutter test` **33/33**, Polygon saga live (capture overlay **Generating Proof…**, ~2s relay on physical iPhone), **ledger tx hash on certificate**, branded app icon ([[Polygon_Saga_Live]]). PR0 lazy camera mount remains prerequisite ([[Polygon_Try1_Postmortem]]).
+As of this baseline, the **primary product workflow is verified end-to-end** on hosted Supabase: **logon** → **vault hub** → **capture or browse** → sealed assets with remote proof when online.
+
+- **Third QA pass 2026-05-21** (same branch): Sprint 2 **transactional journal** + SQLite single-flight fix; physical iPhone capture + **Polygon `proof_ledger` insert** verified; hub shell fixes (lazy archive/account panels, unique Cupertino nav `heroTag`, 2×2 hub grid + scroll in landscape).
+- **Second QA pass 2026-05-20**: proof-progress + certificate tx-hash fixes; `flutter test` **33/33** core suite; Polygon saga live (overlay **Generating Proof…**, ~2s relay), **ledger tx hash on certificate**, branded app icon ([[Polygon_Saga_Live]]).
+- PR0 lazy camera mount remains prerequisite ([[Polygon_Try1_Postmortem]]). Journal details: [[Vault_Transactional_Journal]].
 
 ### Verified workflow (happy path)
 
@@ -24,7 +28,7 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 
 - **Remote drift (May 2026):** Hosted databases could diverge from repo migrations (legacy `proof_ledger` shapes, missing `simulated_chain_ledger`, missing or mismatched RPCs such as `simulate_chain_notarize` / `check_proof_status`). **Repair:** `supabase/migrations/20260509160000_repair_remote_prooflock_schema.sql` drops and recreates the canonical simulated-chain + `proof_ledger` surface and RPCs to match `20260503120000_prooflock_simulated_chain.sql`. **Destructive:** prior rows in old `proof_ledger` tables are not preserved across that repair.
 - **Profiles gap:** Historic `auth.users` rows sometimes had no `public.profiles` row (trigger timing/failures), blocking `wallet_id` and ledger/RPC paths. **Repair:** `supabase/migrations/20260509200000_backfill_profiles_from_auth_users.sql` inserts missing profiles and ensures non-null `wallet_id`.
-- **Flutter runtime:** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, optional **`USE_POLYGON_NOTARIZER`** (sync script defaults **true**), `WEB_VAULT_BASE_URL`, `REQUIRE_HARDWARE_ATTESTATION` (latter **not wired**). See `scripts/write_flutter_dart_defines.py`.
+- **Flutter runtime:** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, optional **`USE_POLYGON_NOTARIZER`** (sync script defaults **true**), `WEB_VAULT_BASE_URL`, `REQUIRE_HARDWARE_ATTESTATION` (latter **not wired**). See `scripts/write_flutter_dart_defines.py` and `scripts/sync_flutter_dart_defines.sh` (also emits gitignored `generated_dart_defines.dart` so plain `flutter run` works after sync; stub template committed).
 - **Polygon saga migrations:** `20260520120000_polygon_saga_proof_ledger.sql`, `20260521000000_proof_ledger_replica_identity.sql`; Edge Function **`anchor-relay`** must be deployed on hosted projects.
 - **CLI / ops:** Bare `supabase` CLI does not load repo root `.env.local`; use `scripts/factlockcam_supabase_pipeline.sh` (or source `.env.local`) for linked push and consistent env when operating against remote projects.
 
@@ -47,6 +51,7 @@ Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
 ## Related Notes
 
 * [[FactLockCam_Master_Blueprint]]
+* [[Vault_Transactional_Journal]]
 * [[Polygon_Saga_Live]]
 * [[Polygon_Try1_Postmortem]]
 * [[ProofLock_Refactor_Scope]]

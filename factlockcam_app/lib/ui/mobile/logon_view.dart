@@ -245,10 +245,12 @@ class _ConfigNotice extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Text(
           'Supabase is not configured yet. The local wallet shell is usable; '
-          'Magic Number auth requires SUPABASE_URL and SUPABASE_ANON_KEY. '
-          'From the repo root run `bash scripts/factlockcam_supabase_pipeline.sh app-run`. '
-          'If you are already in `scripts/`, run `./factlockcam_supabase_pipeline.sh app-run` '
-          '(a bare filename is not on your PATH).',
+          'Magic Number auth requires SUPABASE_URL and SUPABASE_ANON_KEY in '
+          'repo-root `.env.local`, then run '
+          '`bash scripts/sync_flutter_dart_defines.sh` from the repo root '
+          '(or `../scripts/sync_flutter_dart_defines.sh` from factlockcam_app). '
+          'After sync, plain `flutter run` works, or use '
+          '`scripts/factlockcam_supabase_pipeline.sh app-run`.',
           style: TextStyle(
             color: AppColors.starkWhite.withValues(alpha: 0.88),
             fontSize: 13,

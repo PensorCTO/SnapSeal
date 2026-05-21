@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/di/locator.dart';
 import '../models/archive_item.dart';
+import 'vault_transactional_paths.dart';
 
 final localVaultStorageProvider = Provider<LocalVaultStorage>(
   (ref) => getIt<LocalVaultStorage>(),
@@ -11,6 +12,25 @@ final localVaultStorageProvider = Provider<LocalVaultStorage>(
 
 class LocalVaultStorage {
   Future<ArchiveItem> resolveArchivePaths(ArchiveItem item) async => item;
+
+  Future<VaultTransactionalPaths> resolveTransactionalPaths(
+    String assetFingerprint,
+  ) async {
+    throw UnsupportedError('Transactional vault paths are mobile-only.');
+  }
+
+  Future<void> writeBytesToPath(String path, Uint8List bytes) async {
+    throw UnsupportedError('Transactional vault writes are mobile-only.');
+  }
+
+  Future<void> commitStagedFile({
+    required String stagingPath,
+    required String finalPath,
+  }) async {
+    throw UnsupportedError('Transactional vault commit is mobile-only.');
+  }
+
+  Future<void> purgePaths(List<String> paths) async {}
 
   Future<String> writeEncryptedOriginal({
     required String assetFingerprint,

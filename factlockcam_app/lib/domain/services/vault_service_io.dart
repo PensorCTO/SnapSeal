@@ -15,6 +15,7 @@ import '../../core/config/app_config.dart';
 import '../../core/crypto/courier_crypto.dart';
 import '../../core/crypto/vault_encryption_handler.dart';
 import '../../core/di/locator.dart';
+import '../../core/journal/transactional_vault_persister.dart';
 import '../../core/ghost_key/native_enclave_channel.dart';
 import '../../data/local/vault_database.dart';
 import '../../data/models/archive_item.dart';
@@ -103,6 +104,7 @@ class VaultService {
     required ProofSyncNotifier proofSyncNotifier,
     required NativeEnclaveChannel nativeEnclave,
     required AuthRepository authRepository,
+    TransactionalVaultPersister? transactionalPersister,
     VaultPathResolver? pathResolver,
   }) : _database = database,
        _storage = storage,
@@ -115,6 +117,7 @@ class VaultService {
        _proofSyncNotifier = proofSyncNotifier,
        _nativeEnclave = nativeEnclave,
        _authRepository = authRepository,
+       _transactionalPersister = transactionalPersister,
        _pathResolver = pathResolver ?? VaultPathResolver(storage);
 
   static const _vaultKeyName = 'factlockcam:vault_key';
@@ -136,6 +139,7 @@ class VaultService {
   final ProofSyncNotifier _proofSyncNotifier;
   final NativeEnclaveChannel _nativeEnclave;
   final AuthRepository _authRepository;
+  final TransactionalVaultPersister? _transactionalPersister;
   final VaultPathResolver _pathResolver;
 
   /// Courier vault origin embedded in shared links.
@@ -547,7 +551,7 @@ class VaultService {
     });
   }
 
-  /// Persists encrypted media + SQLite row. Returns whether local row wants sync.
+  /// Persists encrypted media + SQLite row inside a journal-backed transaction.
   Future<void> _persistSealedBytes(
     Uint8List rawMediaBytes, {
     required String? mimeType,
@@ -565,40 +569,21 @@ class VaultService {
       sourcePath: sourcePath,
     );
 
-    final encryptedPath = await _storage.writeEncryptedOriginal(
-      assetFingerprint: assetFingerprint,
-      bytes: encryptedBytes,
-    );
-    final thumbnailPath = await _storage.writeThumbnail(
-      assetFingerprint: assetFingerprint,
-      bytes: thumbnailBytes,
-    );
-
-    try {
-      await _database.upsertArchiveItem(
-        ArchiveItem(
-          assetFingerprint: assetFingerprint,
-          encryptedPath: encryptedPath,
-          thumbnailPath: thumbnailPath,
-          byteLength: rawMediaBytes.length,
-          mimeType: mimeType,
-          createdAt: DateTime.now().toUtc(),
-          pendingSync: true,
-          title: null,
-          description: null,
-          syncAttemptCount: 0,
-          lastSyncAttemptAt: null,
-          nextRetryAt: null,
-        ),
+    final persister = _transactionalPersister;
+    if (persister == null) {
+      throw StateError(
+        'TransactionalVaultPersister is required for vault persistence.',
       );
-    } catch (_) {
-      // Compensating cleanup keeps local vault + SQLite metadata consistent.
-      await _storage.deleteAssetFiles(
-        encryptedPath: encryptedPath,
-        thumbnailPath: thumbnailPath,
-      );
-      rethrow;
     }
+
+    await persister.persistSealedAsset(
+      assetFingerprint: assetFingerprint,
+      encryptedBytes: encryptedBytes,
+      thumbnailBytes: thumbnailBytes,
+      rawByteLength: rawMediaBytes.length,
+      mimeType: mimeType,
+      pendingSync: true,
+    );
   }
 
   /// If the thumbnail file is missing but the encrypted original exists, decrypt,

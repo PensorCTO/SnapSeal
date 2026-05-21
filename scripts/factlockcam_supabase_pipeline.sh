@@ -121,15 +121,17 @@ case "${1:-help}" in
     require_env SUPABASE_ANON_KEY
     python3 "$ROOT_DIR/scripts/write_flutter_dart_defines.py" \
       --env-file "$ENV_FILE" \
-      --out "$APP_DIR/dart_defines.json"
-    echo "Wrote $APP_DIR/dart_defines.json"
+      --out "$APP_DIR/dart_defines.json" \
+      --dart-out "$APP_DIR/lib/core/config/generated_dart_defines.dart"
+    echo "Wrote $APP_DIR/dart_defines.json and lib/core/config/generated_dart_defines.dart"
     ;;
   app-run)
     require_env SUPABASE_URL
     require_env SUPABASE_ANON_KEY
     python3 "$ROOT_DIR/scripts/write_flutter_dart_defines.py" \
       --env-file "$ENV_FILE" \
-      --out "$APP_DIR/dart_defines.json"
+      --out "$APP_DIR/dart_defines.json" \
+      --dart-out "$APP_DIR/lib/core/config/generated_dart_defines.dart"
     (cd "$APP_DIR" && flutter run --dart-define-from-file dart_defines.json)
     ;;
   help|--help|-h)

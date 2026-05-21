@@ -8,6 +8,8 @@ final vaultDatabaseProvider = Provider<VaultDatabase>(
 );
 
 class VaultDatabase {
+  Future<void> ensureOpen() async {}
+
   Future<void> upsertArchiveItem(ArchiveItem item) async {
     throw UnsupportedError('Local vault database is mobile-only.');
   }
