@@ -1,39 +1,32 @@
 ---
-tags: [overview, synthesis, llm_wiki]
-summary: "Evolving high-level synthesis of the wiki's accumulated knowledge."
+tags: [overview, synthesis, factlockcam, llm_wiki]
+summary: "Big-picture view of ProofLockCleanup: FactLockCam product runtime, Supabase ledger/RPC surfaces, and this Karpathy-style LLM Wiki as canonical architecture memory."
 ---
 
 # Overview
 
 ## Core Synthesis
 
-This wiki now tracks both the Karpathy-style LLM Wiki workflow and the emerging SnapSeal application. SnapSeal is a Flutter mathematical certainty wallet for authenticated media capture, local sealing, and active-wallet proof replication through Supabase, with Polygon still planned as the durable proof layer. A separate **ProofLock** architectural manifest ([[ProofLock_Architectural_Manifest]]) captures a **stricter target** (hardware-backed signing, Polygon + C2PA, RPC-first ledger/courier); [[ProofLock_Refactor_Scope]] maps that target to the current codebase and estimates refactor phases.
+`ProofLockCleanup` is a **dual** workspace: (1) the **FactLockCam** Flutter application (`factlockcam_app/`) with **local-first** encrypted media vault behavior and optional **Supabase** auth and proof ledger replication; (2) a **Karpathy-style LLM Wiki** (`wiki/`) that compiles durable architecture truth from `raw/` sources and ongoing reconciliation.
 
-## Current Themes
+For **product status and verified workflow**, start at [[FactLockCam_Product_Baseline_2026-05]]. For **dated narrative architecture**, use [[MASTER_CONTEXT16MAY2026]]. For **layered technical breakdown** (routing, DI, `VaultService.proofLockFile`, RPC mapping, archive contract), use [[FactLockCam_Blueprints_14May2026]] (mirrors repo root `FactLockCam_Blueprints14May2026.md`). For **physical iOS device dev** (build/install when `flutter run` attach fails), use [[iOS_Device_Development_Workflow]]. For **Polygon async saga (live)**, use [[Polygon_Saga_Live]]; Try 1 history in [[Polygon_Try1_Postmortem]]. For **gap-to-target** relative to the ProofLock manifest, see [[ProofLock_Refactor_Scope]].
 
-- Source-first knowledge compilation.
-- LLM-maintained Markdown synthesis.
-- Explicit provenance and related-note links.
-- Cursor-native workflows for ingest, query, and lint.
-- SnapSeal local-first media sealing with encrypted originals, thumbnails, SQLite metadata, and Supabase active-ledger sync.
-
-## Open Questions
-
-- How should Polygon proof submission and verification be integrated into the current local vault and Supabase active-ledger model?
-- What retry/reconciliation model should clear `pending_sync` rows after offline or failed Supabase sync?
-- Which user-facing export or courier workflow should expose verified decrypted media without weakening local privacy guarantees?
-- When adopting ProofLock-class guarantees, what is the minimum viable **native TEE signing** and **capture pipeline** change set before marketing hardware-backed provenance?
+Primary navigation: [[index]] · [[glossary]] · [[log]]
 
 ## Provenance Tracking
 
-* *Initial architecture*: Derived from `raw/sample_llm_wiki_source.md` (2026-04-26)
-* *SnapSeal application state*: Derived from `wiki/analyses/SnapSeal_Master_Blueprint.md` (2026-04-30; updated 2026-05-03)
-* *ProofLock target architecture and refactor scope*: Derived from `wiki/sources/ProofLock_Architectural_Manifest.md` and `wiki/analyses/ProofLock_Refactor_Scope.md` (2026-05-03)
+* *Page intent*: Standing orientation for humans and agents reading the wiki; updated 2026-05-14 when [[FactLockCam_Blueprints_14May2026]] was added and this overview was initialized from an empty file.
 
 ## Related Notes
 
-* [[Sample_Source]]
-* [[LLM_Wiki_Pattern]]
-* [[SnapSeal_Master_Blueprint]]
-* [[ProofLock_Architectural_Manifest]]
+* [[index]]
+* [[FactLockCam_Product_Baseline_2026-05]]
+* [[MASTER_CONTEXT16MAY2026]]
+* [[FactLockCam_Blueprints_14May2026]]
+* [[FactLockCam_Master_Blueprint]]
+* [[iOS_Device_Development_Workflow]]
+* [[Polygon_Saga_Live]]
+* [[Polygon_Try1_Postmortem]]
 * [[ProofLock_Refactor_Scope]]
+* [[glossary]]
+* [[log]]

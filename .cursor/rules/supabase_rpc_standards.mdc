@@ -1,0 +1,12 @@
+---
+description: Standards for Supabase RPC implementations and Flutter integrations (PostgREST, SECURITY DEFINER, schema reload).
+globs: supabase/**/*.sql, factlockcam_app/lib/data/supabase/**/*.dart
+alwaysApply: false
+---
+
+# Supabase RPC & PostgREST Standards
+
+- **Parameter Mapping**: Ensure Dart `rpc()` parameters exactly match the PostgreSQL `p_` argument names.
+- **Cache Management**: Every structural DDL change to an RPC must include `NOTIFY pgrst, 'reload schema';` to prevent `PGRST202` exceptions.
+- **Security Definer**: Read-only pre-flight checks that require global table visibility (e.g., checking if another user owns a hash) MUST use `SECURITY DEFINER` and handle manual authorization logic inside the function body.
+- **Typing**: Enforce strict return types in Dart using `.map((response) => response as String)`.

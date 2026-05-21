@@ -1,0 +1,11 @@
+---
+description: Architectural constraints for the ProofLock Haptic Chronology Vault UI.
+globs: factlockcam_app/lib/ui/mobile/vault/**/*.dart
+alwaysApply: true
+---
+# Haptic Chronology Constraints
+
+1. **RepaintBoundary Enforcement**: For this complex ListView implementation featuring a scrolling list of cards with expensive visual effects, wrapping individual items in a RepaintBoundary is mandatory to substantially reduce the redraw region during scrolling or interactions.
+2. **Scroll-Driven Animation**: Do not use `AnimationController` for the stack fanning effect. Bind the `Transform.translate` and `Transform.scale` directly to the `ScrollController` offset via a custom calculation to ensure 1-to-1 parity between user thumb movement and UI reaction.
+3. **Isolate Decoding**: Use Flutter's `compute` function or `Isolate.run` to decode `thumbnail_base64` to `Uint8List` before passing it to `Image.memory`. Store the resulting `Uint8List` in a Riverpod `StateProvider` cache keyed by `asset_hash`.
+4. **Haptic Triggers**: Use `HapticFeedback.lightImpact()` when a card crosses the vertical center threshold of the screen, and `HapticFeedback.heavyImpact()` on a horizontal swipe-to-action threshold.

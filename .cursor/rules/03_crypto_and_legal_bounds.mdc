@@ -1,0 +1,10 @@
+---
+description: Prevents overclaiming trust in UI/comments; formal crypto interface docs.
+alwaysApply: true
+---
+
+# Crypto Specs & Legal Framing
+
+- FORBID UI text claiming "mathematical certainty of truth" or "absolute anti-deepfake". Use terms like "tamper-evident", "authenticity heuristics", and "risk reduction".
+- REQUIRE legal disclaimers on PDF generation indicating the document "supports workflow and disclosure but does not guarantee admissibility under FRE 902."
+- REQUIRE explicit interface documentation (Inputs, Outputs, Expected Failure Modes) for `VaultEncryptionHandler` and `CourierCrypto`.

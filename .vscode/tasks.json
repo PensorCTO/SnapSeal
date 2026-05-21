@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "factlockcam: sync Flutter dart defines",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/sync_flutter_dart_defines.sh",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    }
+  ]
+}

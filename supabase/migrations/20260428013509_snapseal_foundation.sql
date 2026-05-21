@@ -1,4 +1,4 @@
--- SnapSeal foundation schema.
+-- FactLockCam foundation schema.
 -- Polygon remains the durable proof layer; this Supabase ledger is an
 -- active-wallet replica for assets still connected to active app wallets.
 

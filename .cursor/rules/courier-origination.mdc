@@ -1,0 +1,10 @@
+---
+description: Courier origination ("Send Proof") — Riverpod only, WEB_VAULT_BASE_URL, non-blocking UX.
+alwaysApply: true
+---
+
+# Courier Origination (Send Proof)
+
+1. **State Isolation**: UI components must never call `Supabase` directly. All "Send Proof" actions must dispatch through a Riverpod `AsyncNotifier` (e.g., `CourierOriginationProvider`).
+2. **`WEB_VAULT_BASE_URL` binding**: Courier links MUST use `--dart-define=WEB_VAULT_BASE_URL=...`. A compile-time define, when non-empty, must never be overridden by app-level defaults (see `_effectiveCourierWebVaultBase` in `vault_service_io.dart`). Debug-only localhost applies only when the define was **not** passed; QA tunnels (Ngrok) pass the ephemeral `https://` origin per `ephemeral-environments.mdc`.
+3. **UX Non-Blocking**: The RPC call to `get_or_create_courier_package` can have latency. The UI must reflect a loading state (e.g., CupertinoActivityIndicator) and handle potential `PostgrestException` failures gracefully via a SnackBar or Cupertino dialog.

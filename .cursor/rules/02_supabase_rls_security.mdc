@@ -1,0 +1,11 @@
+---
+description: PostgreSQL RLS and RPC defense-in-depth for Supabase-backed FactLockCam.
+alwaysApply: true
+---
+
+# PostgreSQL RLS & RPC Strictness
+
+- REQUIRE Row Level Security (RLS) on ALL tables (`proof_ledger`, `picture`, `video`, `courier_packages`).
+- REQUIRE policies to explicitly handle `INSERT`, `UPDATE`, `DELETE`, and `SELECT` using `auth.uid()`.
+- FORBID direct `SELECT` on black-box tables like `courier_packages`. Access must be gated through RPCs like `attempt_courier_unlock`.
+- REQUIRE `SECURITY DEFINER` only on strictly necessary RPCs, with explicitly declared `SET search_path = public`.
