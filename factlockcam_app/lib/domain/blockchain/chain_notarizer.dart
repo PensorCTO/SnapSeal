@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/di/locator.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
+import 'vault_blockchain_handler.dart';
+import 'wallet_service.dart';
 
 /// Durable chain write path. Production: Polygon; today: Supabase-simulated ledger.
 abstract class ChainNotarizer {
@@ -34,15 +36,34 @@ class SimulatedChainNotarizer implements ChainNotarizer {
   }
 }
 
+/// Wires Polygon notarization via the shared relayer.
+///
+/// Obtains the owner signature (EIP-191) from [WalletService], then
+/// delegates to [VaultBlockchainHandler] which invokes the `anchor-relay`
+/// Edge Function for live Polygon mainnet broadcast.
 class PolygonChainNotarizer implements ChainNotarizer {
+  PolygonChainNotarizer({
+    WalletService? walletService,
+    VaultBlockchainHandler? blockchainHandler,
+  })  : _walletService = walletService ?? getIt<WalletService>(),
+        _blockchainHandler = blockchainHandler ??
+            getIt<VaultBlockchainHandler>();
+
+  final WalletService _walletService;
+  final VaultBlockchainHandler _blockchainHandler;
+
   @override
   Future<String> notarizeFileHash({
     required String fileHash,
     required String deviceSignature,
-  }) {
-    throw UnsupportedError(
-      'Polygon notarization is not wired yet. Keep USE_POLYGON_NOTARIZER=false '
-      'until the on-chain adapter is implemented.',
+  }) async {
+    // Obtain the EIP-191 owner signature for the relay's auth check
+    final ownerSignature = await _walletService.signMessageHash(fileHash);
+
+    return _blockchainHandler.notarizeFileHash(
+      fileHash: fileHash,
+      ownerSignature: ownerSignature,
+      deviceSignature: deviceSignature,
     );
   }
 }

@@ -5,6 +5,15 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-05-22
+
+- **Polygon mainnet wiring + seventh QA pass**:
+  - **Code:** `anchor-relay` live broadcast + QA sim fallback; `PolygonChainNotarizer`; `transactionHash` API contract; RPC receipt polling; `journal_repository` web stub/io split; `seal_ledger_repository` syntax fix; migration `20260523000000_polygon_tx_indexing.sql`.
+  - **Ops:** `supabase functions deploy anchor-relay`; `supabase db push`; repaired stuck `pending_notarization` rows during QA.
+  - **QA:** User-confirmed pass (capture + sync no longer stuck).
+  - **Wiki:** Added [[Polygon_Mainnet_Wiring_2026-05]]; refreshed [[Polygon_Saga_Live]], [[FactLockCam_Product_Baseline_2026-05]], [[index]], [[overview]], [[glossary]].
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 ## 2026-05-21
 
 - **Identity lifecycle + sixth QA pass** (committed to `main`):

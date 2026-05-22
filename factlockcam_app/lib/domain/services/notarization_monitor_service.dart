@@ -1,8 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:web3dart/web3dart.dart';
 
+import '../../core/config/app_config.dart';
 import '../../core/di/locator.dart';
 import '../../data/local/vault_database.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
@@ -17,6 +20,9 @@ abstract class NotarizationMonitorService {
   void stopMonitoring();
 
   Stream<ProofState> watchAsset(String assetHash);
+
+  /// Polls Polygon RPC for pending transaction receipts.
+  Future<void> checkPendingPolygonTransactions();
 }
 
 /// No-op monitor — simulated chain resolves synchronously.
@@ -31,9 +37,13 @@ class SimulatedNotarizationMonitorService
   @override
   Stream<ProofState> watchAsset(String assetHash) =>
       Stream.value(ProofState.notarized);
+
+  @override
+  Future<void> checkPendingPolygonTransactions() async {}
 }
 
-/// Subscribes to Supabase Realtime `UPDATE` events on `proof_ledger`.
+/// Subscribes to Supabase Realtime `UPDATE` events on `proof_ledger`
+/// AND polls Polygon RPC for pending transaction receipts.
 class PolygonNotarizationMonitorService
     implements NotarizationMonitorService {
   PolygonNotarizationMonitorService({
@@ -45,7 +55,7 @@ class PolygonNotarizationMonitorService
         _database = database,
         _proofSyncNotifier = proofSyncNotifier,
         _sealLedgerRepository =
-            sealLedgerRepository ?? getIt<SealLedgerRepository>();
+            sealLedgerRepository ?? getIt<SealLedgerRepository>(); // ignore: inference_failure_on_instance_creation
 
   final SupabaseClientHandle _handle;
   final VaultDatabase _database;
@@ -53,6 +63,7 @@ class PolygonNotarizationMonitorService
   final SealLedgerRepository _sealLedgerRepository;
 
   RealtimeChannel? _channel;
+  Web3Client? _web3Client;
   final _assetControllers = <String, StreamController<ProofState>>{};
   final _seededAssets = <String>{};
 
@@ -74,6 +85,18 @@ class PolygonNotarizationMonitorService
           },
         )
         .subscribe();
+
+    // Initialize Web3Client for RPC polling if RPC URL is configured
+    _initWeb3Client();
+  }
+
+  /// Initializes the Web3Client from the POLYGON_RPC_URL dart-define.
+  void _initWeb3Client() {
+    final rpcUrl = AppConfig.polygonRpcUrl;
+    if (rpcUrl == null || rpcUrl.isEmpty) {
+      return;
+    }
+    _web3Client = Web3Client(rpcUrl, http.Client());
   }
 
   @override
@@ -89,6 +112,8 @@ class PolygonNotarizationMonitorService
     }
     _assetControllers.clear();
     _seededAssets.clear();
+    _web3Client?.dispose();
+    _web3Client = null;
   }
 
   @override
@@ -103,6 +128,72 @@ class PolygonNotarizationMonitorService
       unawaited(_seedAssetState(normalized, controller));
     }
     return controller.stream;
+  }
+
+  @override
+  Future<void> checkPendingPolygonTransactions() async {
+    final web3 = _web3Client;
+    if (web3 == null) {
+      return;
+    }
+
+    if (!_sealLedgerRepository.isConfigured) {
+      return;
+    }
+
+    try {
+      // Query proof_ledger for pending transactions that have a chain_tx_hash
+      // (The relay may have broadcast but the DB row still says pending_notarization)
+      final user = _handle.client?.auth.currentUser;
+      if (user == null) {
+        return;
+      }
+
+      // Fetch pending asset hashes from the local database
+      final pendingItems = await _database.listPendingArchiveItems();
+
+      for (final item in pendingItems) {
+        final assetHash = item.assetFingerprint;
+        if (assetHash.isEmpty) {
+          continue;
+        }
+
+        // Try to get the chain tx hash from the remote ledger
+        final chainTxHash = await _sealLedgerRepository
+            .fetchProofChainTxHash(assetHash);
+
+        if (chainTxHash == null || chainTxHash.isEmpty) {
+          continue;
+        }
+
+        try {
+          final receipt =
+              await web3.getTransactionReceipt(chainTxHash);
+
+          if (receipt != null) {
+            // Transaction has been mined
+            final confirmed =
+                receipt.status != null && receipt.status!;
+
+            if (confirmed) {
+              await _clearLocalPending(
+                assetHash,
+                chainTxHash: chainTxHash,
+              );
+              _emit(assetHash, ProofState.notarized);
+            } else {
+              // Transaction reverted
+              _emit(assetHash, ProofState.failed);
+            }
+          }
+          // receipt == null means still pending — skip
+        } catch (_) {
+          // RPC call failed (network error, tx not found, etc.) — skip
+        }
+      }
+    } catch (_) {
+      // General error — skip this polling cycle
+    }
   }
 
   Future<void> _seedAssetState(
@@ -129,7 +220,8 @@ class PolygonNotarizationMonitorService
     }
 
     try {
-      final remoteStatus = await _sealLedgerRepository.fetchProofNotarizationStatus(
+      final remoteStatus =
+          await _sealLedgerRepository.fetchProofNotarizationStatus(
         assetHash,
       );
       if (remoteStatus == null) {
@@ -139,7 +231,8 @@ class PolygonNotarizationMonitorService
       final proofState = _mapStatus(remoteStatus);
       _emitTo(controller, proofState);
       if (proofState == ProofState.notarized) {
-        final chainTxHash = await _sealLedgerRepository.fetchProofChainTxHash(
+        final chainTxHash =
+            await _sealLedgerRepository.fetchProofChainTxHash(
           assetHash,
         );
         await _clearLocalPending(assetHash, chainTxHash: chainTxHash);

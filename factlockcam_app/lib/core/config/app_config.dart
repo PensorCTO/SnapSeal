@@ -62,6 +62,16 @@ class AppConfig {
   static bool get usePolygonNotarizer => _usePolygonNotarizer;
   static bool get requireHardwareAttestation => _requireHardwareAttestation;
 
+  /// Polygon JSON-RPC endpoint for on-chain transaction receipt monitoring.
+  ///
+  /// Set via `--dart-define=POLYGON_RPC_URL=...` at build time.
+  /// Returns null if unset, allowing the monitor service to degrade gracefully.
+  static String? get polygonRpcUrl {
+    const fromEnv = String.fromEnvironment('POLYGON_RPC_URL');
+    if (fromEnv.isNotEmpty) return fromEnv;
+    return null;
+  }
+
   static String get webVaultBaseUrl => _webVaultBaseUrl;
 
   /// Placeholder support/marketing URL for App Store submission requirements.

@@ -72,12 +72,12 @@ class PolygonBlockchainHandler implements VaultBlockchainHandler {
 
     final data = response.data;
     if (data is Map) {
-      final txHash = data['tx_hash'];
+      final txHash = data['transactionHash'];
       if (txHash is String && txHash.trim().isNotEmpty) {
         return txHash.trim();
       }
     }
-    throw StateError('anchor-relay returned no tx_hash.');
+    throw StateError('anchor-relay returned no transactionHash.');
   }
 }
 

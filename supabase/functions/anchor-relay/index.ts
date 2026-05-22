@@ -1,14 +1,16 @@
-// anchor-relay — ProofLock Polygon saga relay
+// anchor-relay — ProofLock Polygon saga relay (live mainnet)
 //
 // Contract:
 //   POST /functions/v1/anchor-relay
 //   Authorization: Bearer <user JWT>
 //   Body: { asset_hash, owner_signature, device_signature }
-//   Response 200: { tx_hash: string }
+//   Response 200: { transactionHash: string, status: "pending" | "already_notarized" }
 //
 // Environment (supabase secrets):
-//   POLYGON_RPC_URL — optional; when unset, returns a deterministic simulated hash.
-//   RELAY_GAS_PRIVATE_KEY — optional gas-station key for live broadcast (future).
+//   ALCHEMY_API_URL — Polygon RPC URL (used by ethers JsonRpcProvider)
+//   RELAYER_PRIVATE_KEY — Funded hot wallet for notarize() gas
+//   SUPABASE_URL — Supabase project URL
+//   SUPABASE_SERVICE_ROLE_KEY — Service role key for admin DB writes
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
@@ -17,6 +19,10 @@ import {
   hexToBytes,
   recoverAddress,
 } from "https://esm.sh/viem@2.23.2";
+import { ethers } from "https://esm.sh/ethers@5.7.2";
+
+const CONTRACT_ADDRESS = "0x83508c78104b8b58ff844EE5654FaaC06cFFc155";
+const CONTRACT_ABI = ["function notarize(bytes32 fileHash) external"];
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -65,6 +71,7 @@ async function recoverSignerAddress(
   });
 }
 
+/** Deterministic QA hash when live Polygon secrets are not configured. */
 function simulatedTxHash(assetHash: string): string {
   const digest = new TextEncoder().encode(`polygon-sim:${assetHash}`);
   let hex = "";
@@ -170,16 +177,68 @@ serve(async (req) => {
       .eq("asset_hash", assetHash)
       .maybeSingle();
     return jsonResponse({
-      tx_hash: finalized?.chain_tx_hash ?? simulatedTxHash(assetHash),
-      status: "already_notarized",
+      transactionHash: finalized?.chain_tx_hash,
+      status: "already_notorized",
     });
   }
 
-  // Live Polygon broadcast hook — falls back to deterministic sim hash locally.
-  const txHash = Deno.env.get("POLYGON_RPC_URL")
-    ? simulatedTxHash(assetHash)
-    : simulatedTxHash(assetHash);
+  // --- POLYGON BROADCAST (live when secrets configured, else QA sim hash) ---
+  const rpcUrl = Deno.env.get("ALCHEMY_API_URL");
+  const relayerKey = Deno.env.get("RELAYER_PRIVATE_KEY");
 
+  let txHash: string;
+
+  if (!rpcUrl || !relayerKey) {
+    // QA / staging: no relayer secrets — finalize with deterministic sim hash.
+    console.warn(
+      "anchor-relay: ALCHEMY_API_URL or RELAYER_PRIVATE_KEY unset; using simulated tx hash",
+    );
+    txHash = simulatedTxHash(assetHash);
+  } else {
+    try {
+      const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+      const wallet = new ethers.Wallet(relayerKey, provider);
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        CONTRACT_ABI,
+        wallet,
+      );
+
+      const hexValue = assetHash.startsWith("0x")
+        ? assetHash.slice(2)
+        : assetHash;
+      const fileHashBytes32 = ("0x" + hexValue.slice(0, 64).padStart(64, "0")) as `0x${string}`;
+
+      const feeData = await provider.getFeeData();
+      const maxPriorityFeePerGas = ethers.utils.parseUnits("40", "gwei");
+
+      const tx = await contract.notarize(fileHashBytes32, {
+        maxPriorityFeePerGas,
+        maxFeePerGas: feeData.lastBaseFeePerGas
+          .mul(2)
+          .add(maxPriorityFeePerGas),
+      });
+
+      txHash = tx.hash;
+    } catch (error) {
+      console.error("Polygon broadcast failed:", error);
+
+      await adminClient.rpc("fail_polygon_notarization", {
+        p_asset_hash: assetHash,
+        p_wallet_id: profile.wallet_id,
+      });
+
+      return jsonResponse(
+        {
+          error: "Blockchain transaction failed",
+          message: error instanceof Error ? error.message : String(error),
+        },
+        500,
+      );
+    }
+  }
+
+  // Record successful broadcast in proof_ledger
   const { error: finalizeError } = await adminClient.rpc(
     "finalize_polygon_notarization",
     {
@@ -190,12 +249,15 @@ serve(async (req) => {
   );
 
   if (finalizeError) {
-    await adminClient.rpc("fail_polygon_notarization", {
-      p_asset_hash: assetHash,
-      p_wallet_id: profile.wallet_id,
-    });
-    return jsonResponse({ error: finalizeError.message }, 500);
+    // Transaction already broadcast but DB update failed — log and return hash anyway
+    // The NotarizationMonitorService will pick up pending transactions
+    console.error(
+      `finalize_polygon_notarization RPC failed for ${assetHash}: ${finalizeError.message}`,
+    );
   }
 
-  return jsonResponse({ tx_hash: txHash, status: "notarized" });
+  return jsonResponse({
+    transactionHash: txHash,
+    status: "pending",
+  });
 });

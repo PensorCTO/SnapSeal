@@ -124,7 +124,7 @@ class SealLedgerRepository {
       'device_signature': deviceSignature,
       'chain_tx_hash': chainTxHash,
       'notarization_status': 'notarized',
-      if (evmAddress != null) 'evm_address': evmAddress,
+      'evm_address': evmAddress,
     });
   }
 
@@ -146,7 +146,7 @@ class SealLedgerRepository {
       'device_signature': deviceSignature,
       'chain_tx_hash': null,
       'notarization_status': 'pending_notarization',
-      if (evmAddress != null) 'evm_address': evmAddress,
+      'evm_address': evmAddress,
     });
   }
 
