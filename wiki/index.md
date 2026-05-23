@@ -12,7 +12,7 @@ Read this page first when answering questions about the wiki.
 | Page | When to read |
 |------|----------------|
 | [[FactLockCam_Product_Baseline_2026-05]] | **Canonical status** — verified workflow, Supabase ops, branding, open gaps |
-| [[Polygon_Mainnet_Wiring_2026-05]] | **Seventh QA (2026-05-22)** — relay wiring, sim fallback, web compile, deploy checklist |
+| [[Polygon_Mainnet_Wiring_2026-05]] | **Eighth QA (2026-05-22)** — live Polygon mainnet on iPhone, secrets, sim fallback removed |
 | [[App_Store_Prep_Capture_Seal_2026-05]] | **Fifth QA (2026-05-21)** — App Store legal bundle, multi-shot seal hardening, vault I/O fixes |
 | [[Identity_Lifecycle_And_Data_Lineage]] | **Sixth QA (2026-05-21)** — Wallet lineage, EVM key rotation, JIT courier upload, archive placeholders |
 | [[FactLockCam_Master_Blueprint]] | Application capabilities, finished vs unfinished, use cases |
@@ -34,7 +34,7 @@ Read this page first when answering questions about the wiki.
 - [[Isolate_Lock_Coordinator]] - Sprint 4 cross-isolate UI lock stream, sidecar advisory locks, securing overlays.
 - [[App_Store_Prep_Capture_Seal_2026-05]] - Fifth QA: legal bundle, multi-shot capture, vault promote I/O fixes.
 - [[Identity_Lifecycle_And_Data_Lineage]] - Sixth QA: wallet history, EVM lineage on ledger, JIT courier, restore placeholders.
-- [[Polygon_Mainnet_Wiring_2026-05]] - Seventh QA: prooflock_production relay wiring, anchor-relay sim fallback, web compile fix, RPC monitor.
+- [[Polygon_Mainnet_Wiring_2026-05]] - Eighth QA: live Polygon mainnet on iPhone, relay secrets, sim fallback removed.
 
 ## Analyses (active)
 

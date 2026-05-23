@@ -69,6 +69,8 @@ class AppConfig {
   static String? get polygonRpcUrl {
     const fromEnv = String.fromEnvironment('POLYGON_RPC_URL');
     if (fromEnv.isNotEmpty) return fromEnv;
+    const fromGenerated = GeneratedDartDefines.polygonRpcUrl;
+    if (fromGenerated.isNotEmpty) return fromGenerated;
     return null;
   }
 

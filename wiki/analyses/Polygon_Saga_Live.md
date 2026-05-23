@@ -9,6 +9,7 @@ summary: "May 2026 Polygon Try 2: synchronous capture-time relay, local chain_tx
 
 **Try 2 is complete and QA-verified** on physical iPhone against hosted project `jqvnwtslmoxjwzusmtxs`.
 
+- **Eighth QA 2026-05-22:** **Live Polygon mainnet** — real on-chain `notarize()` tx, Polygonscan-confirmed, sync clears; sim-hash fallback removed ([[Polygon_Mainnet_Wiring_2026-05]]).
 - **Third QA 2026-05-21:** capture + Polygon ledger insert re-verified after Sprint 2 local persist ([[Vault_Transactional_Journal]]) and SQLite open race fix.
 - **Second QA 2026-05-20:** post-capture proof progress regression and certificate tx-hash omission fixed.
 
@@ -24,7 +25,7 @@ When `USE_POLYGON_NOTARIZER=true` (default after `scripts/sync_flutter_dart_defi
 
 Simulated chain remains available when `USE_POLYGON_NOTARIZER=false`.
 
-**Simulated on-chain hash (QA default):** When `ALCHEMY_API_URL` or `RELAYER_PRIVATE_KEY` are unset on the Edge Function, `anchor-relay` finalizes with deterministic `polygon-sim:<asset_hash>` (hex-encoded as `chain_tx_hash`). When both secrets are set, the relay broadcasts `notarize(bytes32)` on Polygon mainnet via the shared relayer wallet. See [[Polygon_Mainnet_Wiring_2026-05]] for the seventh QA regression fix (v3 returned 500 without secrets).
+**Live mainnet (eighth QA):** When `ALCHEMY_API_URL` and `RELAYER_PRIVATE_KEY` are set on `anchor-relay`, the relay broadcasts `notarize(bytes32)` on Polygon mainnet and returns a real `transactionHash`. Missing secrets → **HTTP 500** (no `polygon-sim:` fallback). Client rejects legacy sim-encoded hashes. See [[Polygon_Mainnet_Wiring_2026-05]].
 
 ## Architecture (Try 2 — post-regression fix)
 
@@ -63,7 +64,7 @@ sequenceDiagram
 | Export | `CertificateExportService.buildCertificateDraft` | Async; includes **Ledger Transaction Hash** line |
 | UI | `camera_view.dart` `_SealingOverlay` | Polygon copy: **Generating Proof…** |
 | UI | `chronology_card.dart` / omni grid | **Generating Proof…** badge via `proofNotarizationStateProvider` |
-| Edge | `supabase/functions/anchor-relay/index.ts` | JWT + EIP-191 verify → live broadcast or sim fallback → finalize row |
+| Edge | `supabase/functions/anchor-relay/index.ts` | JWT + EIP-191 verify → live Polygon broadcast → finalize row |
 | DB | `20260520120000_polygon_saga_proof_ledger.sql` | `notarization_status`, nullable `chain_tx_hash`, finalize RPCs |
 | DB | `20260523000000_polygon_tx_indexing.sql` | Indexes for monitor polling by `chain_tx_hash` / `notarization_status` |
 | Config | `POLYGON_RPC_URL` | Optional dart-define for client-side receipt polling |
@@ -77,12 +78,12 @@ sequenceDiagram
 | Vault badge skipped "Generating Proof…" | Relay finished before dashboard refresh; monitor now **seeds** initial status; chronology shows badge while `pendingNotarization` |
 | Certificate missing tx hash | `CertificateExportService` adds ledger hash; local SQLite + remote fetch |
 | Legacy rows without local hash | Certificate falls back to `fetchProofChainTxHash` from `proof_ledger` |
-| Pending sync stuck after capture (2026-05-22) | `anchor-relay` v3 returned 500 without Polygon secrets; client swallowed error. Fixed: sim fallback redeploy — [[Polygon_Mainnet_Wiring_2026-05]] |
+| Pending sync stuck after capture (2026-05-22) | Seventh QA: client swallowed relay 500; brief sim fallback. **Eighth QA:** sim removed, errors propagate — [[Polygon_Mainnet_Wiring_2026-05]] |
 | Flutter Web compile failure | Unconditional `sqlite3` import in `journal_repository.dart`; fixed with stub/io conditional export |
 
-**Deploy checklist:** `supabase db push` (saga + indexing migrations) + `supabase functions deploy anchor-relay --no-verify-jwt`. Optional: `supabase secrets set ALCHEMY_API_URL=... RELAYER_PRIVATE_KEY=...` for live mainnet.
+**Deploy checklist:** `supabase db push` + `supabase functions deploy anchor-relay --no-verify-jwt` + `supabase secrets set ALCHEMY_API_URL=... RELAYER_PRIVATE_KEY=...` (both required for live mainnet).
 
-**Device rebuild (required):** signed debug build with `--dart-define-from-file=dart_defines.json` — never `--no-codesign` for physical install ([[iOS_Device_Development_Workflow]]).
+**Device rebuild (required):** `flutter run -d <deviceName> --dart-define-from-file=dart_defines.json` on physical iPhone — use device name from `flutter devices`, not `-d ios` ([[iOS_Device_Development_Workflow]]).
 
 ## Provenance Tracking
 

@@ -64,7 +64,22 @@ class PolygonBlockchainHandler implements VaultBlockchainHandler {
     );
 
     if (response.status >= 400) {
-      final detail = response.data?.toString() ?? 'unknown error';
+      var detail = response.data?.toString() ?? 'unknown error';
+      if (response.data is Map) {
+        final map = response.data as Map;
+        final error = map['error'];
+        final message = map['message'];
+        final missing = map['missing'];
+        if (error is String && error.isNotEmpty) {
+          detail = error;
+          if (message is String && message.isNotEmpty) {
+            detail = '$detail: $message';
+          }
+          if (missing is List && missing.isNotEmpty) {
+            detail = '$detail (missing: ${missing.join(', ')})';
+          }
+        }
+      }
       throw StateError(
         'anchor-relay failed (${response.status}): $detail',
       );
@@ -74,11 +89,23 @@ class PolygonBlockchainHandler implements VaultBlockchainHandler {
     if (data is Map) {
       final txHash = data['transactionHash'];
       if (txHash is String && txHash.trim().isNotEmpty) {
-        return txHash.trim();
+        final normalized = txHash.trim();
+        if (_isSimulatedPolygonTxHash(normalized)) {
+          throw StateError(
+            'anchor-relay returned a simulated tx hash; configure '
+            'ALCHEMY_API_URL and RELAYER_PRIVATE_KEY on Supabase.',
+          );
+        }
+        return normalized;
       }
     }
     throw StateError('anchor-relay returned no transactionHash.');
   }
+}
+
+/// Hex prefix of UTF-8 `polygon-sim:` — legacy QA fallback, not a real tx.
+bool _isSimulatedPolygonTxHash(String txHash) {
+  return txHash.toLowerCase().startsWith('0x706f6c79676f6e2d73696d3a');
 }
 
 final blockchainHandlerProvider = Provider<VaultBlockchainHandler>(

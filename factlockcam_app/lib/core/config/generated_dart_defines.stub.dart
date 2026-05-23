@@ -8,4 +8,5 @@ abstract final class GeneratedDartDefines {
   static const localAnonKey = '';
   static const webVaultBaseUrl = '';
   static const usePolygonNotarizer = false;
+  static const polygonRpcUrl = '';
 }

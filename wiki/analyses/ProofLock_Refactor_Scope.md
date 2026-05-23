@@ -51,7 +51,7 @@ flowchart LR
 
 ## Phased effort (indicative)
 
-**Polygon Try 2 (2026-05-21):** PR0–PR5 **complete**; physical iPhone QA passes. See [[Polygon_Saga_Live]]. Remaining gap: live mainnet/testnet broadcast (not DB-finalization stub).
+**Polygon Try 2 (2026-05-21):** PR0–PR5 **complete**; physical iPhone QA passes. **Live Polygon mainnet** verified eighth QA 2026-05-22 — see [[Polygon_Saga_Live]], [[Polygon_Mainnet_Wiring_2026-05]].
 
 Rough calendar estimates for a **small team**; actuals depend on chain UX, attestation depth, and App Store review.
 

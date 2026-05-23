@@ -18,7 +18,12 @@ import sys
 from pathlib import Path
 
 REQUIRED_KEYS = ("SUPABASE_URL", "SUPABASE_ANON_KEY")
-OPTIONAL_KEYS = ("LOCAL_ANON_KEY", "WEB_VAULT_BASE_URL", "USE_POLYGON_NOTARIZER")
+OPTIONAL_KEYS = (
+    "LOCAL_ANON_KEY",
+    "WEB_VAULT_BASE_URL",
+    "USE_POLYGON_NOTARIZER",
+    "POLYGON_RPC_URL",
+)
 ALLOWED_KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
 
 
@@ -51,14 +56,30 @@ def parse_env_file(path: Path) -> dict[str, str]:
     return out
 
 
-def resolve_values(env_file: Path | None) -> dict[str, str]:
+def resolve_values(env_file: Path | None, existing_out: Path | None = None) -> dict[str, str]:
     file_vals: dict[str, str] = {}
     if env_file is not None and env_file.is_file():
         file_vals = parse_env_file(env_file)
 
+    existing_vals: dict[str, str] = {}
+    if existing_out is not None and existing_out.is_file():
+        try:
+            parsed = json.loads(existing_out.read_text(encoding="utf-8"))
+            if isinstance(parsed, dict):
+                for key in OPTIONAL_KEYS:
+                    raw = parsed.get(key)
+                    if isinstance(raw, str) and raw.strip():
+                        existing_vals[key] = raw.strip()
+        except json.JSONDecodeError:
+            pass
+
     merged: dict[str, str] = {}
     for key in ALLOWED_KEYS:
-        v = (file_vals.get(key) or os.environ.get(key, "")).strip()
+        v = (
+            file_vals.get(key)
+            or os.environ.get(key, "")
+            or existing_vals.get(key, "")
+        ).strip()
         if v:
             merged[key] = v
     for url_key in ("SUPABASE_URL", "WEB_VAULT_BASE_URL"):
@@ -88,6 +109,7 @@ def write_generated_dart_defines(path: Path, merged: dict[str, str]) -> None:
         f"  static const localAnonKey = {_dart_string_literal(merged.get('LOCAL_ANON_KEY', ''))};",
         f"  static const webVaultBaseUrl = {_dart_string_literal(merged.get('WEB_VAULT_BASE_URL', ''))};",
         f"  static const usePolygonNotarizer = {'true' if use_polygon else 'false'};",
+        f"  static const polygonRpcUrl = {_dart_string_literal(merged.get('POLYGON_RPC_URL', ''))};",
         "}",
         "",
     ]
@@ -117,7 +139,7 @@ def main() -> int:
     )
     args = ap.parse_args()
 
-    merged = resolve_values(args.env_file)
+    merged = resolve_values(args.env_file, existing_out=args.out)
     missing = [k for k in REQUIRED_KEYS if k not in merged or not merged[k]]
     if missing:
         src = args.env_file if args.env_file else "environment"

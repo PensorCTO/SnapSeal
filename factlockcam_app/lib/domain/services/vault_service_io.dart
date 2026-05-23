@@ -470,23 +470,21 @@ class VaultService {
   }
 
   /// Returns the relay transaction hash when notarization completes.
+  ///
+  /// Relay failures propagate to callers so QA sees real configuration or
+  /// broadcast errors instead of a silent pending-sync loop.
   Future<String?> _dispatchPolygonRelay({
     required String fileHash,
     required String ownerSignature,
     required String deviceSignature,
   }) async {
-    try {
-      final txHash = await _blockchainHandler.notarizeFileHash(
-        fileHash: fileHash,
-        ownerSignature: ownerSignature,
-        deviceSignature: deviceSignature,
-      );
-      await _finalizeLocalPolygonSync(fileHash, chainTxHash: txHash);
-      return txHash;
-    } catch (_) {
-      // Relay failures retain local ciphertext; retry scheduler recovers.
-      return null;
-    }
+    final txHash = await _blockchainHandler.notarizeFileHash(
+      fileHash: fileHash,
+      ownerSignature: ownerSignature,
+      deviceSignature: deviceSignature,
+    );
+    await _finalizeLocalPolygonSync(fileHash, chainTxHash: txHash);
+    return txHash;
   }
 
   Future<void> _finalizeLocalPolygonSync(

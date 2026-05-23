@@ -71,19 +71,6 @@ async function recoverSignerAddress(
   });
 }
 
-/** Deterministic QA hash when live Polygon secrets are not configured. */
-function simulatedTxHash(assetHash: string): string {
-  const digest = new TextEncoder().encode(`polygon-sim:${assetHash}`);
-  let hex = "";
-  for (let i = 0; i < digest.length; i++) {
-    hex += digest[i].toString(16).padStart(2, "0");
-  }
-  while (hex.length < 64) {
-    hex += "0";
-  }
-  return `0x${hex.slice(0, 64)}`;
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -182,60 +169,73 @@ serve(async (req) => {
     });
   }
 
-  // --- POLYGON BROADCAST (live when secrets configured, else QA sim hash) ---
+  // --- POLYGON BROADCAST (live mainnet only; no simulated tx hashes) ---
+  // Deploy marker: live-only relay (2026-05-22).
   const rpcUrl = Deno.env.get("ALCHEMY_API_URL");
   const relayerKey = Deno.env.get("RELAYER_PRIVATE_KEY");
 
-  let txHash: string;
-
   if (!rpcUrl || !relayerKey) {
-    // QA / staging: no relayer secrets — finalize with deterministic sim hash.
-    console.warn(
-      "anchor-relay: ALCHEMY_API_URL or RELAYER_PRIVATE_KEY unset; using simulated tx hash",
+    const missing = [
+      !rpcUrl ? "ALCHEMY_API_URL" : null,
+      !relayerKey ? "RELAYER_PRIVATE_KEY" : null,
+    ].filter(Boolean);
+
+    console.error(
+      `anchor-relay: live Polygon secrets missing: ${missing.join(", ")}`,
     );
-    txHash = simulatedTxHash(assetHash);
-  } else {
-    try {
-      const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-      const wallet = new ethers.Wallet(relayerKey, provider);
-      const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        CONTRACT_ABI,
-        wallet,
-      );
 
-      const hexValue = assetHash.startsWith("0x")
-        ? assetHash.slice(2)
-        : assetHash;
-      const fileHashBytes32 = ("0x" + hexValue.slice(0, 64).padStart(64, "0")) as `0x${string}`;
+    return jsonResponse(
+      {
+        error: "Relayer environment not configured",
+        missing,
+        message:
+          "Set ALCHEMY_API_URL and RELAYER_PRIVATE_KEY via supabase secrets set before notarizing on Polygon mainnet.",
+      },
+      500,
+    );
+  }
 
-      const feeData = await provider.getFeeData();
-      const maxPriorityFeePerGas = ethers.utils.parseUnits("40", "gwei");
+  let txHash: string;
+  try {
+    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    const wallet = new ethers.Wallet(relayerKey, provider);
+    const contract = new ethers.Contract(
+      CONTRACT_ADDRESS,
+      CONTRACT_ABI,
+      wallet,
+    );
 
-      const tx = await contract.notarize(fileHashBytes32, {
-        maxPriorityFeePerGas,
-        maxFeePerGas: feeData.lastBaseFeePerGas
-          .mul(2)
-          .add(maxPriorityFeePerGas),
-      });
+    const hexValue = assetHash.startsWith("0x")
+      ? assetHash.slice(2)
+      : assetHash;
+    const fileHashBytes32 = ("0x" + hexValue.slice(0, 64).padStart(64, "0")) as `0x${string}`;
 
-      txHash = tx.hash;
-    } catch (error) {
-      console.error("Polygon broadcast failed:", error);
+    const feeData = await provider.getFeeData();
+    const maxPriorityFeePerGas = ethers.utils.parseUnits("40", "gwei");
 
-      await adminClient.rpc("fail_polygon_notarization", {
-        p_asset_hash: assetHash,
-        p_wallet_id: profile.wallet_id,
-      });
+    const tx = await contract.notarize(fileHashBytes32, {
+      maxPriorityFeePerGas,
+      maxFeePerGas: feeData.lastBaseFeePerGas
+        .mul(2)
+        .add(maxPriorityFeePerGas),
+    });
 
-      return jsonResponse(
-        {
-          error: "Blockchain transaction failed",
-          message: error instanceof Error ? error.message : String(error),
-        },
-        500,
-      );
-    }
+    txHash = tx.hash;
+  } catch (error) {
+    console.error("Polygon broadcast failed:", error);
+
+    await adminClient.rpc("fail_polygon_notarization", {
+      p_asset_hash: assetHash,
+      p_wallet_id: profile.wallet_id,
+    });
+
+    return jsonResponse(
+      {
+        error: "Blockchain transaction failed",
+        message: error instanceof Error ? error.message : String(error),
+      },
+      500,
+    );
   }
 
   // Record successful broadcast in proof_ledger
