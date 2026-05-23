@@ -1,0 +1,23 @@
+---
+description: Architectural constraints and execution rules for the ProofLock Send Proof & Courier workflow.
+globs: ["factlockcam_app/lib/features/archive/**/*.dart", "factlockcam_app/lib/domain/export/**/*.dart", "factlockcam_app/lib/core/crypto/**/*.dart", "supabase/migrations/*.sql", "supabase/functions/courier-unlock/**"]
+---
+
+# CONTEXT ANCHORS
+- UI State: `factlockcam_app/lib/features/archive/presentation/providers/send_proof_provider.dart`
+- Domain: `factlockcam_app/lib/features/archive/application/proof_courier_service.dart`
+- Certificate: `factlockcam_app/lib/domain/export/certificate_export_service.dart`
+- Crypto: `factlockcam_app/lib/core/crypto/courier_crypto.dart`
+- DB: `supabase/migrations/`
+
+# STRICT RULES FOR CURSOR EXECUTION
+
+1. **Terminology Enforcement**: Always use the domain term `Archive` instead of `Vault` for user-facing UI and high-level structural components (e.g., `ArchiveRepository`, `ArchiveInspector`).
+2. **Utility positioning (App Store)**: FactLockCam is a capture-and-archive utility, **not** a communication or messaging app. **FORBID** in-app email dispatch, SMTP/Resend/SendGrid integration, or UI that sends proof packages on the user's behalf. Delivery is **owner-side only** via the system share sheet (PDF + courier URL + password communicated out-of-band by the user).
+3. **Cost-Control Enforcement (Supabase)**:
+   - Never allow direct `SELECT` on `courier_packages` for recipient flows.
+   - All Courier downloads must increment `download_count` via `attempt_courier_unlock` (invoked through the `courier-unlock` edge function for signed URLs).
+   - Storage RLS must deny reads when `download_count > max_downloads`, `is_bricked`, or `expires_at` has passed.
+4. **Certificate Generation**: Use the `pdf` package. The PDF must link `chain_tx_hash` to `https://polygonscan.com/tx/{hash}` when anchored.
+5. **State Management**: Use `AsyncNotifier` for Send Proof state (`SendProof`). Handle `PostgrestException` and edge-function failures gracefully in UI.
+6. **Cryptography**: Courier payloads remain AES-GCM vault ciphertext; recipients verify SHA-256 via `CourierCrypto.decryptAndVerifyFingerprint`. Passwords never leave the device in plaintext — only hashed verifier secrets are stored server-side.

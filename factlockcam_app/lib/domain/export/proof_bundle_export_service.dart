@@ -54,12 +54,15 @@ class ProofBundleExportService {
       'legalDisclaimer': fre902EvidencePackagingDisclaimer.trim(),
     };
 
+    final manifestJson = utf8.encode(jsonEncode(manifest));
+    final readmeBytes = utf8.encode(_readme);
+
     final archive = Archive()
       ..addFile(
         ArchiveFile(
           'manifest.json',
-          utf8.encode(jsonEncode(manifest)).length,
-          utf8.encode(jsonEncode(manifest)),
+          manifestJson.length,
+          manifestJson,
         ),
       )
       ..addFile(
@@ -68,8 +71,8 @@ class ProofBundleExportService {
       ..addFile(
         ArchiveFile(
           'README.txt',
-          _readme.length,
-          utf8.encode(_readme),
+          readmeBytes.length,
+          readmeBytes,
         ),
       );
 

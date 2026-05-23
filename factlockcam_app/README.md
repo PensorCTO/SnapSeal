@@ -61,6 +61,16 @@ template. No native deep-link callback is required.
 5. Verify the app redirects to `/vault-home` (hub: Archive, Picture, Video).
 6. From the hub, open **Archive** to browse photos and videos separately; use **Picture** / **Video** to capture. Tap sign out and verify the app returns to `/logon` after local burn.
 
+## Send Proof (certificate PDF + secure link)
+
+Archive → **Send Proof** → enter a recipient password → **Create**.
+
+The app generates a certificate PDF and a password-protected web link, then opens the **iOS share sheet**. You deliver both via Messages, Mail, AirDrop, or any app you choose. Share the password separately.
+
+FactLockCam **does not send email**. That keeps the app a capture-and-archive utility (App Store positioning), not a messaging service.
+
+Requires `WEB_VAULT_BASE_URL` at build time so courier links open your public web unlock page (Ngrok tunnel or production web host).
+
 ## Foundation
 
 - `lib/core/crypto/`: isolate-backed SHA-256, AES-GCM, and thumbnail work.

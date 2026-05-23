@@ -57,6 +57,7 @@ dependencies:
   http: ^1.2.0
   geolocator: ^14.0.1
   archive: ^4.0.7
+  pdf: ^3.11.3
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'supabase_client_handle.dart';
@@ -34,23 +35,37 @@ class CourierRepository {
     required String requestorEmail,
   }) async {
     final client = _requiredClient();
-    final response = await client.rpc(
-      'attempt_courier_unlock',
-      params: {
-        'p_package_id': packageId,
-        'p_verifier_guess': verifierGuess,
-        'p_requestor_email': requestorEmail.trim(),
+    final response = await client.functions.invoke(
+      'courier-unlock',
+      body: <String, dynamic>{
+        'package_id': packageId,
+        'verifier_guess': verifierGuess,
+        'requestor_email': requestorEmail.trim(),
       },
     );
-    return _firstRpcRow(response);
+
+    if (response.status >= 400) {
+      final data = response.data;
+      final detail = data is Map ? data['error'] ?? data : data;
+      throw StateError('courier-unlock failed ($response.status): $detail');
+    }
+
+    final data = response.data;
+    if (data is! Map) {
+      throw StateError('courier-unlock returned unexpected payload.');
+    }
+    return Map<String, dynamic>.from(data);
   }
 
-  Future<Uint8List> downloadBlob({
-    required String bucket,
-    required String path,
-  }) async {
-    final client = _requiredClient();
-    return client.storage.from(bucket).download(path);
+  Future<Uint8List> downloadSignedBlob(String signedUrl) async {
+    _requiredClient();
+    final response = await http.get(Uri.parse(signedUrl));
+    if (response.statusCode >= 400) {
+      throw StateError(
+        'Signed blob download failed (${response.statusCode}).',
+      );
+    }
+    return response.bodyBytes;
   }
 
   SupabaseClient _requiredClient() {
@@ -62,15 +77,5 @@ class CourierRepository {
       );
     }
     return client;
-  }
-
-  Map<String, dynamic> _firstRpcRow(Object? response) {
-    if (response is List && response.isNotEmpty) {
-      return Map<String, dynamic>.from(response.first as Map);
-    }
-    if (response is Map) {
-      return Map<String, dynamic>.from(response);
-    }
-    throw StateError('Courier unlock RPC returned no package data.');
   }
 }

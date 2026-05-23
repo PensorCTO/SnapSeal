@@ -5,6 +5,14 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-05-24
+
+- **Send Proof & courier synthesis (agent session)**:
+  - **Product:** Certificate PDF + password-protected courier link via iOS share sheet only; **no in-app email** (App Store utility positioning). Recipient E2E unlock **deferred** until public Flutter Web vault deployed at `WEB_VAULT_BASE_URL` (stealth pre–App Store; no marketing domain required for ongoing dev).
+  - **Code:** `SendProof` notifier wired to UI; `CertificateExportService` PDF; `courier-unlock` edge function; migration `20260524120000_courier_download_limits.sql`; `ProofCourierService` isolate fix; removed `dispatch-courier` from repo.
+  - **Wiki:** Added [[Send_Proof_Courier_2026-05]]; refreshed [[FactLockCam_Product_Baseline_2026-05]], [[index]], [[overview]], [[glossary]].
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 ## 2026-05-22
 
 - **Live Polygon mainnet + eighth QA pass**:

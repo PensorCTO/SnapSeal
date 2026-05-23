@@ -9,6 +9,8 @@ export '../../domain/export/certificate_export_service.dart'
     show certificateExportServiceProvider;
 export '../../domain/export/proof_bundle_export_service.dart'
     show proofBundleExportServiceProvider;
+export '../../features/archive/presentation/providers/send_proof_provider.dart'
+    show sendProofProvider;
 export '../../domain/services/vault_service.dart' show vaultServiceProvider;
 export '../../features/archive/application/proof_courier_service.dart'
     show proofCourierServiceProvider;

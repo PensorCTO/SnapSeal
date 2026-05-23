@@ -12,7 +12,7 @@ import '../../core/archive/presentation/widgets/universal_asset_toolbar.dart';
 import '../../core/di/service_providers.dart';
 import '../../data/models/archive_item.dart';
 import '../controllers/dashboard_controller.dart';
-import 'archive/providers/courier_link_provider.dart';
+import '../../features/archive/presentation/providers/send_proof_provider.dart';
 import 'vault/providers/thumbnail_cache_provider.dart';
 import 'archive_photo_view.dart';
 import 'archive_video_view.dart';
@@ -151,11 +151,11 @@ class ArchiveItemActions {
     WidgetRef ref,
     ArchiveItem item,
   ) async {
-    final password = await _promptForRecipientPassword(context);
-    if (password == null) {
+    final form = await _promptForSendProofDetails(context, item);
+    if (form == null) {
       return;
     }
-    if (password.isEmpty) {
+    if (form.password.isEmpty) {
       if (!context.mounted) return;
       await _showErrorDialog(context, 'Recipient password is required.');
       return;
@@ -165,25 +165,32 @@ class ArchiveItemActions {
     unawaited(_showLoadingDialog(context));
 
     try {
-      final url = await ref
-          .read(courierLinkProvider.notifier)
-          .generateLink(item.assetFingerprint, password);
-      final sealed = await ref
-          .read(vaultServiceProvider)
-          .extractForCourier(item.assetFingerprint);
-      final bundleFile = await ref
-          .read(proofBundleExportServiceProvider)
-          .writeBundleToCache(
-            item: item,
-            sealed: sealed,
-            courierUrl: url,
+      final result = await ref.read(sendProofProvider.notifier).send(
+            SendProofRequest(
+              item: item,
+              password: form.password,
+              title: form.title,
+              description: form.description,
+            ),
           );
+
       if (!context.mounted) return;
       Navigator.of(context, rootNavigator: true).pop();
+
       await SharePlus.instance.share(
         ShareParams(
-          files: [XFile(bundleFile.path, mimeType: 'application/zip')],
-          text: 'FactLockCam proof bundle\nCourier link: $url',
+          files: [
+            XFile(
+              result.certificatePdfPath,
+              mimeType: 'application/pdf',
+              name: 'factlockcam-certificate.pdf',
+            ),
+          ],
+          text:
+              'FactLockCam proof package\n\n'
+              'Secure media link:\n${result.courierUrl}\n\n'
+              'Share the password separately.\n\n'
+              'Attached: certificate PDF with asset hash and blockchain details.',
         ),
       );
     } catch (error) {
@@ -193,24 +200,53 @@ class ArchiveItemActions {
     }
   }
 
-  static Future<String?> _promptForRecipientPassword(BuildContext context) {
-    final controller = TextEditingController();
-    return showCupertinoDialog<String>(
+  static Future<_SendProofForm?> _promptForSendProofDetails(
+    BuildContext context,
+    ArchiveItem item,
+  ) {
+    final passwordController = TextEditingController();
+    final titleController = TextEditingController(text: item.title ?? '');
+    final descriptionController = TextEditingController(
+      text: item.description ?? '',
+    );
+
+    return showCupertinoDialog<_SendProofForm>(
       context: context,
       builder: (dialogContext) {
         return CupertinoAlertDialog(
-          title: const Text('Recipient Password'),
+          title: const Text('Send Proof'),
           content: Padding(
             padding: const EdgeInsets.only(top: 12),
-            child: CupertinoTextField(
-              controller: controller,
-              autofocus: true,
-              obscureText: true,
-              placeholder: 'Enter password',
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) {
-                Navigator.of(dialogContext).pop(controller.text.trim());
-              },
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Creates a certificate PDF and a password-protected web link. '
+                    'You share both using Messages, Mail, or AirDrop — FactLockCam '
+                    'does not send email.',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                  const SizedBox(height: 12),
+                  CupertinoTextField(
+                    controller: passwordController,
+                    autofocus: true,
+                    obscureText: true,
+                    placeholder: 'Password for recipient',
+                  ),
+                  const SizedBox(height: 8),
+                  CupertinoTextField(
+                    controller: titleController,
+                    placeholder: 'Title on certificate (optional)',
+                  ),
+                  const SizedBox(height: 8),
+                  CupertinoTextField(
+                    controller: descriptionController,
+                    placeholder: 'Description on certificate (optional)',
+                    maxLines: 2,
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -221,14 +257,24 @@ class ArchiveItemActions {
             CupertinoDialogAction(
               isDefaultAction: true,
               onPressed: () {
-                Navigator.of(dialogContext).pop(controller.text.trim());
+                Navigator.of(dialogContext).pop(
+                  _SendProofForm(
+                    password: passwordController.text.trim(),
+                    title: titleController.text.trim(),
+                    description: descriptionController.text.trim(),
+                  ),
+                );
               },
-              child: const Text('Generate Link'),
+              child: const Text('Create'),
             ),
           ],
         );
       },
-    ).whenComplete(controller.dispose);
+    ).whenComplete(() {
+      passwordController.dispose();
+      titleController.dispose();
+      descriptionController.dispose();
+    });
   }
 
   static Future<void> _showLoadingDialog(BuildContext context) {
@@ -414,4 +460,16 @@ class ArchiveItemActions {
       ),
     );
   }
+}
+
+class _SendProofForm {
+  const _SendProofForm({
+    required this.password,
+    required this.title,
+    required this.description,
+  });
+
+  final String password;
+  final String title;
+  final String description;
 }

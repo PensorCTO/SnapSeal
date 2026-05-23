@@ -23,7 +23,7 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 1. Authenticate via Magic Number (6-digit email OTP) when Supabase is configured with Dart defines.
 2. From **`/vault-home`**, use the **four-tile hub** (Archive, Picture, Video, Account & Settings). **Picture** and **Video** open embedded `CameraView` panels (`AcquisitionMode.photo` / `video`) inside `VaultHomeView`'s `IndexedStack` — cameras **lazy-mount** only when that panel is active (PR0). Photo mode uses `ShutterIrisPainter`, **`ImageFormatGroup.jpeg`**, live GPS/UTC HUD, and **stays on the viewfinder** after each shot (background seal badge). **Archive** opens the unified archive omni-surface. Video mode enables audio with long-press/toggle recording. **Back** on each panel returns to the hub launcher.
 3. When **`USE_POLYGON_NOTARIZER=true`** (default after dart-defines sync), capture runs the **Polygon saga**: **`check_proof_status`** → device sign + **EIP-191 EVM sign** → local **AES-GCM** vault + SQLite → **`proof_ledger`** insert (`pending_notarization`) → **await `anchor-relay`** (camera overlay **Generating Proof…**) → local **`chain_tx_hash`** + `pending_sync` cleared ([[Polygon_Saga_Live]]). **Certificate draft** includes the ledger transaction hash (local SQLite or remote `proof_ledger` fetch). When the flag is **false**, the legacy synchronous **`SimulatedChainNotarizer`** path applies unchanged.
-4. Browse sealed media from the **Archive** hub tile (`UnifiedArchiveViewport`: grid/chronology omni-surface with filters), not a separate `/archive` route. In-flight transactional writes show a **SECURING FILE…** overlay on the affected asset ([[Isolate_Lock_Coordinator]]). Thumbnails load via path-resolved JPEG files; chronology supports long-press delete. **View Full** in the asset inspector decrypts via `extractForCourier` and renders with engine codec (HEIC/JPEG). **Send Proof** shares a zip proof bundle + courier URL. Per-item **DELETE FROM DEVICE** removes local SQLite + encrypted/thumbnail/staging files (remote ledger rows may remain).
+4. Browse sealed media from the **Archive** hub tile (`UnifiedArchiveViewport`: grid/chronology omni-surface with filters), not a separate `/archive` route. In-flight transactional writes show a **SECURING FILE…** overlay on the affected asset ([[Isolate_Lock_Coordinator]]). Thumbnails load via path-resolved JPEG files; chronology supports long-press delete. **View Full** in the asset inspector decrypts via `extractForCourier` and renders with engine codec (HEIC/JPEG). **Send Proof** builds a certificate PDF + courier URL and opens the iOS share sheet (no in-app email); recipient link unlock is **parked** until a public web vault exists ([[Send_Proof_Courier_2026-05]]). Per-item **DELETE FROM DEVICE** removes local SQLite + encrypted/thumbnail/staging files (remote ledger rows may remain).
 
 ### Branding
 
@@ -42,7 +42,7 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 
 - **Relayer wallet ops:** Active payer is a funded hot wallet (`RELAYER_PRIVATE_KEY` in Supabase secrets); rotate or fund as needed — not the user's profile EVM address ([[Polygon_Mainnet_Wiring_2026-05]]).
 - **Hardware-backed signing:** native channel still returns **developer-simulated** device signatures; EVM wallet is software-keyed in Secure Storage.
-- **Courier / verification UX:** service-layer extraction and owner-side full-size photo/video viewing exist; manifest-style RPC-only courier and outsider verification surfaces are not implemented.
+- **Courier / Send Proof:** Certificate PDF + courier package + share sheet wired (`SendProof` notifier); **no in-app email** (App Store utility positioning). Recipient browser unlock + download quotas implemented server-side; **E2E link QA deferred** until public `WEB_VAULT_BASE_URL` host exists — [[Send_Proof_Courier_2026-05]].
 - **C2PA** and full **ProofLock manifest** assurance: see [[ProofLock_Refactor_Scope]] and [[ProofLock_Architectural_Manifest]].
 - Automated tests improved (retry, dashboard/archive, enclave channel, action registry/toolbar, photo-view rebuild caching, and video-thumbnail MIME extension checks) but remain **thinner than a production bar** on capture/crypto/sync edge cases.
 
@@ -56,6 +56,7 @@ Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
 
 ## Related Notes
 
+* [[Send_Proof_Courier_2026-05]]
 * [[App_Store_Prep_Capture_Seal_2026-05]]
 * [[Identity_Lifecycle_And_Data_Lineage]]
 * [[FactLockCam_Master_Blueprint]]

@@ -11,6 +11,7 @@ Read this page first when answering questions about the wiki.
 
 | Page | When to read |
 |------|----------------|
+| [[Send_Proof_Courier_2026-05]] | **Send Proof (May 2026)** — PDF + share sheet, no in-app email, web vault deployment gate |
 | [[FactLockCam_Product_Baseline_2026-05]] | **Canonical status** — verified workflow, Supabase ops, branding, open gaps |
 | [[Polygon_Mainnet_Wiring_2026-05]] | **Eighth QA (2026-05-22)** — live Polygon mainnet on iPhone, secrets, sim fallback removed |
 | [[App_Store_Prep_Capture_Seal_2026-05]] | **Fifth QA (2026-05-21)** — App Store legal bundle, multi-shot seal hardening, vault I/O fixes |
@@ -28,6 +29,7 @@ Read this page first when answering questions about the wiki.
 ## Concepts
 
 - [[LLM_Wiki_Pattern]] - The source-to-wiki compilation model.
+- [[Send_Proof_Courier_2026-05]] - Send Proof: certificate PDF + courier link; utility positioning; web vault gate.
 - [[FactLockCam_Product_Baseline_2026-05]] - Verified hub/archive/capture workflow and compressed Supabase baseline (start here for FactLockCam status).
 - [[Heavy_Metal_Design_System]] - FactLockCam titanium/mono/iris visual system for secure-hardware UI feel.
 - [[Vault_Transactional_Journal]] - Sprint 2 WAL journal, transactional file persist, boot recovery, SQLite open hardening.
@@ -38,6 +40,7 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses (active)
 
+- [[Send_Proof_Courier_2026-05]] - Send Proof workflow, App Store utility rules, production web vault gate (May 2026).
 - [[FactLockCam_Master_Blueprint]] - Current-state application blueprint: hub-first vault shell, archive actions, unfinished work, use cases.
 - [[FactLockCam_Blueprints_14May2026]] - Layered technical blueprint (routing, DI, `proofLockFile`, Supabase RPC mapping); companion to [[MASTER_CONTEXT16MAY2026]].
 - [[Polygon_Saga_Live]] - **Live** async Polygon saga (Try 2): anchor-relay, wallet/handler/monitor, ~2s device QA.

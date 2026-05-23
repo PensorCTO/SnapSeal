@@ -117,11 +117,12 @@ class CourierUnlockNotifier extends Notifier<CourierUnlockState> {
         verifierGuess: challenge,
         requestorEmail: email,
       );
-      final bucket = row['storage_bucket'] as String;
-      final path = row['storage_path'] as String;
-      final encryptedBytes = await _courierRepository.downloadBlob(
-        bucket: bucket,
-        path: path,
+      final signedUrl = row['signed_url'] as String?;
+      if (signedUrl == null || signedUrl.isEmpty) {
+        throw StateError('Courier unlock did not return a signed download URL.');
+      }
+      final encryptedBytes = await _courierRepository.downloadSignedBlob(
+        signedUrl,
       );
       final verifiedBytes = await CourierCrypto.decryptAndVerifyFingerprint(
         vault: _vault,

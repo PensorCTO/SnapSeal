@@ -29,7 +29,11 @@ summary: "Terminology reference for the LLM Wiki."
 | sealAndStoreCapture | Buffered in-memory capture path: `_hashBytesInIsolate` → `_proofLockBytes*` → `_persistSealedBytes`; serialized by `_enqueueCaptureSeal` for rapid multi-shot. | [[App_Store_Prep_Capture_Seal_2026-05]], `vault_service_io.dart` |
 | Archive (user-facing) | Hub tile label replacing user-visible "Vault" copy; internal services retain `VaultService` / `VaultDatabase` names. | [[App_Store_Prep_Capture_Seal_2026-05]] |
 | LegalDocumentView | Native bundled ToS/Privacy renderer (`assets/legal/*.md`) from Account & Settings. | [[App_Store_Prep_Capture_Seal_2026-05]] |
-| ProofBundleExportService | Zips proof artifacts to temp dir for `SharePlus` Send Proof flow. | [[App_Store_Prep_Capture_Seal_2026-05]] |
+| ProofBundleExportService | Zips proof artifacts to temp dir; **not** used on Send Proof path (May 2026). | [[Send_Proof_Courier_2026-05]] |
+| SendProof (notifier) | Riverpod `SendProof`: certificate PDF + courier package + iOS share sheet; **no in-app email**. | [[Send_Proof_Courier_2026-05]] |
+| WEB_VAULT_BASE_URL (courier) | Compile-time origin in shared links. Production = live public Flutter Web host; Ngrok/localhost dev-only. E2E recipient unlock deferred until web vault deployed pre–App Store. | [[Send_Proof_Courier_2026-05]] |
+| courier-unlock | Edge Function: RPC password gate + signed Storage URL for web recipients. | [[Send_Proof_Courier_2026-05]] |
+| Send Proof utility rule | App Store: utility not messaging app — no outbound email from FactLockCam. | [[Send_Proof_Courier_2026-05]] |
 | Isolate lock coordinator | Sprint 4 `IsolateLockCoordinator` + `assetLockStateProvider`: mirrors in-flight vault writes to **SECURING FILE…** overlays; sidecar advisory lock on promote; payload writes on caller isolate. | [[Isolate_Lock_Coordinator]] |
 | PrivacyInfo.xcprivacy | Apple-required privacy manifest bundled with iOS Runner; must align with App Store Connect nutrition labels. | `ios/Runner/PrivacyInfo.xcprivacy`, `docs/app_store_submission_checklist.md` |
 | SECURING FILE… | Sprint 4 archive overlay copy while an asset fingerprint is lock-coordinator–protected (not blockchain pending copy). | [[Isolate_Lock_Coordinator]], `asset_securing_overlay.dart` |
@@ -62,7 +66,7 @@ summary: "Terminology reference for the LLM Wiki."
 | Polygon saga | Capture pipeline when `USE_POLYGON_NOTARIZER=true`: pending `proof_ledger` row → **await** `anchor-relay` → local `chain_tx_hash` + `pending_sync` clear. Camera overlay: **Generating Proof…**. Flag defaults true via dart-defines sync. | [[Polygon_Saga_Live]], `.cursor/rules/polygon-saga-architecture.mdc` |
 | chain_tx_hash (local) | SQLite column on `archive_items` (DB v5) mirroring finalized `proof_ledger.chain_tx_hash`; written on relay success; certificate reads local first, then remote fetch. | `vault_database_io.dart`, [[Polygon_Saga_Live]] |
 | Generating Proof… | User-facing Polygon in-progress copy (not "Waiting for Blockchain Tx"); shown on camera sealing overlay and vault pending badges via `ProofState.processingLabel`. | `.cursor/rules/polygon-saga-architecture.mdc`, [[Polygon_Saga_Live]] |
-| CertificateExportService | Async certificate draft builder; includes **Ledger Transaction Hash** from local SQLite or `SealLedgerRepository.fetchProofChainTxHash`. | `certificate_export_service.dart`, [[FactLockCam_Master_Blueprint]] |
+| CertificateExportService | Certificate draft + PDF export (`pdf` package); Polygonscan link when `chain_tx_hash` present. | [[Send_Proof_Courier_2026-05]], `certificate_export_service.dart` |
 | ProofSyncNotifier | Domain event bus: fires when relay finalization clears local `pending_sync`; invalidates vault dashboard via Riverpod. | `proof_sync_notifier.dart` |
 | notarization_status | `proof_ledger` column: `pending_notarization` \| `notarized` \| `failed`. Drives saga + Realtime monitor. | migration `20260520120000_polygon_saga_proof_ledger.sql` |
 | ProofLockConflictException | Custom exception thrown by `VaultService.proofLockFile` when `check_proof_status` RPC returns a status other than `new` (i.e., the hash already exists in the ledger). | [[FactLockCam_Master_Blueprint]], [[FactLockCam_Blueprints_14May2026]] |
@@ -90,8 +94,11 @@ summary: "Terminology reference for the LLM Wiki."
 * *App Store prep + capture seal terms*: sidecar staging lock, `sealAndStoreCapture`, Archive UX label, legal bundle (2026-05-21) via [[App_Store_Prep_Capture_Seal_2026-05]]
 * *Identity lifecycle terms*: `wallet_history`, historical placeholder, `ProofCourierService`, `perform_full_burn` cascade (2026-05-21) via [[Identity_Lifecycle_And_Data_Lineage]]
 
+* *Send Proof / courier terms* (2026-05-24): `SendProof`, utility rule, `WEB_VAULT_BASE_URL` gate, `courier-unlock` via [[Send_Proof_Courier_2026-05]]
+
 ## Related Notes
 
+* [[Send_Proof_Courier_2026-05]]
 * [[LLM_Wiki_Pattern]]
 * [[App_Store_Prep_Capture_Seal_2026-05]]
 * [[Identity_Lifecycle_And_Data_Lineage]]

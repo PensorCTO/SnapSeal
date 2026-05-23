@@ -23,19 +23,20 @@ class ProofCourierService {
   final SupabaseClientHandle _handle;
   final IPlatformChannelCoordinator _channelCoordinator;
 
-  /// JIT upload: isolate read + background-scoped storage upload.
+  /// JIT upload with background task scope for iOS upload continuity.
+  ///
+  /// File bytes are already loaded on the caller isolate; do not nest
+  /// [Isolate.run] inside the upload callback — closures that share scope
+  /// with [SupabaseClient] are not isolate-sendable.
   Future<void> uploadEncryptedCourierBlob({
     required String storagePath,
     required Uint8List encryptedBytes,
   }) async {
-    final client = _requiredClient();
     await _channelCoordinator.executeWithBackgroundScope(() async {
-      final payload = await Isolate.run(
-        () => _copyBytesInIsolate(encryptedBytes),
-      );
+      final client = _requiredClient();
       await client.storage.from('courier-blobs').uploadBinary(
             storagePath,
-            payload,
+            encryptedBytes,
             fileOptions: const FileOptions(
               contentType: 'application/octet-stream',
               upsert: true,
@@ -48,10 +49,12 @@ class ProofCourierService {
     File localEncryptedFile,
     String assetHash,
   ) async {
+    final filePath = localEncryptedFile.path;
+    final payload = await Isolate.run(
+      () => _readEncryptedFileInIsolate(filePath),
+    );
+
     return _channelCoordinator.executeWithBackgroundScope(() async {
-      final payload = await Isolate.run(
-        () => _readEncryptedFileInIsolate(localEncryptedFile.path),
-      );
       final storageDestination = 'courier_drops/$assetHash.plock';
       final client = _requiredClient();
       await client.storage.from('courier-blobs').uploadBinary(
@@ -78,10 +81,6 @@ class ProofCourierService {
     }
     return client;
   }
-}
-
-Uint8List _copyBytesInIsolate(Uint8List encryptedBytes) {
-  return Uint8List.fromList(encryptedBytes);
 }
 
 Uint8List _readEncryptedFileInIsolate(String path) {
