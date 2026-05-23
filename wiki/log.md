@@ -7,6 +7,15 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 ## 2026-05-24
 
+- **Production transition + ninth QA pass**:
+  - **Config:** `APP_ENVIRONMENT=production`, `WEB_VAULT_BASE_URL=https://vault.factlockcam.com`, `SUPPORT_URL=https://factlockcam.com/support` in dart-defines sync; account panel + courier error copy updated.
+  - **Supabase:** Migrations `20260524130000_optimize_courier_lookups.sql`, `20260524140000_courier_lookup_trigger.sql` pushed local + hosted.
+  - **iOS:** `PrivacyInfo.xcprivacy` DiskSpace/Email/Location declarations; `ITSAppUsesNonExemptEncryption=false`.
+  - **Tests:** `setupTestDependencies()`, Flutter-test isolation guards, polygon retry defer parity; `flutter test` **40/40**.
+  - **QA:** User-confirmed pass.
+  - **Wiki:** Added [[Production_Transition_2026-05]]; refreshed [[FactLockCam_Product_Baseline_2026-05]], [[Send_Proof_Courier_2026-05]], [[index]], [[overview]], [[glossary]], [[FactLockCam_Master_Blueprint]].
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 - **Send Proof & courier synthesis (agent session)**:
   - **Product:** Certificate PDF + password-protected courier link via iOS share sheet only; **no in-app email** (App Store utility positioning). Recipient E2E unlock **deferred** until public Flutter Web vault deployed at `WEB_VAULT_BASE_URL` (stealth pre–App Store; no marketing domain required for ongoing dev).
   - **Code:** `SendProof` notifier wired to UI; `CertificateExportService` PDF; `courier-unlock` edge function; migration `20260524120000_courier_download_limits.sql`; `ProofCourierService` isolate fix; removed `dispatch-courier` from repo.

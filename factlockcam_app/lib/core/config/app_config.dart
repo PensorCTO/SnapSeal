@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import 'generated_dart_defines.dart';
+import 'runtime_test_flag.dart';
 
 class AppConfig {
   static const supabaseUrl = String.fromEnvironment(
@@ -11,6 +12,7 @@ class AppConfig {
     'SUPABASE_ANON_KEY',
     defaultValue: GeneratedDartDefines.supabaseAnonKey,
   );
+
   /// Local Supabase REST/Kong URL; port must match `supabase/config.toml` `[api].port`.
   static const localSupabaseUrl = 'http://127.0.0.1:54325';
   static const _localAnonKey = String.fromEnvironment(
@@ -28,6 +30,14 @@ class AppConfig {
   static const _webVaultBaseUrl = String.fromEnvironment(
     'WEB_VAULT_BASE_URL',
     defaultValue: GeneratedDartDefines.webVaultBaseUrl,
+  );
+  static const _appEnvironment = String.fromEnvironment(
+    'APP_ENVIRONMENT',
+    defaultValue: GeneratedDartDefines.appEnvironment,
+  );
+  static const _supportUrl = String.fromEnvironment(
+    'SUPPORT_URL',
+    defaultValue: GeneratedDartDefines.supportUrl,
   );
 
   static String get supabaseAnonKey => _supabaseAnonKey;
@@ -76,8 +86,21 @@ class AppConfig {
 
   static String get webVaultBaseUrl => _webVaultBaseUrl;
 
-  /// Placeholder support/marketing URL for App Store submission requirements.
-  static const supportWebsiteUrl = 'https://factlockcam.com/support';
+  /// Compile-time deployment target (`development`, `staging`, `production`, …).
+  static String get appEnvironment =>
+      _appEnvironment.isNotEmpty ? _appEnvironment : 'development';
+
+  static bool get isProduction => appEnvironment == 'production';
+
+  /// True while running under `flutter test` (Supabase/network quarantine).
+  static bool get isFlutterTest => isRunningFlutterTest;
+
+  /// Permanent support URL for App Store Connect and in-app settings.
+  static String get supportUrl =>
+      _supportUrl.isNotEmpty ? _supportUrl : 'https://factlockcam.com/support';
+
+  /// Deprecated alias — prefer [supportUrl].
+  static String get supportWebsiteUrl => supportUrl;
 
   /// Deprecated external legal URLs — native bundled documents are preferred.
   @Deprecated('Use offline LegalDocumentView assets instead.')

@@ -15,6 +15,8 @@ class SupabaseClientHandle {
       return Supabase.instance.client;
     } on StateError {
       return null;
+    } on AssertionError {
+      return null;
     }
   }
 }

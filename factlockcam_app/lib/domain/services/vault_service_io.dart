@@ -182,9 +182,9 @@ class VaultService {
     }
     if (kDebugMode) return 'http://localhost:3000';
     throw StateError(
-      'WEB_VAULT_BASE_URL is unset. For profile/release QA, pass '
-      '`--dart-define=WEB_VAULT_BASE_URL=https://YOUR-NGROK-SUBDOMAIN.ngrok-free.app` '
-      '(or tunnel equivalent) built from dart_defines / launch tooling.',
+      'WEB_VAULT_BASE_URL is unset. Release/profile builds must pass '
+      '`--dart-define=WEB_VAULT_BASE_URL=https://vault.factlockcam.com` '
+      'via dart_defines.json or launch tooling.',
     );
   }
 
@@ -1098,11 +1098,23 @@ class VaultService {
       return false;
     }
 
-    final chainTxHash = await _dispatchPolygonRelay(
-      fileHash: assetFingerprint,
-      ownerSignature: ownerSignature,
-      deviceSignature: deviceSignature,
-    );
+    String? chainTxHash;
+    try {
+      chainTxHash = await _dispatchPolygonRelay(
+        fileHash: assetFingerprint,
+        ownerSignature: ownerSignature,
+        deviceSignature: deviceSignature,
+      );
+    } catch (e) {
+      if (_isRecoverableRemoteFailure(e)) {
+        await _database.markSyncDeferred(
+          assetFingerprint: assetFingerprint,
+          nextRetryAt: _nextRetryAt(item.syncAttemptCount + 1),
+        );
+        return false;
+      }
+      return false;
+    }
     if (chainTxHash != null) {
       return true;
     }

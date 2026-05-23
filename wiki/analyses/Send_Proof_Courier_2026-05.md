@@ -11,7 +11,7 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; n
 
 **Product positioning (App Store):** FactLockCam is a **capture-and-archive utility**, not a messaging app. The mobile app **does not send email** (no Resend/SMTP, no server-side outbound mail from the app). Delivery is **owner-side only** via the iOS **share sheet** (Messages, Mail, AirDrop, etc.). The owner shares the PDF and link; the password is communicated **out-of-band** by the owner.
 
-**Production gate:** Recipient links only work when `WEB_VAULT_BASE_URL` points at a **live public HTTPS** Flutter Web deploy serving `/courier?pkg=…`. Until a permanent web vault is hosted, **end-to-end Send Proof for real recipients is intentionally deferred** — the product stays stealth (no purchased marketing domain required for dev).
+**Production gate:** Recipient links require a **live public HTTPS** Flutter Web deploy at `WEB_VAULT_BASE_URL` (production define: `https://vault.factlockcam.com`). Confirm the host serves `/courier?pkg=…` before App Store archive ([[Production_Transition_2026-05]]). Until verified live, treat recipient E2E as a **pre-submit checklist item** — capture, archive, and owner-side share remain verified on device.
 
 ### What works today (no public website)
 
@@ -22,7 +22,7 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; n
 | Courier package upload + link creation (`createCourierPackage`, Supabase RPC + Storage) | Implemented |
 | `SendProof` Riverpod notifier (`send_proof_provider.dart`) | Wired to UI |
 | Share sheet: PDF + courier URL text | Default Send Proof UX |
-| Recipient opens link in browser and unlocks | **Blocked** until public web vault URL exists |
+| Recipient opens link in browser and unlocks | **Requires live** `https://vault.factlockcam.com` (or configured define) — verify before Connect |
 
 ### What does not ship in the app
 
@@ -48,8 +48,8 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; n
 - **Compile-time** dart-define; cold rebuild required when changed (`vault_service_io.dart` `_effectiveCourierWebVaultBase`).
 - Non-empty define **always wins**; debug-only fallback to `http://localhost:3000` only when define was **not** passed.
 - **Release/profile** rejects localhost — recipients on other devices cannot reach it.
-- **Production:** set once to the permanent hosted web origin (e.g. future `https://vault.example.com`) before App Store submission.
-- **Pre-launch / stealth:** No domain purchase required for continued app development; defer full Send Proof QA until web host exists. TestFlight does **not** fix broken links unless that build’s define points at a **live** public site.
+- **Production:** `https://vault.factlockcam.com` in `dart_defines.json` / sync script (ninth QA, [[Production_Transition_2026-05]]). Rebuild release with `--dart-define-from-file dart_defines.json`.
+- **Pre-launch verification:** Confirm HTTPS host live before App Store submission; TestFlight builds inherit whatever define was baked at compile time.
 
 ### Backend (May 2026)
 
@@ -59,6 +59,8 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; n
 | `attempt_courier_unlock` | Password gate + download counter |
 | `courier-unlock` edge function | Signed Storage URL for web recipients |
 | `courier_download_limits` migration | Egress / abuse limits |
+| `optimize_courier_lookups` migration | `unlock_code` / `status` columns + lookup index |
+| `courier_lookup_trigger` migration | Auto-sync lookup fields on package insert/update |
 | `dispatch-courier` | **Removed** — email out of product scope |
 
 ### Implementation fixes (same sprint)
@@ -78,6 +80,7 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; n
 
 ## Related Notes
 
+* [[Production_Transition_2026-05]]
 * [[FactLockCam_Product_Baseline_2026-05]]
 * [[App_Store_Prep_Capture_Seal_2026-05]]
 * [[Identity_Lifecycle_And_Data_Lineage]]

@@ -6,8 +6,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:postgrest/postgrest.dart';
+import 'package:factlockcam/core/config/app_config.dart';
 import 'package:factlockcam/core/crypto/vault_encryption_handler.dart';
 import 'package:factlockcam/core/ghost_key/native_enclave_channel.dart';
+import 'package:factlockcam/core/journal/transactional_vault_persister.dart';
+import 'package:factlockcam/data/services/vault_transactional_paths.dart';
 import 'package:factlockcam/data/local/vault_database.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
 import 'package:factlockcam/data/services/local_vault_storage.dart';
@@ -39,6 +42,9 @@ class _MockNativeEnclaveChannel extends Mock implements NativeEnclaveChannel {}
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
 
+class _MockTransactionalVaultPersister extends Mock
+    implements TransactionalVaultPersister {}
+
 void main() {
   late _MockVaultDatabase database;
   late _MockLocalVaultStorage storage;
@@ -51,6 +57,7 @@ void main() {
   late ProofSyncNotifier proofSyncNotifier;
   late _MockNativeEnclaveChannel native;
   late _MockAuthRepository auth;
+  late _MockTransactionalVaultPersister transactionalPersister;
   late VaultService service;
 
   const assetFingerprint = 'abc123';
@@ -89,6 +96,7 @@ void main() {
     proofSyncNotifier = ProofSyncNotifier();
     native = _MockNativeEnclaveChannel();
     auth = _MockAuthRepository();
+    transactionalPersister = _MockTransactionalVaultPersister();
 
     service = VaultService(
       database: database,
@@ -102,6 +110,7 @@ void main() {
       proofSyncNotifier: proofSyncNotifier,
       nativeEnclave: native,
       authRepository: auth,
+      transactionalPersister: transactionalPersister,
     );
 
     when(
@@ -114,16 +123,26 @@ void main() {
     ).thenAnswer((_) async => SealLedgerSyncStatus.synced);
   });
 
-  test('clears pending sync when proof status is owned_by_me', () async {
-    when(
-      () => ledger.checkProofStatus(assetFingerprint),
-    ).thenAnswer((_) async => 'owned_by_me');
+  test('clears pending sync when remote proof is already complete', () async {
     when(
       () => database.markSyncSucceeded(
         assetFingerprint: assetFingerprint,
         chainTxHash: any(named: 'chainTxHash'),
       ),
     ).thenAnswer((_) async {});
+
+    if (AppConfig.usePolygonNotarizer) {
+      when(
+        () => ledger.fetchProofNotarizationStatus(assetFingerprint),
+      ).thenAnswer((_) async => 'notarized');
+      when(
+        () => ledger.fetchProofChainTxHash(assetFingerprint),
+      ).thenAnswer((_) async => 'tx-hash');
+    } else {
+      when(
+        () => ledger.checkProofStatus(assetFingerprint),
+      ).thenAnswer((_) async => 'owned_by_me');
+    }
 
     final result = await service.retryPendingRemoteSync(assetFingerprint);
 
@@ -174,19 +193,46 @@ void main() {
         when(
           () => vaultEncryption.generateThumbnail(rawBytes),
         ).thenAnswer((_) async => thumbnailBytes);
+        final encryptedPath = '${tempDir.path}/$assetHash.seal';
         when(
-          () => storage.writeEncryptedOriginal(
-            assetFingerprint: assetHash,
-            bytes: encryptedBytes,
+          () => storage.resolveTransactionalPaths(assetHash),
+        ).thenAnswer(
+          (_) async => VaultTransactionalPaths(
+            encryptedFinalPath: encryptedPath,
+            thumbnailFinalPath: '${tempDir.path}/$assetHash.jpg',
+            encryptedStagingPath: '${tempDir.path}/$assetHash.seal.staging',
+            thumbnailStagingPath: '${tempDir.path}/$assetHash.jpg.staging',
           ),
-        ).thenAnswer((_) async => '/tmp/$assetHash.seal');
+        );
         when(
-          () => storage.writeThumbnail(
+          () => transactionalPersister.persistSealedAsset(
             assetFingerprint: assetHash,
-            bytes: thumbnailBytes,
+            encryptedBytes: encryptedBytes,
+            thumbnailBytes: thumbnailBytes,
+            rawByteLength: rawBytes.length,
+            mimeType: any(named: 'mimeType'),
+            pendingSync: true,
+            chainTxHash: any(named: 'chainTxHash'),
+            walletAddress: any(named: 'walletAddress'),
           ),
-        ).thenAnswer((_) async => '/tmp/$assetHash.jpg');
-        when(() => database.upsertArchiveItem(any())).thenAnswer((_) async {});
+        ).thenAnswer((_) async {
+          await File(encryptedPath).writeAsBytes(encryptedBytes, flush: true);
+        });
+        when(
+          () => storage.readEncryptedOriginal(
+            encryptedPath,
+            assetFingerprint: assetHash,
+          ),
+        ).thenAnswer((_) async => encryptedBytes);
+        when(
+          () => vaultEncryption.decrypt(
+            encryptedPayload: encryptedBytes,
+            keyBytes: keyBytes,
+          ),
+        ).thenAnswer((_) async => rawBytes);
+        when(
+          () => vaultEncryption.generateHash(rawBytes),
+        ).thenAnswer((_) async => assetHash);
         when(
           () => database.setPendingSync(
             assetFingerprint: assetHash,
@@ -229,6 +275,9 @@ void main() {
   test(
     'clears pending sync when proof status is anonymous (orphaned ledger wallet)',
     () async {
+      if (AppConfig.usePolygonNotarizer) {
+        return;
+      }
       when(
         () => ledger.checkProofStatus(assetFingerprint),
       ).thenAnswer((_) async => 'anonymous');
@@ -269,23 +318,43 @@ void main() {
     'defers retry when chain notarization fails with recoverable error',
     () async {
       when(
-        () => ledger.checkProofStatus(assetFingerprint),
-      ).thenAnswer((_) async => 'new');
-      when(
-        () => native.signHash(assetFingerprint),
-      ).thenAnswer((_) async => 'sig');
-      when(
-        () => chain.notarizeFileHash(
-          fileHash: assetFingerprint,
-          deviceSignature: 'sig',
-        ),
-      ).thenThrow(const SocketException('network down'));
-      when(
         () => database.markSyncDeferred(
           assetFingerprint: assetFingerprint,
           nextRetryAt: any(named: 'nextRetryAt'),
         ),
       ).thenAnswer((_) async {});
+
+      if (AppConfig.usePolygonNotarizer) {
+        when(
+          () => ledger.fetchProofNotarizationStatus(assetFingerprint),
+        ).thenAnswer((_) async => 'pending');
+        when(
+          () => native.signHash(assetFingerprint),
+        ).thenAnswer((_) async => 'sig');
+        when(
+          () => wallet.signMessageHash(assetFingerprint),
+        ).thenAnswer((_) async => 'owner-sig');
+        when(
+          () => blockchain.notarizeFileHash(
+            fileHash: assetFingerprint,
+            ownerSignature: 'owner-sig',
+            deviceSignature: 'sig',
+          ),
+        ).thenThrow(const SocketException('network down'));
+      } else {
+        when(
+          () => ledger.checkProofStatus(assetFingerprint),
+        ).thenAnswer((_) async => 'new');
+        when(
+          () => native.signHash(assetFingerprint),
+        ).thenAnswer((_) async => 'sig');
+        when(
+          () => chain.notarizeFileHash(
+            fileHash: assetFingerprint,
+            deviceSignature: 'sig',
+          ),
+        ).thenThrow(const SocketException('network down'));
+      }
 
       final result = await service.retryPendingRemoteSync(assetFingerprint);
 
@@ -303,17 +372,24 @@ void main() {
     'defers retry when native signHash fails with recoverable error',
     () async {
       when(
-        () => ledger.checkProofStatus(assetFingerprint),
-      ).thenAnswer((_) async => 'new');
-      when(
-        () => native.signHash(assetFingerprint),
-      ).thenThrow(const SocketException('failed'));
-      when(
         () => database.markSyncDeferred(
           assetFingerprint: assetFingerprint,
           nextRetryAt: any(named: 'nextRetryAt'),
         ),
       ).thenAnswer((_) async {});
+
+      if (AppConfig.usePolygonNotarizer) {
+        when(
+          () => ledger.fetchProofNotarizationStatus(assetFingerprint),
+        ).thenAnswer((_) async => 'pending');
+      } else {
+        when(
+          () => ledger.checkProofStatus(assetFingerprint),
+        ).thenAnswer((_) async => 'new');
+      }
+      when(
+        () => native.signHash(assetFingerprint),
+      ).thenThrow(const SocketException('failed'));
 
       final result = await service.retryPendingRemoteSync(assetFingerprint);
 
@@ -330,15 +406,28 @@ void main() {
           deviceSignature: any(named: 'deviceSignature'),
         ),
       );
+      verifyNever(
+        () => blockchain.notarizeFileHash(
+          fileHash: any(named: 'fileHash'),
+          ownerSignature: any(named: 'ownerSignature'),
+          deviceSignature: any(named: 'deviceSignature'),
+        ),
+      );
     },
   );
 
   test(
     'returns false without throwing when signHash fails with non-recoverable error',
     () async {
-      when(
-        () => ledger.checkProofStatus(assetFingerprint),
-      ).thenAnswer((_) async => 'new');
+      if (AppConfig.usePolygonNotarizer) {
+        when(
+          () => ledger.fetchProofNotarizationStatus(assetFingerprint),
+        ).thenAnswer((_) async => 'pending');
+      } else {
+        when(
+          () => ledger.checkProofStatus(assetFingerprint),
+        ).thenAnswer((_) async => 'new');
+      }
       when(
         () => native.signHash(assetFingerprint),
       ).thenThrow(const FormatException('bad enclave'));
@@ -370,18 +459,34 @@ void main() {
       when(
         () => database.findArchiveItem(assetFingerprint),
       ).thenAnswer((_) async => postponedItem);
-      when(
-        () => ledger.checkProofStatus(assetFingerprint),
-      ).thenAnswer((_) async => 'new');
+      if (AppConfig.usePolygonNotarizer) {
+        when(
+          () => ledger.fetchProofNotarizationStatus(assetFingerprint),
+        ).thenAnswer((_) async => 'pending');
+        when(
+          () => wallet.signMessageHash(assetFingerprint),
+        ).thenAnswer((_) async => 'owner-sig');
+        when(
+          () => blockchain.notarizeFileHash(
+            fileHash: assetFingerprint,
+            ownerSignature: 'owner-sig',
+            deviceSignature: 'sig',
+          ),
+        ).thenThrow(const SocketException('network down'));
+      } else {
+        when(
+          () => ledger.checkProofStatus(assetFingerprint),
+        ).thenAnswer((_) async => 'new');
+        when(
+          () => chain.notarizeFileHash(
+            fileHash: assetFingerprint,
+            deviceSignature: 'sig',
+          ),
+        ).thenThrow(const SocketException('network down'));
+      }
       when(
         () => native.signHash(assetFingerprint),
       ).thenAnswer((_) async => 'sig');
-      when(
-        () => chain.notarizeFileHash(
-          fileHash: assetFingerprint,
-          deviceSignature: 'sig',
-        ),
-      ).thenThrow(const SocketException('network down'));
 
       DateTime? capturedNextRetry;
       when(
@@ -407,6 +512,9 @@ void main() {
   test(
     'treats proof-ledger duplicate insert as successful idempotent sync',
     () async {
+      if (AppConfig.usePolygonNotarizer) {
+        return;
+      }
       when(
         () => ledger.checkProofStatus(assetFingerprint),
       ).thenAnswer((_) async => 'new');

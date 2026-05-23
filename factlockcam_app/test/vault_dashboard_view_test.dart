@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:factlockcam/core/di/injection.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
 import 'package:factlockcam/ui/controllers/dashboard_controller.dart';
 import 'package:factlockcam/ui/mobile/vault_home_view.dart';
 
+import 'test_dependencies.dart';
+
 void main() {
   setUpAll(() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    await configureDependencies();
+    await setupTestDependencies();
   });
 
   test('VaultHomeView hub route path', () {
@@ -90,7 +90,9 @@ void main() {
     expect(find.text('LOG OUT'), findsOneWidget);
   });
 
-  testWidgets('shows pending sync banner and retry on vault hub', (tester) async {
+  testWidgets('shows pending sync banner and retry on vault hub', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [

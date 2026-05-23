@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:factlockcam/app/factlockcam_app.dart';
-import 'package:factlockcam/core/di/injection.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
 import 'package:factlockcam/ui/controllers/dashboard_controller.dart';
 import 'package:factlockcam/ui/mobile/vault_home_view.dart';
 
+import 'test_dependencies.dart';
+
 void main() {
   setUpAll(() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    await configureDependencies();
+    await setupTestDependencies();
   });
 
   testWidgets('renders the FactLockCam logon shell', (tester) async {
@@ -22,8 +22,9 @@ void main() {
     expect(find.text('TAMPER-EVIDENT MEDIA VAULT'), findsOneWidget);
   });
 
-  testWidgets('hub tiles switch between vault home and camera views',
-      (tester) async {
+  testWidgets('hub tiles switch between vault home and camera views', (
+    tester,
+  ) async {
     final buildCounter = ValueNotifier<int>(0);
 
     await tester.binding.setSurfaceSize(const Size(800, 1600));
@@ -42,7 +43,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('CHOOSE AN ACTION'), findsNothing);
-    expect(find.text('VAULT'), findsOneWidget);
+    expect(find.text('ARCHIVE'), findsOneWidget);
     expect(buildCounter.value, 1);
 
     final pictureTile = find.text('PICTURE');
@@ -54,7 +55,7 @@ void main() {
 
     await tester.tap(find.byType(CupertinoNavigationBarBackButton));
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('VAULT'), findsOneWidget);
+    expect(find.text('ARCHIVE'), findsOneWidget);
     expect(buildCounter.value, 1);
   });
 }

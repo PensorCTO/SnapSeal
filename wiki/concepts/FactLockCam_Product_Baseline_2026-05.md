@@ -9,13 +9,14 @@ summary: "Authoritative May 2026 baseline: verified hub/archive/capture workflow
 
 As of this baseline, the **primary product workflow is verified end-to-end** on hosted Supabase: **logon** → **vault hub** → **capture or browse** → sealed assets with remote proof when online.
 
+- **Ninth QA pass 2026-05-24**: **Production transition** — `APP_ENVIRONMENT=production`, `WEB_VAULT_BASE_URL=https://vault.factlockcam.com`, `SUPPORT_URL=https://factlockcam.com/support`; courier lookup migrations + trigger; iOS privacy manifest + export compliance; test isolation; `flutter test` **40/40** ([[Production_Transition_2026-05]]).
 - **Eighth QA pass 2026-05-22**: **Live Polygon mainnet on physical iPhone** — `ALCHEMY_API_URL` + `RELAYER_PRIVATE_KEY` on hosted Supabase, real `notarize()` broadcast + Polygonscan-confirmed tx, sim-hash fallback **removed**, relay errors propagate to callers ([[Polygon_Mainnet_Wiring_2026-05]]).
 - **Seventh QA pass 2026-05-22**: **Polygon mainnet wiring** — `prooflock_production` relay pattern, initial pending-sync fix, `PolygonChainNotarizer` + `transactionHash` contract, RPC receipt polling, web `journal_repository` stub/io split, `proof_ledger` indexing migration ([[Polygon_Mainnet_Wiring_2026-05]]).
 - **Sixth QA pass 2026-05-21**: **Identity lifecycle** — `wallet_history`, `proof_ledger.evm_address`, cascade `perform_full_burn`, local SQLite v6 wallet lineage, `ProofCourierService` JIT upload + iOS background scope, historical archive placeholders + restore banner ([[Identity_Lifecycle_And_Data_Lineage]]).
 - **Fifth QA pass 2026-05-21**: App Store prep — bundled ToS/Privacy, support URL, GPS telemetry HUD, multi-shot capture (buffered bytes + seal queue), archive delete/view/thumbnail fixes, proof bundle zip share ([[App_Store_Prep_Capture_Seal_2026-05]]).
 - **Fourth QA pass 2026-05-21**: Sprint 4 **isolate lock coordinator** + securing overlays on archive tiles; sidecar advisory locks on staging promote (not payload truncate); `PrivacyInfo.xcprivacy` + App Store checklist doc ([[Isolate_Lock_Coordinator]]).
 - **Third QA pass 2026-05-21**: Sprint 2 **transactional journal** + SQLite single-flight fix; physical iPhone capture + **Polygon `proof_ledger` insert** verified; hub shell fixes (lazy archive/account panels, unique Cupertino nav `heroTag`, 2×2 hub grid + scroll in landscape).
-- **Second QA pass 2026-05-20**: proof-progress + certificate tx-hash fixes; `flutter test` **33/33** core suite; Polygon saga live (overlay **Generating Proof…**, ~2s relay), **ledger tx hash on certificate**, branded app icon ([[Polygon_Saga_Live]]).
+- **Second QA pass 2026-05-20**: proof-progress + certificate tx-hash fixes; `flutter test` **33/33** core suite (expanded to **40/40** by ninth QA); Polygon saga live (overlay **Generating Proof…**, ~2s relay), **ledger tx hash on certificate**, branded app icon ([[Polygon_Saga_Live]]).
 - PR0 lazy camera mount remains prerequisite ([[Polygon_Try1_Postmortem]]). Journal details: [[Vault_Transactional_Journal]].
 
 ### Verified workflow (happy path)
@@ -33,7 +34,8 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 
 - **Remote drift (May 2026):** Hosted databases could diverge from repo migrations (legacy `proof_ledger` shapes, missing `simulated_chain_ledger`, missing or mismatched RPCs such as `simulate_chain_notarize` / `check_proof_status`). **Repair:** `supabase/migrations/20260509160000_repair_remote_prooflock_schema.sql` drops and recreates the canonical simulated-chain + `proof_ledger` surface and RPCs to match `20260503120000_prooflock_simulated_chain.sql`. **Destructive:** prior rows in old `proof_ledger` tables are not preserved across that repair.
 - **Profiles gap:** Historic `auth.users` rows sometimes had no `public.profiles` row (trigger timing/failures), blocking `wallet_id` and ledger/RPC paths. **Repair:** `supabase/migrations/20260509200000_backfill_profiles_from_auth_users.sql` inserts missing profiles and ensures non-null `wallet_id`.
-- **Flutter runtime:** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, optional **`USE_POLYGON_NOTARIZER`** (sync script defaults **true**), **`POLYGON_RPC_URL`** (receipt polling), `WEB_VAULT_BASE_URL`, `REQUIRE_HARDWARE_ATTESTATION` (latter **not wired**). See `scripts/write_flutter_dart_defines.py` and `scripts/sync_flutter_dart_defines.sh` (also emits gitignored `generated_dart_defines.dart` so plain `flutter run` works after sync; stub template committed).
+- **Flutter runtime:** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, optional **`USE_POLYGON_NOTARIZER`** (sync script defaults **true**), **`POLYGON_RPC_URL`** (receipt polling), **`WEB_VAULT_BASE_URL`** (production: `https://vault.factlockcam.com`), **`APP_ENVIRONMENT`**, **`SUPPORT_URL`**, `REQUIRE_HARDWARE_ATTESTATION` (latter **not wired**). See `scripts/write_flutter_dart_defines.py` and `scripts/sync_flutter_dart_defines.sh` (also emits gitignored `generated_dart_defines.dart` so plain `flutter run` works after sync; stub template committed).
+- **Courier lookup migrations:** **`20260524130000_optimize_courier_lookups.sql`**, **`20260524140000_courier_lookup_trigger.sql`** (unlock_code/status index + sync trigger).
 - **Polygon saga migrations:** `20260520120000_polygon_saga_proof_ledger.sql`, `20260521000000_proof_ledger_replica_identity.sql`, **`20260521120000_identity_lifecycle.sql`**, **`20260523000000_polygon_tx_indexing.sql`**; Edge Function **`anchor-relay`** deployed with `--no-verify-jwt` on hosted projects (JWT validated in-function).
 - **Live Polygon mainnet (eighth QA):** Hosted secrets `ALCHEMY_API_URL` + `RELAYER_PRIVATE_KEY` configured; relay broadcasts to contract `0x83508c78104b8b58ff844EE5654FaaC06cFFc155` — no sim-hash fallback ([[Polygon_Mainnet_Wiring_2026-05]]).
 - **CLI / ops:** Bare `supabase` CLI does not load repo root `.env.local`; use `scripts/factlockcam_supabase_pipeline.sh` (or source `.env.local`) for linked push and consistent env when operating against remote projects.
@@ -42,9 +44,9 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 
 - **Relayer wallet ops:** Active payer is a funded hot wallet (`RELAYER_PRIVATE_KEY` in Supabase secrets); rotate or fund as needed — not the user's profile EVM address ([[Polygon_Mainnet_Wiring_2026-05]]).
 - **Hardware-backed signing:** native channel still returns **developer-simulated** device signatures; EVM wallet is software-keyed in Secure Storage.
-- **Courier / Send Proof:** Certificate PDF + courier package + share sheet wired (`SendProof` notifier); **no in-app email** (App Store utility positioning). Recipient browser unlock + download quotas implemented server-side; **E2E link QA deferred** until public `WEB_VAULT_BASE_URL` host exists — [[Send_Proof_Courier_2026-05]].
+- **Courier / Send Proof:** Certificate PDF + courier package + share sheet wired (`SendProof` notifier); **no in-app email** (App Store utility positioning). Production **`WEB_VAULT_BASE_URL`** baked into dart-defines — **confirm live host** before App Store archive ([[Production_Transition_2026-05]], [[Send_Proof_Courier_2026-05]]).
+- Automated tests: **40/40** passing under production notarizer defaults (retry polygon path, dashboard/widget isolation, capture UI); still thinner than a production bar on some crypto/sync edge cases.
 - **C2PA** and full **ProofLock manifest** assurance: see [[ProofLock_Refactor_Scope]] and [[ProofLock_Architectural_Manifest]].
-- Automated tests improved (retry, dashboard/archive, enclave channel, action registry/toolbar, photo-view rebuild caching, and video-thumbnail MIME extension checks) but remain **thinner than a production bar** on capture/crypto/sync edge cases.
 
 Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
 
@@ -56,6 +58,7 @@ Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
 
 ## Related Notes
 
+* [[Production_Transition_2026-05]]
 * [[Send_Proof_Courier_2026-05]]
 * [[App_Store_Prep_Capture_Seal_2026-05]]
 * [[Identity_Lifecycle_And_Data_Lineage]]

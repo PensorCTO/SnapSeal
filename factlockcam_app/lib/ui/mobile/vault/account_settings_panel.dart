@@ -27,10 +27,10 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel> {
   bool _isBurning = false;
 
   Future<void> _openSupportWebsite() async {
-    final uri = Uri.parse(AppConfig.supportWebsiteUrl);
+    final uri = Uri.parse(AppConfig.supportUrl);
     if (!await canLaunchUrl(uri)) {
       if (!mounted) return;
-      await _showAlert('Unable to open link', AppConfig.supportWebsiteUrl);
+      await _showAlert('Unable to open link', AppConfig.supportUrl);
       return;
     }
     await launchUrl(uri, mode: LaunchMode.externalApplication);

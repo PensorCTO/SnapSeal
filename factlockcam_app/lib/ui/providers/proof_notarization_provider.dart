@@ -20,7 +20,7 @@ final proofNotarizationStateProvider =
 
 /// Starts Realtime monitoring for the Polygon saga lifecycle.
 final polygonNotarizationLifecycleProvider = Provider<void>((ref) {
-  if (!AppConfig.usePolygonNotarizer) {
+  if (!AppConfig.usePolygonNotarizer || AppConfig.isFlutterTest) {
     return;
   }
   final monitor = ref.read(notarizationMonitorProvider);
@@ -30,7 +30,7 @@ final polygonNotarizationLifecycleProvider = Provider<void>((ref) {
 
 /// Refreshes the vault dashboard when relay finalization clears pending_sync.
 final polygonProofSyncRefreshProvider = Provider<void>((ref) {
-  if (!AppConfig.usePolygonNotarizer) {
+  if (!AppConfig.usePolygonNotarizer || AppConfig.isFlutterTest) {
     return;
   }
   final notifier = getIt<ProofSyncNotifier>();

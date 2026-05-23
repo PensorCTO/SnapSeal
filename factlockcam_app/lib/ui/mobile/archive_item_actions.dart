@@ -319,15 +319,15 @@ class ArchiveItemActions {
     }
     if (message.contains('WEB_VAULT_BASE_URL is unset')) {
       return 'Courier links require WEB_VAULT_BASE_URL at compile time. '
-          'Use VS Code launch "iOS (QA Tunnel)", or pass '
-          '`--dart-define=WEB_VAULT_BASE_URL=https://YOUR_TUNNEL_ORIGIN`.';
+          'Release builds should use '
+          '`--dart-define=WEB_VAULT_BASE_URL=https://vault.factlockcam.com`.';
     }
     if (message.contains('ERR_CONNECTION_REFUSED') ||
         message.contains('Connection refused')) {
       return 'The link used an unreachable host (often localhost, which '
-          'only works on your dev machine). Run Flutter Web on port 3000 behind '
-          'Ngrok and pass that HTTPS origin as WEB_VAULT_BASE_URL, rebuild '
-          'FactLockCam, then regenerate the link.';
+          'only works on your dev machine). Production builds should bind '
+          'WEB_VAULT_BASE_URL to https://vault.factlockcam.com, then '
+          'regenerate the link.';
     }
     if (message.contains('Bucket not found')) {
       return 'Storage bucket "courier-blobs" is missing on this Supabase project. '

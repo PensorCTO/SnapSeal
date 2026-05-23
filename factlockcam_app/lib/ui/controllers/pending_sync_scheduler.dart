@@ -2,9 +2,13 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/config/app_config.dart';
 import 'dashboard_controller.dart';
 
 final pendingSyncSchedulerProvider = Provider<void>((ref) {
+  if (AppConfig.isFlutterTest) {
+    return;
+  }
   final scheduler = PendingSyncScheduler(ref);
   scheduler.start();
   ref.onDispose(scheduler.dispose);

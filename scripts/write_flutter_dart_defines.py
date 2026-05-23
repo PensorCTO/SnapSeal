@@ -21,6 +21,8 @@ REQUIRED_KEYS = ("SUPABASE_URL", "SUPABASE_ANON_KEY")
 OPTIONAL_KEYS = (
     "LOCAL_ANON_KEY",
     "WEB_VAULT_BASE_URL",
+    "APP_ENVIRONMENT",
+    "SUPPORT_URL",
     "USE_POLYGON_NOTARIZER",
     "POLYGON_RPC_URL",
 )
@@ -87,6 +89,12 @@ def resolve_values(env_file: Path | None, existing_out: Path | None = None) -> d
             merged[url_key] = _normalize_https_dup_scheme(merged[url_key])
     if "USE_POLYGON_NOTARIZER" not in merged:
         merged["USE_POLYGON_NOTARIZER"] = "true"
+    if "APP_ENVIRONMENT" not in merged:
+        merged["APP_ENVIRONMENT"] = "production"
+    if "SUPPORT_URL" not in merged:
+        merged["SUPPORT_URL"] = "https://factlockcam.com/support"
+    if "WEB_VAULT_BASE_URL" not in merged:
+        merged["WEB_VAULT_BASE_URL"] = "https://vault.factlockcam.com"
     return merged
 
 
@@ -108,6 +116,8 @@ def write_generated_dart_defines(path: Path, merged: dict[str, str]) -> None:
         f"  static const supabaseAnonKey = {_dart_string_literal(merged.get('SUPABASE_ANON_KEY', ''))};",
         f"  static const localAnonKey = {_dart_string_literal(merged.get('LOCAL_ANON_KEY', ''))};",
         f"  static const webVaultBaseUrl = {_dart_string_literal(merged.get('WEB_VAULT_BASE_URL', ''))};",
+        f"  static const appEnvironment = {_dart_string_literal(merged.get('APP_ENVIRONMENT', 'production'))};",
+        f"  static const supportUrl = {_dart_string_literal(merged.get('SUPPORT_URL', 'https://factlockcam.com/support'))};",
         f"  static const usePolygonNotarizer = {'true' if use_polygon else 'false'};",
         f"  static const polygonRpcUrl = {_dart_string_literal(merged.get('POLYGON_RPC_URL', ''))};",
         "}",

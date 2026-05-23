@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../data/local/vault_database.dart';
@@ -31,6 +31,14 @@ import '../config/app_config.dart';
 import 'locator.dart';
 
 var _diConfigured = false;
+
+@visibleForTesting
+Future<void> resetDependenciesForTest() async {
+  if (_diConfigured) {
+    await getIt.reset();
+  }
+  _diConfigured = false;
+}
 
 /// Registers app-wide singletons. Call after [Supabase.initialize] when using defines.
 ///
