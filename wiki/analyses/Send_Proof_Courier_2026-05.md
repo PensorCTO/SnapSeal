@@ -11,7 +11,7 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; n
 
 **Product positioning (App Store):** FactLockCam is a **capture-and-archive utility**, not a messaging app. The mobile app **does not send email** (no Resend/SMTP, no server-side outbound mail from the app). Delivery is **owner-side only** via the iOS **share sheet** (Messages, Mail, AirDrop, etc.). The owner shares the PDF and link; the password is communicated **out-of-band** by the owner.
 
-**Production gate:** Recipient links require a **live public HTTPS** Flutter Web deploy at `WEB_VAULT_BASE_URL` (production define: `https://vault.factlockcam.com`). Confirm the host serves `/courier?pkg=…` before App Store archive ([[Production_Transition_2026-05]]). Until verified live, treat recipient E2E as a **pre-submit checklist item** — capture, archive, and owner-side share remain verified on device.
+**Production gate:** Recipient links require a **live public HTTPS** Flutter Web deploy at **`WEB_ARCHIVE_BASE_URL`** (production default: `https://archive.factlockcam.com`). Confirm the host serves `/courier?pkg=…` before **App Store review**. For **TestFlight**, an Ngrok tunnel origin in `.env.local` is acceptable ([[App_Store_Remediation_2026-05]]).
 
 ### What works today (no public website)
 
@@ -22,7 +22,7 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; n
 | Courier package upload + link creation (`createCourierPackage`, Supabase RPC + Storage) | Implemented |
 | `SendProof` Riverpod notifier (`send_proof_provider.dart`) | Wired to UI |
 | Share sheet: PDF + courier URL text | Default Send Proof UX |
-| Recipient opens link in browser and unlocks | **Requires live** `https://vault.factlockcam.com` (or configured define) — verify before Connect |
+| Recipient opens link in browser and unlocks | **Requires live HTTPS origin** (purchased domain or Ngrok for TestFlight) |
 
 ### What does not ship in the app
 
@@ -39,17 +39,18 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; n
 
 ### Recipient flow (when web vault is live)
 
-1. Tap link: `{WEB_VAULT_BASE_URL}/courier?pkg={uuid}`.
+1. Tap link: `{WEB_ARCHIVE_BASE_URL}/courier?pkg={uuid}`.
 2. Web `CourierUnlockView` → `courier-unlock` edge function (signed blob URL) + local decrypt (`CourierCrypto`).
 3. Download quota enforced in DB migration `20260524120000_courier_download_limits.sql` (`max_downloads`, `download_count`, 7-day `expires_at`).
 
-### `WEB_VAULT_BASE_URL` semantics
+### `WEB_ARCHIVE_BASE_URL` semantics
 
-- **Compile-time** dart-define; cold rebuild required when changed (`vault_service_io.dart` `_effectiveCourierWebVaultBase`).
+- **Compile-time** dart-define; cold rebuild required when changed (`vault_service_io.dart` `_effectiveCourierWebArchiveBase`).
 - Non-empty define **always wins**; debug-only fallback to `http://localhost:3000` only when define was **not** passed.
 - **Release/profile** rejects localhost — recipients on other devices cannot reach it.
-- **Production:** `https://vault.factlockcam.com` in `dart_defines.json` / sync script (ninth QA, [[Production_Transition_2026-05]]). Rebuild release with `--dart-define-from-file dart_defines.json`.
-- **Pre-launch verification:** Confirm HTTPS host live before App Store submission; TestFlight builds inherit whatever define was baked at compile time.
+- **Production default:** `https://archive.factlockcam.com` in `dart_defines.json` / sync script (tenth QA, [[App_Store_Remediation_2026-05]]). Rebuild with `--dart-define-from-file dart_defines.json`.
+- **TestFlight:** Set `WEB_ARCHIVE_BASE_URL` to Ngrok or staging in `.env.local`, re-sync, rebuild IPA — no purchased domain required.
+- **App Store review:** Purchased domain + live support URL required.
 
 ### Backend (May 2026)
 
@@ -60,7 +61,7 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; n
 | `courier-unlock` edge function | Signed Storage URL for web recipients |
 | `courier_download_limits` migration | Egress / abuse limits |
 | `optimize_courier_lookups` migration | `unlock_code` / `status` columns + lookup index |
-| `courier_lookup_trigger` migration | Auto-sync lookup fields on package insert/update |
+| `optimize_courier_archive` migration | Btree indices on `asset_hash`, `(package_id, expires_at)`, `(owner_id, asset_hash)` — tenth QA |
 | `dispatch-courier` | **Removed** — email out of product scope |
 
 ### Implementation fixes (same sprint)
@@ -70,7 +71,7 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; n
 
 ### Open decision (owner, 2026-05)
 
-**Finalize Send Proof for customers when:** a public Flutter Web vault is deployed at a stable HTTPS origin and the App Store build bakes that URL into `WEB_VAULT_BASE_URL`. Until then, treat courier link E2E as **parked**; continue capture, archive, on-device certificate share, and Polygon work without exposing product via marketing domain.
+**Finalize Send Proof for App Store when:** a public Flutter Web archive is deployed at a stable HTTPS origin and the release build bakes that URL into **`WEB_ARCHIVE_BASE_URL`**. **TestFlight** may use Ngrok; trademark/domain purchase can wait until after internal validation ([[App_Store_Remediation_2026-05]]).
 
 ## Provenance Tracking
 

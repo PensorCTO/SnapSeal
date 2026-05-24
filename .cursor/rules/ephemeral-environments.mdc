@@ -6,5 +6,5 @@ alwaysApply: true
 # Ephemeral QA environment
 
 1. **No assumed production URLs**: QA does not require a purchased prod domain or paid static hosting URL.
-2. **Compile-time vault origin**: Courier links use **`WEB_VAULT_BASE_URL`** via `--dart-define` / `dart_defines.json` — never silently override when the compiler define is non-empty (see `vault_service_io.dart`).
-3. **Tunnel awareness**: Use an HTTPS tunnel (e.g. Ngrok) exposing local Flutter Web on `:3000`; paste that origin into `WEB_VAULT_BASE_URL` before building the iOS app that shares links.
+2. **Compile-time archive origin**: Courier links use **`WEB_ARCHIVE_BASE_URL`** via `--dart-define` / `dart_defines.json` — never silently override when the compiler define is non-empty (see `vault_service_io.dart`).
+3. **Tunnel awareness**: Use an HTTPS tunnel (e.g. Ngrok) exposing local Flutter Web on `:3000`; paste that origin into `WEB_ARCHIVE_BASE_URL` before building the iOS app that shares links.

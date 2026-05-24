@@ -18,7 +18,7 @@ import '../../core/crypto/courier_crypto.dart';
 import '../../core/crypto/vault_encryption_handler.dart';
 import '../../core/di/locator.dart';
 import '../../core/journal/journal_repository.dart';
-import '../../core/journal/transactional_vault_persister.dart';
+import '../../core/journal/transactional_archive_persister.dart';
 import '../../core/lock/isolate_lock_coordinator.dart';
 import '../../core/ghost_key/native_enclave_channel.dart';
 import '../../data/local/vault_database.dart';
@@ -70,7 +70,7 @@ String _normalizedCourierBlobPath(String raw) {
   return path;
 }
 
-bool _courierWebVaultHostLooksMachineLocal(Uri uri) {
+bool _courierWebArchiveHostLooksMachineLocal(Uri uri) {
   if (!uri.hasAuthority) return false;
   final h = uri.host.toLowerCase();
   return h == 'localhost' || h == '127.0.0.1' || h == '::1';
@@ -110,7 +110,7 @@ class VaultService {
     required NativeEnclaveChannel nativeEnclave,
     required AuthRepository authRepository,
     ProofCourierService? proofCourierService,
-    TransactionalVaultPersister? transactionalPersister,
+    TransactionalArchivePersister? transactionalPersister,
     VaultPathResolver? pathResolver,
   }) : _database = database,
        _storage = storage,
@@ -130,9 +130,9 @@ class VaultService {
   static const _vaultKeyName = 'factlockcam:vault_key';
   static const _legacyVaultKeyName = 'snapseal:vault_key';
 
-  /// Compile-time **only**. Has no Dart default — empty means "not passed"; see [_effectiveCourierWebVaultBase].
-  static const String _webVaultCompilerDefine = String.fromEnvironment(
-    'WEB_VAULT_BASE_URL',
+  /// Compile-time **only**. Has no Dart default — empty means "not passed"; see [_effectiveCourierWebArchiveBase].
+  static const String _webArchiveCompilerDefine = String.fromEnvironment(
+    'WEB_ARCHIVE_BASE_URL',
   );
 
   final VaultDatabase _database;
@@ -147,7 +147,7 @@ class VaultService {
   final NativeEnclaveChannel _nativeEnclave;
   final AuthRepository _authRepository;
   final ProofCourierService? _proofCourierService;
-  final TransactionalVaultPersister? _transactionalPersister;
+  final TransactionalArchivePersister? _transactionalPersister;
   final VaultPathResolver _pathResolver;
   Future<void>? _captureSealChain;
 
@@ -170,20 +170,20 @@ class VaultService {
     }
   }
 
-  /// Courier vault origin embedded in shared links.
+  /// Courier archive origin embedded in shared links.
   ///
-  /// **Precedence**: any non-empty `String.fromEnvironment('WEB_VAULT_BASE_URL')`
+  /// **Precedence**: any non-empty `String.fromEnvironment('WEB_ARCHIVE_BASE_URL')`
   /// wins (tunnel, staging, prod). Fallback to `http://localhost:3000` exists **only**
   /// in debug when the define was not passed — it never replaces an explicit dart-define.
-  String _effectiveCourierWebVaultBase() {
-    final trimmed = _webVaultCompilerDefine.trim();
+  String _effectiveCourierWebArchiveBase() {
+    final trimmed = _webArchiveCompilerDefine.trim();
     if (trimmed.isNotEmpty) {
       return AppConfig.normalizeSupabaseProjectUrl(trimmed);
     }
     if (kDebugMode) return 'http://localhost:3000';
     throw StateError(
-      'WEB_VAULT_BASE_URL is unset. Release/profile builds must pass '
-      '`--dart-define=WEB_VAULT_BASE_URL=https://vault.factlockcam.com` '
+      'WEB_ARCHIVE_BASE_URL is unset. Release/profile builds must pass '
+      '`--dart-define=WEB_ARCHIVE_BASE_URL=https://archive.factlockcam.com` '
       'via dart_defines.json or launch tooling.',
     );
   }
@@ -566,13 +566,13 @@ class VaultService {
       );
     }
 
-    final courierVaultBase = _effectiveCourierWebVaultBase();
-    final vaultBaseParsed = Uri.tryParse(courierVaultBase);
+    final courierArchiveBase = _effectiveCourierWebArchiveBase();
+    final archiveBaseParsed = Uri.tryParse(courierArchiveBase);
     if (!kDebugMode &&
-        vaultBaseParsed != null &&
-        _courierWebVaultHostLooksMachineLocal(vaultBaseParsed)) {
+        archiveBaseParsed != null &&
+        _courierWebArchiveHostLooksMachineLocal(archiveBaseParsed)) {
       throw StateError(
-        'WEB_VAULT_BASE_URL points at localhost ($courierVaultBase). Recipients '
+        'WEB_ARCHIVE_BASE_URL points at localhost ($courierArchiveBase). Recipients '
         'on another device cannot reach it — use an HTTPS tunnel (Ngrok, etc.), '
         'pass that origin via dart-define, rebuild the iOS app, then regenerate the link.',
       );
@@ -617,9 +617,9 @@ class VaultService {
       storagePath: storagePath,
     );
 
-    final base = courierVaultBase.endsWith('/')
-        ? courierVaultBase.substring(0, courierVaultBase.length - 1)
-        : courierVaultBase;
+    final base = courierArchiveBase.endsWith('/')
+        ? courierArchiveBase.substring(0, courierArchiveBase.length - 1)
+        : courierArchiveBase;
     return '$base/courier?pkg=${Uri.encodeQueryComponent(packageId)}';
   }
 
@@ -713,7 +713,7 @@ class VaultService {
     final persister = _transactionalPersister;
     if (persister == null) {
       throw StateError(
-        'TransactionalVaultPersister is required for vault persistence.',
+        'TransactionalArchivePersister is required for archive persistence.',
       );
     }
 

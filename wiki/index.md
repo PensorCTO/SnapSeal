@@ -11,6 +11,7 @@ Read this page first when answering questions about the wiki.
 
 | Page | When to read |
 |------|----------------|
+| [[App_Store_Remediation_2026-05]] | **Tenth QA (2026-05-24)** — WEB_ARCHIVE_BASE_URL rename, courier archive indices pushed, TestFlight posture |
 | [[Production_Transition_2026-05]] | **Ninth QA (2026-05-24)** — production dart-defines, courier lookup migrations, iOS privacy/export, 40/40 tests |
 | [[Send_Proof_Courier_2026-05]] | **Send Proof (May 2026)** — PDF + share sheet, production web vault URL, live-host gate |
 | [[FactLockCam_Product_Baseline_2026-05]] | **Canonical status** — verified workflow, Supabase ops, branding, open gaps |
@@ -30,6 +31,7 @@ Read this page first when answering questions about the wiki.
 ## Concepts
 
 - [[LLM_Wiki_Pattern]] - The source-to-wiki compilation model.
+- [[App_Store_Remediation_2026-05]] - Tenth QA: App Store remediation, WEB_ARCHIVE_BASE_URL, courier archive indices, TestFlight-first.
 - [[Production_Transition_2026-05]] - Ninth QA: production config, courier lookup migrations, iOS compliance, test suite.
 - [[Send_Proof_Courier_2026-05]] - Send Proof: certificate PDF + courier link; utility positioning; production web vault URL.
 - [[FactLockCam_Product_Baseline_2026-05]] - Verified hub/archive/capture workflow and compressed Supabase baseline (start here for FactLockCam status).
@@ -42,6 +44,7 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses (active)
 
+- [[App_Store_Remediation_2026-05]] - Tenth QA: compliance remediation, archive URL rename, migration push, TestFlight posture (May 2026).
 - [[Production_Transition_2026-05]] - Ninth QA: production dart-defines, courier migrations, iOS privacy/export, 40/40 tests (May 2026).
 - [[Send_Proof_Courier_2026-05]] - Send Proof workflow, App Store utility rules, production web vault URL (May 2026).
 - [[FactLockCam_Master_Blueprint]] - Current-state application blueprint: hub-first vault shell, archive actions, unfinished work, use cases.

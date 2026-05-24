@@ -42,7 +42,7 @@ Environment:
   SUPABASE_DB_PASSWORD              Remote database password for link/push
   SUPABASE_URL                      Project API URL for the Flutter app
   SUPABASE_ANON_KEY                 Rotated public anon key for the Flutter app
-  WEB_VAULT_BASE_URL                Optional → dart_defines: public HTTPS origin
+  WEB_ARCHIVE_BASE_URL                Optional → dart_defines: public HTTPS archive origin
                                     of the Flutter *web* build that serves /courier
                                     (required for QA/prod courier links — not localhost)
 HELP
@@ -65,7 +65,7 @@ case "${1:-help}" in
   doctor)
     (cd "$ROOT_DIR" && supabase --version)
     (cd "$APP_DIR" && flutter --version | sed -n '1p')
-    for name in FACTLOCKCAM_SUPABASE_PROJECT_REF SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_URL SUPABASE_ANON_KEY WEB_VAULT_BASE_URL; do
+    for name in FACTLOCKCAM_SUPABASE_PROJECT_REF SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_URL SUPABASE_ANON_KEY WEB_ARCHIVE_BASE_URL; do
       if [[ -n "${!name:-}" ]]; then
         echo "$name=set"
       else

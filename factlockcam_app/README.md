@@ -69,7 +69,7 @@ The app generates a certificate PDF and a password-protected web link, then open
 
 FactLockCam **does not send email**. That keeps the app a capture-and-archive utility (App Store positioning), not a messaging service.
 
-Requires `WEB_VAULT_BASE_URL` at build time so courier links open your public web unlock page (Ngrok tunnel or production web host).
+Requires `WEB_ARCHIVE_BASE_URL` at build time so courier links open your public web unlock page (Ngrok tunnel or production archive host).
 
 ## Foundation
 

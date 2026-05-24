@@ -1,0 +1,10 @@
+---
+description: FactLockCam 2026 iOS Compliance & Digital Certainty Rules
+globs: lib/**/*.dart, ios/Runner/Info.plist, supabase/migrations/*.sql
+---
+# Architectural Rules
+
+1. **Nomenclature Strictness:** The term "Vault" is deprecated across the entire application stack. You must exclusively use "Archive" for all branding, UI text, variable names, and web endpoints (e.g., `archive.factlockcam.com`) to align with Digital Certainty positioning.
+2. **App Store Completeness:** No placeholder UI is permitted. Dead code must be actively deleted, not commented out.
+3. **Privacy Manifest Integrity:** Do not modify `PrivacyInfo.xcprivacy` as it is already fully compliant. Restrict iOS permission modifications strictly to string updates in `Info.plist`.
+4. **Database Performance:** Any interaction with `courier_packages` must be supported by indices to prevent latency timeouts during Apple's review process.

@@ -6,7 +6,7 @@ abstract final class GeneratedDartDefines {
   static const supabaseUrl = '';
   static const supabaseAnonKey = '';
   static const localAnonKey = '';
-  static const webVaultBaseUrl = '';
+  static const webArchiveBaseUrl = '';
   static const usePolygonNotarizer = false;
   static const polygonRpcUrl = '';
 }

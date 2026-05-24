@@ -7,8 +7,8 @@ import '../lock/isolate_lock_coordinator.dart';
 import 'journal_repository.dart';
 
 /// Prepare → write staging files → atomic rename → commit journal + archive row.
-class TransactionalVaultPersister {
-  TransactionalVaultPersister({
+class TransactionalArchivePersister {
+  TransactionalArchivePersister({
     required JournalRepository journal,
     required LocalVaultStorage storage,
     required VaultDatabase database,

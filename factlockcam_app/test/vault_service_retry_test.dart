@@ -9,7 +9,7 @@ import 'package:postgrest/postgrest.dart';
 import 'package:factlockcam/core/config/app_config.dart';
 import 'package:factlockcam/core/crypto/vault_encryption_handler.dart';
 import 'package:factlockcam/core/ghost_key/native_enclave_channel.dart';
-import 'package:factlockcam/core/journal/transactional_vault_persister.dart';
+import 'package:factlockcam/core/journal/transactional_archive_persister.dart';
 import 'package:factlockcam/data/services/vault_transactional_paths.dart';
 import 'package:factlockcam/data/local/vault_database.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
@@ -42,8 +42,8 @@ class _MockNativeEnclaveChannel extends Mock implements NativeEnclaveChannel {}
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
 
-class _MockTransactionalVaultPersister extends Mock
-    implements TransactionalVaultPersister {}
+class _MockTransactionalArchivePersister extends Mock
+    implements TransactionalArchivePersister {}
 
 void main() {
   late _MockVaultDatabase database;
@@ -57,7 +57,7 @@ void main() {
   late ProofSyncNotifier proofSyncNotifier;
   late _MockNativeEnclaveChannel native;
   late _MockAuthRepository auth;
-  late _MockTransactionalVaultPersister transactionalPersister;
+  late _MockTransactionalArchivePersister transactionalPersister;
   late VaultService service;
 
   const assetFingerprint = 'abc123';
@@ -96,7 +96,7 @@ void main() {
     proofSyncNotifier = ProofSyncNotifier();
     native = _MockNativeEnclaveChannel();
     auth = _MockAuthRepository();
-    transactionalPersister = _MockTransactionalVaultPersister();
+    transactionalPersister = _MockTransactionalArchivePersister();
 
     service = VaultService(
       database: database,

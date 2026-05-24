@@ -1,0 +1,125 @@
+---
+description: Production transition constraints — Archive terminology, test DI quarantine, iOS privacy compliance, and App Store archive sequence.
+alwaysApply: true
+---
+
+# FactLockCam Production & Compliance Constraints
+
+## 1. Architectural Terminology (STRICT)
+
+- **Rule**: Enforce **Archive** nomenclature globally. The application is a digital archive emphasizing truth and chain-of-custody, not a defensive "Vault".
+- **User-facing UI**: Use "Archive", "Archive Item", "Send Proof", "Chain-of-Custody" — never "Vault" in labels, dialogs, or App Store copy.
+- **Structural rename backlog** (propose in focused PRs; do not mix with feature work):
+  - ~~`TransactionalVaultPersister` → `TransactionalArchivePersister`~~ **Done** (`transactional_archive_persister.dart`)
+  - Hub tile: **Archive** label + chain-of-custody subtitle (`haptic_hub_panel.dart`) **Done**
+  - `vault_service_io.dart` → `archive_service_io.dart`
+  - `vault_dashboard_view_test.dart` → `archive_dashboard_view_test.dart`
+- **Compile-time define**: Courier links use **`WEB_ARCHIVE_BASE_URL`** via `--dart-define` / `dart_defines.json` — never silently override when the compiler define is non-empty (see `_effectiveCourierWebArchiveBase` in `vault_service_io.dart`). Production origin target: `https://archive.factlockcam.com`. A non-empty `--dart-define` value MUST NOT be overridden at runtime.
+
+## 2. Test Dependency Injection (QUARANTINE)
+
+Network and local hardware I/O MUST remain quarantined in the test suite.
+
+### Required patterns
+
+| Surface | Production | Test (`AppConfig.isFlutterTest`) |
+|---------|------------|----------------------------------|
+| Supabase init | `initializeBackend()` in `supabase_client.dart` | Early return — no network |
+| Polygon monitor | `polygonNotarizationLifecycleProvider` | Skipped |
+| Proof sync refresh | `polygonProofSyncRefreshProvider` | Skipped |
+| Pending sync timer | `pending_sync_scheduler.dart` | Skipped |
+| Widget / integration tests | `configureDependencies()` | Via `test/test_dependencies.dart` → `setupTestDependencies()` |
+
+### Test bootstrap contract
+
+All tests under `factlockcam_app/test/` that touch DI or widgets MUST:
+
+1. Call `setupTestDependencies()` in `setUpAll` (mocks `path_provider`, `shared_preferences`, sqflite FFI).
+2. Mock `TransactionalArchivePersister` in unit tests that call `VaultService.proofLockFile` (avoids journal WAL I/O).
+3. Mock Polygon / EVM paths in retry tests; defer on recoverable relay failures — never block the VM on live RPC.
+
+### Forbidden in tests
+
+- Calling `initializeBackend()` without the `isFlutterTest` guard.
+- Starting Realtime subscriptions or polygon receipt polling timers.
+- Relying on native platform channels without mocks.
+
+## 3. iOS Privacy Compliance
+
+- **Rule**: Any newly added device capability or data collection mechanism MUST be mirrored instantly in `ios/Runner/PrivacyInfo.xcprivacy`.
+- **Rule**: Do not modify `Info.plist` without cross-referencing App Store Guideline **5.1.1** (purpose strings must match actual behavior).
+- **Current baseline** (do not regress):
+  - `NSPrivacyAccessedAPITypes`: DiskSpace (`E174.1`), FileTimestamp (`C617.1`), UserDefaults (`CA92.1`)
+  - `NSPrivacyCollectedDataTypes`: Photos/Videos, UserID, EmailAddress, PreciseLocation — all linked, AppFunctionality, tracking=false
+  - `ITSAppUsesNonExemptEncryption` = `false` in `Info.plist`
+- **Pre-upload**: Archive in Xcode → **Generate Privacy Report**; resolve any aggregated third-party SDK gaps before App Store Connect upload.
+
+## 4. Production Compile-Time Variables
+
+Sync via `scripts/sync_flutter_dart_defines.sh` (reads repo-root `.env.local`, writes gitignored `factlockcam_app/dart_defines.json` + `generated_dart_defines.dart`).
+
+Required production `dart_defines.json` shape:
+
+```json
+{
+  "SUPABASE_URL": "<project>.supabase.co",
+  "SUPABASE_ANON_KEY": "<anon>",
+  "WEB_ARCHIVE_BASE_URL": "https://archive.factlockcam.com",
+  "APP_ENVIRONMENT": "production",
+  "SUPPORT_URL": "https://factlockcam.com/support",
+  "USE_POLYGON_NOTARIZER": "true"
+}
+```
+
+Release builds MUST pass `--dart-define-from-file=factlockcam_app/dart_defines.json`.
+
+## 5. App Store Archive & Connect Handoff Sequence
+
+Execute in order; do not upload until every gate passes.
+
+### Phase A — Config & backend
+
+1. `./scripts/sync_flutter_dart_defines.sh` — verify production values above.
+2. `./scripts/factlockcam_supabase_pipeline.sh push` — apply courier migrations (`idx_courier_packages_unlock_code`, lookup trigger).
+3. Confirm HTTPS live: `WEB_ARCHIVE_BASE_URL/courier?pkg=test` (404 OK; connection/TLS must succeed) and `SUPPORT_URL`.
+
+### Phase B — Automated validation
+
+4. `cd factlockcam_app && flutter test` — must be **40/40** (or current count) green under production defines.
+5. `flutter analyze` — zero errors on changed paths.
+
+### Phase C — Xcode pre-flight
+
+6. Open `factlockcam_app/ios/Runner.xcworkspace`.
+7. Scheme: **Runner** → **Any iOS Device (arm64)** (not simulator).
+8. Product → **Clean Build Folder**.
+9. Set version/build in Xcode (match Connect record).
+10. Archive: Product → **Archive** (Release, `--dart-define-from-file` wired via Xcode build settings or pre-archive sync script).
+
+### Phase D — Privacy & export compliance
+
+11. Organizer → select archive → **Generate Privacy Report** — all Required Reason APIs covered.
+12. Verify `ITSAppUsesNonExemptEncryption=false` propagates into the `.ipa` Info.plist (Organizer → Distribute App → export locally → inspect if unsure).
+
+### Phase E — App Store Connect metadata
+
+13. **App Information**: Support URL = `SUPPORT_URL`; Privacy Policy URL; bundled EULA reference.
+14. **App Privacy** (nutrition label): mirror `PrivacyInfo.xcprivacy` — Photos/Videos, User ID, Email, Precise Location; no tracking.
+15. **Age Rating**: complete 2026 questionnaire (utility / no unrestricted web / no UGC).
+16. **Export Compliance**: select standard exemption (app uses exempt encryption only).
+17. **Review notes**: OTP login steps, test account if required, Send Proof = share sheet only (no in-app messaging).
+
+### Phase F — Upload & submit
+
+18. Organizer → **Distribute App** → App Store Connect → Upload.
+19. Select build in Connect → attach what's-new → Submit for Review.
+
+## Context Anchors
+
+- Test bootstrap: `factlockcam_app/test/test_dependencies.dart`
+- Test flag: `factlockcam_app/lib/core/config/runtime_test_flag_io.dart` (`FLUTTER_TEST=true`)
+- Config: `factlockcam_app/lib/core/config/app_config.dart`
+- DI: `factlockcam_app/lib/core/di/injection.dart`
+- Persister: `factlockcam_app/lib/core/journal/transactional_archive_persister.dart`
+- Courier index: `supabase/migrations/20260524130000_optimize_courier_lookups.sql`
+- Wiki: `wiki/analyses/Production_Transition_2026-05.md`

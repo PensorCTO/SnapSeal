@@ -317,16 +317,16 @@ class ArchiveItemActions {
     if (message.contains('No authenticated user')) {
       return 'Sign in before generating a courier link.';
     }
-    if (message.contains('WEB_VAULT_BASE_URL is unset')) {
-      return 'Courier links require WEB_VAULT_BASE_URL at compile time. '
+    if (message.contains('WEB_ARCHIVE_BASE_URL is unset')) {
+      return 'Courier links require WEB_ARCHIVE_BASE_URL at compile time. '
           'Release builds should use '
-          '`--dart-define=WEB_VAULT_BASE_URL=https://vault.factlockcam.com`.';
+          '`--dart-define=WEB_ARCHIVE_BASE_URL=https://archive.factlockcam.com`.';
     }
     if (message.contains('ERR_CONNECTION_REFUSED') ||
         message.contains('Connection refused')) {
       return 'The link used an unreachable host (often localhost, which '
           'only works on your dev machine). Production builds should bind '
-          'WEB_VAULT_BASE_URL to https://vault.factlockcam.com, then '
+          'WEB_ARCHIVE_BASE_URL to https://archive.factlockcam.com, then '
           'regenerate the link.';
     }
     if (message.contains('Bucket not found')) {

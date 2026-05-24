@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Single-command ephemeral QA: Flutter Web (:3000) + Ngrok + iOS Simulator with WEB_VAULT_BASE_URL.
+# Single-command ephemeral QA: Flutter Web (:3000) + Ngrok + iOS Simulator with WEB_ARCHIVE_BASE_URL.
 #
 # Prerequisites: Flutter, Ngrok, Xcode/iOS Simulator; repo-root `.env.local` with SUPABASE_URL
 # and SUPABASE_ANON_KEY (sync writes factlockcam_app/dart_defines.json).
@@ -94,13 +94,13 @@ if [[ -z "$NGROK_URL" ]]; then
   exit 1
 fi
 
-echo "Web vault tunnel (WEB_VAULT_BASE_URL): $NGROK_URL"
+echo "Web archive tunnel (WEB_ARCHIVE_BASE_URL): $NGROK_URL"
 
-echo "Launching iOS Simulator target with injected WEB_VAULT_BASE_URL..."
+echo "Launching iOS Simulator target with injected WEB_ARCHIVE_BASE_URL..."
 set +e
 flutter run -d ios \
   --dart-define-from-file="$DEFINES_JSON" \
-  --dart-define="WEB_VAULT_BASE_URL=$NGROK_URL"
+  --dart-define="WEB_ARCHIVE_BASE_URL=$NGROK_URL"
 IOS_EXIT=$?
 set -e
 

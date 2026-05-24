@@ -27,9 +27,9 @@ class AppConfig {
     'REQUIRE_HARDWARE_ATTESTATION',
     defaultValue: false,
   );
-  static const _webVaultBaseUrl = String.fromEnvironment(
-    'WEB_VAULT_BASE_URL',
-    defaultValue: GeneratedDartDefines.webVaultBaseUrl,
+  static const _webArchiveBaseUrl = String.fromEnvironment(
+    'WEB_ARCHIVE_BASE_URL',
+    defaultValue: GeneratedDartDefines.webArchiveBaseUrl,
   );
   static const _appEnvironment = String.fromEnvironment(
     'APP_ENVIRONMENT',
@@ -84,7 +84,11 @@ class AppConfig {
     return null;
   }
 
-  static String get webVaultBaseUrl => _webVaultBaseUrl;
+  static String get webArchiveBaseUrl => _webArchiveBaseUrl;
+
+  /// Deprecated alias — prefer [webArchiveBaseUrl].
+  @Deprecated('Use webArchiveBaseUrl')
+  static String get webVaultBaseUrl => _webArchiveBaseUrl;
 
   /// Compile-time deployment target (`development`, `staging`, `production`, …).
   static String get appEnvironment =>

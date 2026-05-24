@@ -16,7 +16,7 @@ This sprint moves FactLockCam from stealth/dev posture toward **App Store submis
 | Define | Production value | Role |
 |--------|------------------|------|
 | `APP_ENVIRONMENT` | `production` | Runtime guardrails (`AppConfig.isProduction`) |
-| `WEB_VAULT_BASE_URL` | `https://vault.factlockcam.com` | Courier share links + web unlock origin |
+| `WEB_ARCHIVE_BASE_URL` | `https://archive.factlockcam.com` | Courier share links + web unlock origin (renamed from `WEB_VAULT_BASE_URL` in tenth QA — [[App_Store_Remediation_2026-05]]) |
 | `SUPPORT_URL` | `https://factlockcam.com/support` | Account panel Help & Support |
 | `USE_POLYGON_NOTARIZER` | `true` | Live Polygon saga (unchanged default) |
 
@@ -30,8 +30,9 @@ Sources: `factlockcam_app/dart_defines.json`, `scripts/write_flutter_dart_define
 |-----------|---------|
 | `20260524130000_optimize_courier_lookups.sql` | `unlock_code` + `status` columns on `courier_packages`; backfill; index `(unlock_code, status)` |
 | `20260524140000_courier_lookup_trigger.sql` | Trigger `courier_packages_sync_lookup_fields` keeps lookup columns in sync on insert/update |
+| `20260524150000_optimize_courier_archive.sql` | Btree indices on `asset_hash`, `(package_id, expires_at)`, `(owner_id, asset_hash)` — pushed tenth QA |
 
-Pushed via `scripts/factlockcam_supabase_pipeline.sh push`; local Docker stack verified in sync.
+Pushed via `scripts/factlockcam_supabase_pipeline.sh push`; remote **20/20** migrations in sync.
 
 ### iOS App Store compliance
 
@@ -46,14 +47,14 @@ Run Xcode **Generate Privacy Report** on the release archive before Connect uplo
 
 - `test/test_dependencies.dart` — shared `setupTestDependencies()` (sqflite FFI, path_provider/shared_preferences mocks, DI reset).
 - `AppConfig.isFlutterTest` — skips Supabase init, polygon monitor, and pending-sync scheduler timers in tests.
-- `vault_service_retry_test.dart` — polygon + simulated retry paths; `TransactionalVaultPersister` mock for `proofLockFile`.
+- `vault_service_retry_test.dart` — polygon + simulated retry paths; `TransactionalArchivePersister` mock for `proofLockFile`.
 - `vault_service_io.dart` — polygon retry defers on recoverable relay failures (parity with simulated sync).
 
 **Result:** `flutter test` **40/40** passing under production compile defaults (`USE_POLYGON_NOTARIZER=true`).
 
 ### Still manual before Connect
 
-- Verify live `vault.factlockcam.com` and `factlockcam.com/support`.
+- Verify live **`archive.factlockcam.com`** and **`factlockcam.com/support`** (or use Ngrok + temp support page for **TestFlight only** — [[App_Store_Remediation_2026-05]]).
 - Release archive with production dart-defines file.
 - App Store Connect metadata + age-rating questionnaire.
 - Recipient Send Proof E2E once web vault host serves `/courier?pkg=…` ([[Send_Proof_Courier_2026-05]]).
@@ -66,6 +67,7 @@ Run Xcode **Generate Privacy Report** on the release archive before Connect uplo
 
 ## Related Notes
 
+* [[App_Store_Remediation_2026-05]]
 * [[Send_Proof_Courier_2026-05]]
 * [[App_Store_Prep_Capture_Seal_2026-05]]
 * [[FactLockCam_Product_Baseline_2026-05]]

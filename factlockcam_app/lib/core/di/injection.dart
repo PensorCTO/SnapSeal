@@ -11,7 +11,7 @@ import '../../data/supabase/supabase_client_handle.dart';
 import '../crypto/vault_encryption_handler.dart';
 import '../journal/journal_database_factory.dart';
 import '../journal/journal_repository.dart';
-import '../journal/transactional_vault_persister.dart';
+import '../journal/transactional_archive_persister.dart';
 import '../lock/isolate_lock_coordinator.dart';
 import '../lock/lock_journal_sync.dart';
 import '../../domain/export/certificate_export_service.dart';
@@ -74,8 +74,8 @@ Future<void> configureDependencies() async {
     getIt.registerLazySingleton<JournalRepository>(
       () => JournalRepository(getIt<JournalDatabaseFactory>()),
     );
-    getIt.registerLazySingleton<TransactionalVaultPersister>(
-      () => TransactionalVaultPersister(
+    getIt.registerLazySingleton<TransactionalArchivePersister>(
+      () => TransactionalArchivePersister(
         journal: getIt<JournalRepository>(),
         storage: getIt<LocalVaultStorage>(),
         database: getIt<VaultDatabase>(),
@@ -190,7 +190,7 @@ Future<void> configureDependencies() async {
       pathResolver: getIt<VaultPathResolver>(),
       transactionalPersister: kIsWeb
           ? null
-          : getIt<TransactionalVaultPersister>(),
+          : getIt<TransactionalArchivePersister>(),
     ),
   );
 

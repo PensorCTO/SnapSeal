@@ -9,11 +9,11 @@ import '../../../core/services/haptic_service.dart';
 import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
 import '../../controllers/dashboard_controller.dart';
 
-/// Heavy Metal hub panel — centered four-tile launcher for the vault shell.
+/// Heavy Metal hub panel — centered four-tile launcher for the archive shell.
 class HapticHubPanel extends ConsumerStatefulWidget {
   const HapticHubPanel({super.key, this.onHubDestinationSelected});
 
-  /// Picture=1, Video=2, Vault/archive=3, Account=4.
+  /// Picture=1, Video=2, Archive=3, Account=4.
   final ValueChanged<int>? onHubDestinationSelected;
 
   @override
@@ -115,7 +115,7 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
                               compact: constraints.maxHeight < 420 ||
                                   constraints.maxWidth >
                                       constraints.maxHeight * 1.1,
-                              onVault: () => _handleHubTap(
+                              onArchive: () => _handleHubTap(
                                 () => widget.onHubDestinationSelected?.call(3),
                               ),
                               onPicture: () => _handleHubTap(
@@ -147,14 +147,14 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
 class _HubTileLauncher extends StatelessWidget {
   const _HubTileLauncher({
     required this.compact,
-    required this.onVault,
+    required this.onArchive,
     required this.onPicture,
     required this.onVideo,
     required this.onAccount,
   });
 
   final bool compact;
-  final VoidCallback onVault;
+  final VoidCallback onArchive;
   final VoidCallback onPicture;
   final VoidCallback onVideo;
   final VoidCallback onAccount;
@@ -163,12 +163,12 @@ class _HubTileLauncher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final vault = _HubTile(
+    final archive = _HubTile(
       compact: compact,
-      icon: Icons.folder_open_outlined,
+      icon: Icons.archive_outlined,
       label: 'Archive',
-      subtitle: 'Browse photos and videos on this device',
-      onTap: onVault,
+      subtitle: 'Chain-of-custody · sealed media on this device',
+      onTap: onArchive,
     );
     final picture = _HubTile(
       compact: compact,
@@ -199,7 +199,7 @@ class _HubTileLauncher extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: vault),
+              Expanded(child: archive),
               const SizedBox(width: _spacing),
               Expanded(child: picture),
             ],
@@ -220,7 +220,7 @@ class _HubTileLauncher extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        vault,
+        archive,
         const SizedBox(height: _spacing),
         picture,
         const SizedBox(height: _spacing),

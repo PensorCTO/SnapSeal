@@ -7,6 +7,18 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 ## 2026-05-24
 
+- **App Store remediation + tenth QA pass**:
+  - **Nomenclature:** `WEB_VAULT_BASE_URL` → **`WEB_ARCHIVE_BASE_URL`**; default origin **`https://archive.factlockcam.com`**; `TransactionalVaultPersister` → **`TransactionalArchivePersister`**.
+  - **Dead code:** Deleted `professional_nav_bar.dart`; hub remains `HapticHubPanel` only.
+  - **iOS:** Forensic `NSCameraUsageDescription`; privacy manifest unchanged (already compliant).
+  - **Supabase:** Pushed **`20260524150000_optimize_courier_archive.sql`** — courier btree indices on `asset_hash`, `(package_id, expires_at)`, `(owner_id, asset_hash)`; remote **20/20** migrations synced.
+  - **Defines:** Re-synced via `sync_flutter_dart_defines.sh`.
+  - **Rules:** Added `.cursor/rules/app_store_compliance.mdc`.
+  - **Posture:** TestFlight-first; trademark/domains deferred; Ngrok acceptable for Send Proof E2E.
+  - **Tests:** `flutter test` **40/40**; user-confirmed QA pass.
+  - **Wiki:** Added [[App_Store_Remediation_2026-05]]; refreshed [[Production_Transition_2026-05]], [[Send_Proof_Courier_2026-05]], [[FactLockCam_Product_Baseline_2026-05]], [[index]], [[overview]], [[glossary]].
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 - **Production transition + ninth QA pass**:
   - **Config:** `APP_ENVIRONMENT=production`, `WEB_VAULT_BASE_URL=https://vault.factlockcam.com`, `SUPPORT_URL=https://factlockcam.com/support` in dart-defines sync; account panel + courier error copy updated.
   - **Supabase:** Migrations `20260524130000_optimize_courier_lookups.sql`, `20260524140000_courier_lookup_trigger.sql` pushed local + hosted.
