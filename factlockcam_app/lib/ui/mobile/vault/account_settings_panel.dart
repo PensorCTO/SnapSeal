@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Icons, Scaffold;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:postgrest/postgrest.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -6,6 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/config/app_config.dart';
+import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
+import '../../../core/ui/widgets/heavy_metal_hub_tile.dart';
 import '../../../core/ui/widgets/vault_panel_navigation_bar.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/dashboard_controller.dart';
@@ -23,18 +26,21 @@ class AccountSettingsPanel extends ConsumerStatefulWidget {
       _AccountSettingsPanelState();
 }
 
-class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel> {
+class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
+    with HeavyMetalBackdropMixin<AccountSettingsPanel> {
   bool _isBurning = false;
 
-  Future<void> _openSupportWebsite() async {
-    final uri = Uri.parse(AppConfig.supportUrl);
+  Future<void> _openExternalUrl(String url) async {
+    final uri = Uri.parse(url);
     if (!await canLaunchUrl(uri)) {
       if (!mounted) return;
-      await _showAlert('Unable to open link', AppConfig.supportUrl);
+      await _showAlert('Unable to open link', url);
       return;
     }
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
+
+  Future<void> _openSupportWebsite() => _openExternalUrl(AppConfig.supportUrl);
 
   void _openLegalDocument({
     required String title,
@@ -44,6 +50,13 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel> {
       CupertinoPageRoute<void>(
         builder: (_) => LegalDocumentView(title: title, assetPath: assetPath),
       ),
+    );
+  }
+
+  Future<void> _showComingSoon(String feature) {
+    return _showAlert(
+      'Coming soon',
+      '$feature will be available in a future update.',
     );
   }
 
@@ -140,75 +153,132 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel> {
     final auth = ref.watch(authControllerProvider);
     final busy = _isBurning || auth.isLoading;
 
-    return CupertinoPageScaffold(
+    return Scaffold(
       backgroundColor: AppColors.titaniumDeep,
-      navigationBar: widget.onBackToHub == null
-          ? null
-          : VaultPanelNavigationBar(
+      body: Column(
+        children: [
+          if (widget.onBackToHub != null)
+            VaultPanelNavigationBar(
               title: 'Account',
               onBack: widget.onBackToHub!,
             ),
-      child: SafeArea(
-        child: busy
-            ? const Center(child: CupertinoActivityIndicator())
-            : ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                children: [
-                  Text(
-                    'ACCOUNT & SETTINGS',
-                    style: AppTextStyles.monoMd(
-                      color: AppColors.starkWhite,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  _ActionButton(
-                    label: 'Log out',
-                    color: AppColors.kineticGreen,
-                    onPressed: busy ? null : _signOut,
-                  ),
-                  const SizedBox(height: 12),
-                  _ActionButton(
-                    label: 'Burn account',
-                    color: CupertinoColors.destructiveRed,
-                    onPressed: busy ? null : _confirmBurnAccount,
-                  ),
-                  const SizedBox(height: 32),
-                  Text(
-                    'LEGAL',
-                    style: AppTextStyles.monoSm(
-                      color: AppColors.starkWhite.withValues(alpha: 0.52),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _LegalTile(
-                    title: 'Terms of Service',
-                    onTap: () => _openLegalDocument(
-                      title: 'Terms of Service',
-                      assetPath: LegalDocumentView.termsAssetPath,
-                    ),
-                  ),
-                  _LegalTile(
-                    title: 'Privacy Policy',
-                    onTap: () => _openLegalDocument(
-                      title: 'Privacy Policy',
-                      assetPath: LegalDocumentView.privacyAssetPath,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'SUPPORT',
-                    style: AppTextStyles.monoSm(
-                      color: AppColors.starkWhite.withValues(alpha: 0.52),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _LegalTile(
-                    title: 'Help & Support',
-                    onTap: _openSupportWebsite,
-                  ),
-                ],
-              ),
+          const HeavyMetalLogoBanner(),
+          Expanded(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                BackgroundVideoLayer(
+                  controller: backdropController,
+                  ready: backdropReady,
+                ),
+                const TitaniumOverlay(),
+                SafeArea(
+                  top: false,
+                  child: busy
+                      ? const Center(child: CupertinoActivityIndicator())
+                      : LayoutBuilder(
+                          builder: (context, constraints) {
+                            return SingleChildScrollView(
+                              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight - 40,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Text(
+                                      'ACCOUNT & SETTINGS',
+                                      textAlign: TextAlign.center,
+                                      style: AppTextStyles.monoMd(
+                                        color: AppColors.starkWhite,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    _ActionButton(
+                                      label: 'Log out',
+                                      color: AppColors.kineticGreen,
+                                      onPressed: busy ? null : _signOut,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    _ActionButton(
+                                      label: 'Burn account',
+                                      color: CupertinoColors.destructiveRed,
+                                      onPressed: busy ? null : _confirmBurnAccount,
+                                    ),
+                                    const SizedBox(height: 28),
+                                    _SectionLabel('LEGAL & SUPPORT'),
+                                    const SizedBox(height: 12),
+                                    HeavyMetalHubTile(
+                                      icon: Icons.description_outlined,
+                                      label: 'Terms of Service',
+                                      subtitle: 'End-user license and usage terms',
+                                      onTap: () => _openLegalDocument(
+                                        title: 'Terms of Service',
+                                        assetPath: LegalDocumentView.termsAssetPath,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    HeavyMetalHubTile(
+                                      icon: Icons.shield_outlined,
+                                      label: 'Privacy Policy',
+                                      subtitle: 'How we handle your data on this device',
+                                      onTap: () => _openLegalDocument(
+                                        title: 'Privacy Policy',
+                                        assetPath:
+                                            LegalDocumentView.privacyAssetPath,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    HeavyMetalHubTile(
+                                      icon: Icons.help_outline,
+                                      label: 'Help & Support',
+                                      subtitle: 'Contact support and troubleshooting',
+                                      onTap: _openSupportWebsite,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    HeavyMetalHubTile(
+                                      icon: Icons.language_outlined,
+                                      label: 'App Web Page',
+                                      subtitle: 'Visit the FactLockCam website',
+                                      onTap: () => _showComingSoon('App Web Page'),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    HeavyMetalHubTile(
+                                      icon: Icons.menu_book_outlined,
+                                      label: 'User Guide',
+                                      subtitle: 'Documentation and how-to guides',
+                                      onTap: () => _showComingSoon('User Guide'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      textAlign: TextAlign.center,
+      style: AppTextStyles.monoSm(
+        color: AppColors.starkWhite.withValues(alpha: 0.52),
       ),
     );
   }
@@ -231,48 +301,18 @@ class _ActionButton extends StatelessWidget {
       width: double.infinity,
       child: CupertinoButton(
         padding: const EdgeInsets.symmetric(vertical: 14),
-        color: AppColors.titaniumPanel,
+        color: AppColors.titaniumPanel.withValues(alpha: 0.92),
         disabledColor: AppColors.titaniumPanel.withValues(alpha: 0.5),
         onPressed: onPressed,
         child: Text(
           label.toUpperCase(),
           style: AppTextStyles.monoMd(
-            color: onPressed == null ? AppColors.starkWhite.withValues(alpha: 0.4) : color,
+            color: onPressed == null
+                ? AppColors.starkWhite.withValues(alpha: 0.4)
+                : color,
             fontWeight: FontWeight.w700,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _LegalTile extends StatelessWidget {
-  const _LegalTile({required this.title, required this.onTap});
-
-  final String title;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoButton(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      onPressed: onTap,
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              style: AppTextStyles.monoSm(color: AppColors.starkWhite),
-            ),
-          ),
-          Icon(
-            title == 'Help & Support'
-                ? CupertinoIcons.arrow_up_right_square
-                : CupertinoIcons.doc_text,
-            size: 18,
-            color: AppColors.titaniumHighlight,
-          ),
-        ],
       ),
     );
   }

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_typography.dart';
 
 /// Canonical asset path for the Heavy Metal video backdrop.
 ///
@@ -13,6 +12,10 @@ import '../../../app/theme/app_typography.dart';
 /// `assets/videos/` directory declaration in `pubspec.yaml`.
 const String kHeavyMetalBackdropAsset =
     'assets/videos/FactLockCamBackground.mp4';
+
+/// Canonical logo header graphic for Heavy Metal screens (hub, logon, archive).
+const String kHeavyMetalLogoHeaderAsset =
+    'assets/images/factlockcam_logoheader.jpg';
 
 /// Bottom layer of a Heavy Metal [Stack]: a muted, cover-fit
 /// [VideoPlayer] painted over a [AppColors.titaniumDeep] base so the
@@ -120,7 +123,7 @@ class HeavyMetalLogoBanner extends StatelessWidget {
           width: double.infinity,
           child: Stack(
             children: [
-              Center(child: child ?? const _HeavyMetalLogoPlaceholder()),
+              Center(child: child ?? const _HeavyMetalBrandLogoImage()),
               if (actions.isNotEmpty)
                 Positioned(
                   top: 0,
@@ -136,60 +139,14 @@ class HeavyMetalLogoBanner extends StatelessWidget {
   }
 }
 
-class _HeavyMetalLogoPlaceholder extends StatelessWidget {
-  const _HeavyMetalLogoPlaceholder();
+class _HeavyMetalBrandLogoImage extends StatelessWidget {
+  const _HeavyMetalBrandLogoImage();
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: const RadialGradient(
-              colors: [Color(0xFF1F1F1F), Color(0xFF050505)],
-              stops: [0.4, 1],
-            ),
-            border: Border.all(
-              color: AppColors.verifiedNeon.withValues(alpha: 0.85),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.verifiedNeon.withValues(alpha: 0.3),
-                blurRadius: 14,
-              ),
-            ],
-          ),
-          child: const Icon(
-            Icons.lock_outline,
-            color: AppColors.verifiedNeon,
-            size: 22,
-          ),
-        ),
-        const SizedBox(width: 14),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'FACTLOCKCAM',
-              style: AppTextStyles.monoLg(color: AppColors.starkWhite),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              'TAMPER-EVIDENT MEDIA VAULT',
-              style: AppTextStyles.monoSm(
-                color: AppColors.starkWhite.withValues(alpha: 0.6),
-              ),
-            ),
-          ],
-        ),
-      ],
+    return Image.asset(
+      kHeavyMetalLogoHeaderAsset,
+      fit: BoxFit.contain,
     );
   }
 }

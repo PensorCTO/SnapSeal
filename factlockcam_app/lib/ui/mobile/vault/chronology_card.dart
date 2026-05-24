@@ -16,6 +16,15 @@ import '../../providers/proof_notarization_provider.dart';
 import 'providers/thumbnail_cache_provider.dart';
 import 'widgets/asset_securing_overlay.dart';
 
+/// ListView slot height for chronology cards. Matches
+/// `(itemHeight * (1 - overlapFraction)) + itemHeight` in
+/// [UnifiedArchiveViewport].
+const double kChronologyItemHeight = 340.0;
+const double kChronologyOverlapFraction = 0.75;
+const double kChronologyItemExtent =
+    (kChronologyItemHeight * (1 - kChronologyOverlapFraction)) +
+    kChronologyItemHeight;
+
 /// Single asset plate in the chronology scroll view.
 ///
 /// Wrapped in a [RepaintBoundary] at the root so that the expensive paint
@@ -60,44 +69,48 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
 
   @override
   Widget build(BuildContext context) {
-    // ── Scroll-driven calculations ──────────────────────────────────────
-    // Each card sits at a fixed logical position in the scrollable range.
-    // Its "center" in viewport-relative coordinates is:
-    //   (itemHeight + spacing) * index - scrollOffset + itemHeight / 2
-    // The viewport center is at viewportHeight / 2.
-    const double itemHeight = 340.0;
-    const double itemSpacing = 20.0;
-    const double totalStep = itemHeight + itemSpacing;
+    final cardBody = _buildCardBody();
 
-    final double cardCenter =
-        totalStep * widget.index - widget.scrollOffset + itemHeight / 2;
-    final double viewportCenter = widget.viewportHeight / 2;
-    final double distanceFromCenter = cardCenter - viewportCenter;
+    if (widget.viewportHeight <= 0) {
+      return RepaintBoundary(child: cardBody);
+    }
+
+    // ── Scroll-driven calculations ──────────────────────────────────────
+    // Scroll math uses the same slot stride as the ListView [itemExtent].
+    const double itemSpacing = 20.0;
+    const double totalStep = kChronologyItemHeight + itemSpacing;
+
+    final cardCenter =
+        totalStep * widget.index - widget.scrollOffset + kChronologyItemHeight / 2;
+    final viewportCenter = widget.viewportHeight / 2;
+    final distanceFromCenter = cardCenter - viewportCenter;
     _lastDistanceFromCenter = distanceFromCenter;
 
     // Normalised distance: 0 at centre, +/-1 at the viewport edges.
-    // Clamp to avoid extreme values when items are far off-screen.
-    final double normalised =
+    final normalised =
         (distanceFromCenter / viewportCenter).clamp(-1.5, 1.5);
 
-    // Scale: 1.0 at centre, 0.75 at the edges. Parabolic falloff gives a
-    // smooth physical plate-stacking feel.
-    final double scale = 1.0 - 0.25 * (normalised * normalised).clamp(0, 1);
+    // Scale/translate fan — opacity intentionally omitted so every card stays
+    // fully legible while scrolling (no centre-only "spotlight" dimming).
+    final scale = 1.0 - 0.25 * (normalised * normalised).clamp(0, 1);
+    final rotationRad = math.pi / 90 * normalised.clamp(-1, 1);
+    final translateX = 40.0 * normalised.clamp(-1, 1);
 
-    // Opacity: 1.0 at centre, 0.25 at the edges.
-    final double opacity = 1.0 - 0.75 * (normalised.abs()).clamp(0, 1);
-
-    // Rotation: zero at centre, +/-2 degrees at the edges.
-    final double rotationRad =
-        math.pi / 90 * normalised.clamp(-1, 1); // ~ +/-2 deg
-
-    // Horizontal translation: cards slide laterally as they leave centre.
-    final double translateX = 40.0 * normalised.clamp(-1, 1);
-
-    // ── Haptic: light impact on centre crossing ─────────────────────────
     _triggerCenterHaptic(distanceFromCenter);
 
-    // ── Layers ──────────────────────────────────────────────────────────
+    return RepaintBoundary(
+      child: Transform(
+        alignment: Alignment.center,
+        transform: Matrix4.identity()
+          ..translateByDouble(translateX, 0, 0, 1)
+          ..rotateZ(rotationRad)
+          ..scaleByDouble(scale, scale, scale, 1),
+        child: cardBody,
+      ),
+    );
+  }
+
+  Widget _buildCardBody() {
     final thumbnailAsync = ref.watch(
       thumbnailCacheProvider(widget.item.assetFingerprint),
     );
@@ -117,10 +130,9 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
             .toUpperCase()
         : null;
 
-    return RepaintBoundary(
-      child: AssetSecuringOverlay(
-        assetFingerprint: widget.item.assetFingerprint,
-        child: GestureDetector(
+    return AssetSecuringOverlay(
+      assetFingerprint: widget.item.assetFingerprint,
+      child: GestureDetector(
         onTap: widget.onTap,
         onLongPress: () {
           unawaited(
@@ -131,166 +143,143 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
             ),
           );
         },
-        child: Opacity(
-        opacity: opacity.clamp(0, 1),
-        child: Transform(
-          alignment: Alignment.center,
-          transform: Matrix4.identity()
-            ..translateByDouble(translateX, 0, 0, 1)
-            ..rotateZ(rotationRad)
-            ..scaleByDouble(scale, scale, scale, 1),
-          child: Container(
-            height: itemHeight,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              gradient: const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.titaniumHighlight,
-                  AppColors.titaniumPanel,
-                  Color(0xFF0A0A0A),
-                ],
-                stops: [0, 0.5, 1],
-              ),
-              border: Border.all(
-                color: widget.item.pendingSync
-                    ? AppColors.alertAmber.withValues(alpha: 0.55)
-                    : AppColors.verifiedNeon.withValues(alpha: 0.55),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.verifiedNeon.withValues(alpha: 0.06),
-                  blurRadius: 14,
-                  spreadRadius: 0.3,
-                ),
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
+        child: Container(
+          height: kChronologyItemHeight,
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                AppColors.titaniumHighlight,
+                AppColors.titaniumPanel,
+                Color(0xFF0A0A0A),
               ],
+              stops: [0, 0.5, 1],
             ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // ── Thumbnail (Hero anchored) ───────────────────────────
-                Positioned.fill(
-                  child: Hero(
-                    tag: 'hero_thumb_${widget.item.assetFingerprint}',
-                    child: thumbnailAsync.when(
-                      data: (bytes) => bytes.isEmpty
-                          ? _ThumbnailFallback(
+            border: Border.all(
+              color: widget.item.pendingSync
+                  ? AppColors.alertAmber.withValues(alpha: 0.55)
+                  : AppColors.verifiedNeon.withValues(alpha: 0.55),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.verifiedNeon.withValues(alpha: 0.06),
+                blurRadius: 14,
+                spreadRadius: 0.3,
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Positioned.fill(
+                child: Hero(
+                  tag: 'hero_thumb_${widget.item.assetFingerprint}',
+                  child: thumbnailAsync.when(
+                    data: (bytes) => bytes.isEmpty
+                        ? _ThumbnailFallback(mimeType: widget.item.mimeType)
+                        : Image.memory(
+                            bytes,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                _ThumbnailFallback(
                               mimeType: widget.item.mimeType,
-                            )
-                          : Image.memory(
-                              bytes,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  _ThumbnailFallback(
-                                mimeType: widget.item.mimeType,
-                              ),
                             ),
-                      error: (error, stackTrace) => _ThumbnailFallback(
-                        mimeType: widget.item.mimeType,
-                      ),
-                      loading: () => _ThumbnailFallback(
-                        mimeType: widget.item.mimeType,
-                      ),
+                          ),
+                    error: (error, stackTrace) => _ThumbnailFallback(
+                      mimeType: widget.item.mimeType,
+                    ),
+                    loading: () => _ThumbnailFallback(
+                      mimeType: widget.item.mimeType,
                     ),
                   ),
                 ),
-
-                // ── Bottom metadata panel ────────────────────────────────
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withValues(alpha: 0.88),
-                        ],
-                        stops: const [0, 0.7],
-                      ),
-                    ),
-                    padding: const EdgeInsets.fromLTRB(14, 32, 14, 14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Title or fingerprint
-                        Text(
-                          widget.item.title ?? _shortHash(),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.monoMd(
-                            color: AppColors.starkWhite,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        // Timestamp + MIME label
-                        Text(
-                          '${_formatTimestamp(widget.item.createdAt)}  |  '
-                          '${widget.item.mimeType ?? "unknown"}',
-                          style: AppTextStyles.monoSm(
-                            color: AppColors.starkWhite.withValues(alpha: 0.62),
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        // File size
-                        Text(
-                          _formatBytes(widget.item.byteLength),
-                          style: AppTextStyles.monoSm(
-                            color: AppColors.starkWhite.withValues(alpha: 0.48),
-                          ),
-                        ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.88),
                       ],
+                      stops: const [0, 0.7],
+                    ),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(14, 32, 14, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        widget.item.title ?? _shortHash(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.monoMd(
+                          color: AppColors.starkWhite,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${_formatTimestamp(widget.item.createdAt)}  |  '
+                        '${widget.item.mimeType ?? "unknown"}',
+                        style: AppTextStyles.monoSm(
+                          color: AppColors.starkWhite.withValues(alpha: 0.62),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _formatBytes(widget.item.byteLength),
+                        style: AppTextStyles.monoSm(
+                          color: AppColors.starkWhite.withValues(alpha: 0.48),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (showPendingBadge && pendingLabel != null)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.alertAmber.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      pendingLabel,
+                      style: AppTextStyles.monoSm(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ),
-
-                // ── Pending sync badge ───────────────────────────────────
-                if (showPendingBadge && pendingLabel != null)
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.alertAmber.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        pendingLabel,
-                        style: AppTextStyles.monoSm(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+            ],
           ),
         ),
       ),
-      ),
-      ),
     );
   }
-
-  // ── Helpers ──────────────────────────────────────────────────────────
 
   String _shortHash() =>
       widget.item.assetFingerprint.length > 12
@@ -313,15 +302,7 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
-  /// Fires [HapticFeedback.lightImpact] when the card crosses the vertical
-  /// center threshold of the viewport.
-  ///
-  /// The threshold is crossed when [distanceFromCenter] changes sign or
-  /// passes through zero. We detect this by comparing the sign of the
-  /// current distance against the previous build's distance.
   void _triggerCenterHaptic(double distanceFromCenter) {
-    // The card crosses centre when distanceFromCenter ≈ 0.
-    // A narrow dead-band avoids repeated triggers from noise.
     if (distanceFromCenter.abs() < 8.0 &&
         _lastDistanceFromCenter.abs() >= 8.0) {
       unawaited(ref.read(hapticServiceProvider).success());
@@ -329,7 +310,6 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
   }
 }
 
-/// Fallback placeholder when the thumbnail is not available.
 class _ThumbnailFallback extends StatelessWidget {
   const _ThumbnailFallback({required this.mimeType});
 

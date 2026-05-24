@@ -83,9 +83,11 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Terms of Service'), findsOneWidget);
-    expect(find.text('Privacy Policy'), findsOneWidget);
-    expect(find.text('Help & Support'), findsOneWidget);
+    expect(find.text('TERMS OF SERVICE'), findsOneWidget);
+    expect(find.text('PRIVACY POLICY'), findsOneWidget);
+    expect(find.text('HELP & SUPPORT'), findsOneWidget);
+    expect(find.text('APP WEB PAGE'), findsOneWidget);
+    expect(find.text('USER GUIDE'), findsOneWidget);
     expect(find.text('BURN ACCOUNT'), findsOneWidget);
     expect(find.text('LOG OUT'), findsOneWidget);
   });

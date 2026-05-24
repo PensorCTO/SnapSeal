@@ -11,6 +11,7 @@ Read this page first when answering questions about the wiki.
 
 | Page | When to read |
 |------|----------------|
+| [[UI_Polish_Hub_Archive_2026-05]] | **Eleventh QA (2026-05-24)** — shared logo banner, Account hub tiles, chronology scroll clarity, 41/41 tests |
 | [[App_Store_Remediation_2026-05]] | **Tenth QA (2026-05-24)** — WEB_ARCHIVE_BASE_URL rename, courier archive indices pushed, TestFlight posture |
 | [[Production_Transition_2026-05]] | **Ninth QA (2026-05-24)** — production dart-defines, courier lookup migrations, iOS privacy/export, 40/40 tests |
 | [[Send_Proof_Courier_2026-05]] | **Send Proof (May 2026)** — PDF + share sheet, production web vault URL, live-host gate |
@@ -31,6 +32,7 @@ Read this page first when answering questions about the wiki.
 ## Concepts
 
 - [[LLM_Wiki_Pattern]] - The source-to-wiki compilation model.
+- [[UI_Polish_Hub_Archive_2026-05]] - Eleventh QA: logo banner, Account heavy-metal tiles, chronology scroll fix.
 - [[App_Store_Remediation_2026-05]] - Tenth QA: App Store remediation, WEB_ARCHIVE_BASE_URL, courier archive indices, TestFlight-first.
 - [[Production_Transition_2026-05]] - Ninth QA: production config, courier lookup migrations, iOS compliance, test suite.
 - [[Send_Proof_Courier_2026-05]] - Send Proof: certificate PDF + courier link; utility positioning; production web vault URL.
@@ -44,6 +46,7 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses (active)
 
+- [[UI_Polish_Hub_Archive_2026-05]] - Eleventh QA: shared logo header, Account panel backdrop + hub tiles, chronology opacity fix (May 2026).
 - [[App_Store_Remediation_2026-05]] - Tenth QA: compliance remediation, archive URL rename, migration push, TestFlight posture (May 2026).
 - [[Production_Transition_2026-05]] - Ninth QA: production dart-defines, courier migrations, iOS privacy/export, 40/40 tests (May 2026).
 - [[Send_Proof_Courier_2026-05]] - Send Proof workflow, App Store utility rules, production web vault URL (May 2026).

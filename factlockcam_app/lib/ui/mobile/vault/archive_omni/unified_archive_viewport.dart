@@ -131,12 +131,13 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
 
         return ListView.builder(
           controller: _scrollController,
+          clipBehavior: Clip.none,
           padding: EdgeInsets.only(
             top: 12,
             bottom: MediaQuery.of(context).padding.bottom + 100,
           ),
           itemCount: items.length,
-          itemExtent: (340.0 * (1 - _imageOverlapFraction)) + 340.0,
+          itemExtent: kChronologyItemExtent,
           itemBuilder: (context, index) {
             final item = items[index];
             final card = ChronologyCard(

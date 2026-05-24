@@ -7,6 +7,14 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 ## 2026-05-24
 
+- **UI polish + eleventh QA pass**:
+  - **Brand header:** `HeavyMetalLogoBanner` defaults to `factlockcam_logoheader.jpg` on hub, logon, and Archive.
+  - **Account & Settings:** Heavy Metal backdrop; `HeavyMetalHubTile` rows for legal/support (+ App Web Page / User Guide placeholders).
+  - **Archive chronology:** Removed scroll-driven opacity dimming; restored layout constants; added `unified_archive_viewport_test.dart`.
+  - **Tests:** `flutter test` **41/41**; user-confirmed QA pass.
+  - **Wiki:** Added [[UI_Polish_Hub_Archive_2026-05]]; refreshed [[FactLockCam_Product_Baseline_2026-05]], [[Heavy_Metal_Design_System]], [[index]], [[overview]], [[glossary]].
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 - **App Store remediation + tenth QA pass**:
   - **Nomenclature:** `WEB_VAULT_BASE_URL` → **`WEB_ARCHIVE_BASE_URL`**; default origin **`https://archive.factlockcam.com`**; `TransactionalVaultPersister` → **`TransactionalArchivePersister`**.
   - **Dead code:** Deleted `professional_nav_bar.dart`; hub remains `HapticHubPanel` only.

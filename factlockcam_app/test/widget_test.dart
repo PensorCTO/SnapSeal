@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:factlockcam/app/factlockcam_app.dart';
+import 'package:factlockcam/core/ui/widgets/heavy_metal_backdrop.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
 import 'package:factlockcam/ui/controllers/dashboard_controller.dart';
 import 'package:factlockcam/ui/mobile/vault_home_view.dart';
@@ -17,9 +18,15 @@ void main() {
   testWidgets('renders the FactLockCam logon shell', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: FactLockCamApp()));
 
-    expect(find.text('FACTLOCKCAM'), findsOneWidget);
+    expect(find.byType(HeavyMetalLogoBanner), findsOneWidget);
     expect(find.text('SEND MAGIC NUMBER'), findsOneWidget);
-    expect(find.text('TAMPER-EVIDENT MEDIA VAULT'), findsOneWidget);
+    expect(
+      find.text(
+        'Authenticate with a 6-digit Magic Number. Untouchable media remains '
+        'local.',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('hub tiles switch between vault home and camera views', (

@@ -7,6 +7,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/services/haptic_service.dart';
 import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
+import '../../../core/ui/widgets/heavy_metal_hub_tile.dart';
 import '../../controllers/dashboard_controller.dart';
 
 /// Heavy Metal hub panel — centered four-tile launcher for the archive shell.
@@ -45,12 +46,7 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
       backgroundColor: AppColors.titaniumDeep,
       body: Column(
         children: [
-          HeavyMetalLogoBanner(
-            child: Image.asset(
-              'assets/images/factlockcam_logoheader.jpg',
-              fit: BoxFit.contain,
-            ),
-          ),
+          const HeavyMetalLogoBanner(),
           archive.when(
             data: (items) {
               final pendingCount =
@@ -163,28 +159,28 @@ class _HubTileLauncher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final archive = _HubTile(
+    final archive = HeavyMetalHubTile(
       compact: compact,
       icon: Icons.archive_outlined,
       label: 'Archive',
       subtitle: 'Chain-of-custody · sealed media on this device',
       onTap: onArchive,
     );
-    final picture = _HubTile(
+    final picture = HeavyMetalHubTile(
       compact: compact,
       icon: Icons.photo_camera_outlined,
       label: 'Picture',
       subtitle: 'Capture a still',
       onTap: onPicture,
     );
-    final video = _HubTile(
+    final video = HeavyMetalHubTile(
       compact: compact,
       icon: Icons.videocam_outlined,
       label: 'Video',
       subtitle: 'Record a clip',
       onTap: onVideo,
     );
-    final account = _HubTile(
+    final account = HeavyMetalHubTile(
       compact: compact,
       icon: Icons.settings_outlined,
       label: 'Account & Settings',
@@ -228,157 +224,6 @@ class _HubTileLauncher extends StatelessWidget {
         const SizedBox(height: _spacing),
         account,
       ],
-    );
-  }
-}
-
-/// Heavy-metal hardware-styled tile: titanium gradient surface, hairline
-/// specular highlight along the top edge, Verified Neon outer stroke, and
-/// mono uppercase label.
-class _HubTile extends StatelessWidget {
-  const _HubTile({
-    required this.icon,
-    required this.label,
-    required this.subtitle,
-    required this.onTap,
-    this.compact = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final String subtitle;
-  final VoidCallback onTap;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Semantics(
-      button: true,
-      label: '${label.toUpperCase()}. $subtitle',
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          gradient: const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.titaniumHighlight,
-              AppColors.titaniumPanel,
-              Color(0xFF0A0A0A),
-            ],
-            stops: [0, 0.45, 1],
-          ),
-          border: Border.all(
-            color: AppColors.verifiedNeon.withValues(alpha: 0.55),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.verifiedNeon.withValues(alpha: 0.08),
-              blurRadius: 18,
-              spreadRadius: 0.5,
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.55),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(18),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            splashColor: AppColors.verifiedNeon.withValues(alpha: 0.14),
-            highlightColor: AppColors.verifiedNeon.withValues(alpha: 0.06),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: compact ? 12 : 18,
-                vertical: compact ? 12 : 22,
-              ),
-              child: Row(
-                children: [
-                  _HardwareIcon(icon: icon, compact: compact),
-                  SizedBox(width: compact ? 10 : 18),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          label.toUpperCase(),
-                          style: compact
-                              ? AppTextStyles.monoSm(
-                                  color: AppColors.starkWhite,
-                                )
-                              : AppTextStyles.monoMd(
-                                  color: AppColors.starkWhite,
-                                ),
-                          maxLines: compact ? 2 : 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          subtitle,
-                          maxLines: compact ? 2 : 3,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color:
-                                AppColors.starkWhite.withValues(alpha: 0.62),
-                            fontSize: compact ? 11 : null,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.chevron_right,
-                    size: compact ? 20 : 24,
-                    color: AppColors.titaniumHighlight,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _HardwareIcon extends StatelessWidget {
-  const _HardwareIcon({required this.icon, this.compact = false});
-
-  final IconData icon;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final size = compact ? 40.0 : 52.0;
-    final iconSize = compact ? 20.0 : 26.0;
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const RadialGradient(
-          colors: [Color(0xFF1F1F1F), Color(0xFF0A0A0A)],
-          stops: [0.4, 1],
-        ),
-        border: Border.all(
-          color: AppColors.verifiedNeon.withValues(alpha: 0.75),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.verifiedNeon.withValues(alpha: 0.18),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: Icon(icon, size: iconSize, color: AppColors.verifiedNeon),
     );
   }
 }

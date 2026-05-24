@@ -18,10 +18,12 @@ The design system is codified in Flutter theme tokens under `factlockcam_app/lib
 * *Palette and typography tokens*: Derived from `factlockcam_app/lib/app/theme/app_colors.dart`, `factlockcam_app/lib/app/theme/app_typography.dart`, and `factlockcam_app/lib/app/theme/app_theme.dart` (2026-05-13).
 * *Mechanical iris capture control*: Derived from `factlockcam_app/lib/core/ui/painters/shutter_button_painter.dart` and `factlockcam_app/lib/ui/views/camera/camera_view.dart` (2026-05-13).
 * *HUD and haptics*: Derived from `factlockcam_app/lib/ui/views/camera/telemetry_overlay.dart` and `factlockcam_app/lib/core/services/haptic_service.dart` (2026-05-13).
+* *Hub + archive brand header*: `HeavyMetalLogoBanner` + `HeavyMetalHubTile` shared widgets (2026-05-24, [[UI_Polish_Hub_Archive_2026-05]]).
 * *Design constraints*: Derived from `.cursor/rules/04_forensic_ui_standards.mdc` and Track 2 implementation request (2026-05-13).
 
 ## Related Notes
 
+* [[UI_Polish_Hub_Archive_2026-05]]
 * [[MASTER_CONTEXT16MAY2026]]
 * [[MASTER_CONTEXT13MAY2026]]
 * [[FactLockCam_Product_Baseline_2026-05]]
