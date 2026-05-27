@@ -1,0 +1,32 @@
+---
+import Layout from './Layout.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  lastUpdated?: string;
+}
+
+const {
+  title,
+  description = 'FactLockCam legal and compliance documentation.',
+  lastUpdated = 'May 2026',
+} = Astro.props;
+---
+
+<Layout title={title} description={description}>
+  <article class="mx-auto max-w-3xl px-6 py-12 lg:py-16">
+    <header class="mb-10 border-b border-titanium-edge pb-8">
+      <p class="mono-label mb-3">Legal</p>
+      <h1 class="font-mono text-3xl font-bold text-verified-neon md:text-4xl">
+        {title}
+      </h1>
+      <p class="mt-3 font-mono text-sm text-white/50">Last updated {lastUpdated}</p>
+    </header>
+    <div
+      class="prose prose-invert prose-headings:font-mono prose-headings:text-white prose-a:text-kinetic-green prose-strong:text-white max-w-none prose-p:text-white/80 prose-li:text-white/80"
+    >
+      <slot />
+    </div>
+  </article>
+</Layout>

@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'dart:typed_data';
+
+import 'package:crypto/crypto.dart' as crypto;
 
 import 'vault_encryption_handler.dart';
 
@@ -13,6 +16,23 @@ import 'vault_encryption_handler.dart';
 /// - **Digest mismatch** — plaintext hash does not equal [expectedFingerprint]
 ///   ([StateError]; treat as tampering or wrong asset binding).
 class CourierCrypto {
+  /// Client-side AES-GCM seal before any cloud upload (zero-knowledge).
+  ///
+  /// **Inputs:** plaintext bytes, password string (SHA-256 derived to 32-byte key).
+  /// **Outputs:** nonce || MAC || ciphertext suitable for Supabase Storage upload.
+  /// **Expected failure modes:** cipher errors from corrupt inputs or platform crypto failure.
+  static Future<Uint8List> encrypt(
+    Uint8List plaintext,
+    String password, {
+    VaultEncryptionHandler? vault,
+  }) async {
+    final handler = vault ?? DefaultVaultEncryptionHandler();
+    final keyBytes = Uint8List.fromList(
+      crypto.sha256.convert(utf8.encode(password)).bytes,
+    );
+    return handler.encrypt(bytes: plaintext, keyBytes: keyBytes);
+  }
+
   static Future<Uint8List> decryptAndVerifyFingerprint({
     required VaultEncryptionHandler vault,
     required Uint8List encryptedPayload,

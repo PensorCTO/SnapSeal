@@ -13,6 +13,7 @@ import 'package:image/image.dart' as img;
 import 'package:postgrest/postgrest.dart';
 import 'package:video_thumbnail/video_thumbnail.dart' as video_thumbnail;
 
+import '../../application/vault/vault_sync_coordinator.dart';
 import '../../core/config/app_config.dart';
 import '../../core/crypto/courier_crypto.dart';
 import '../../core/crypto/vault_encryption_handler.dart';
@@ -112,6 +113,7 @@ class VaultService {
     ProofCourierService? proofCourierService,
     TransactionalArchivePersister? transactionalPersister,
     VaultPathResolver? pathResolver,
+    VaultSyncCoordinator? vaultSyncCoordinator,
   }) : _database = database,
        _storage = storage,
        _secureStorage = secureStorage,
@@ -125,7 +127,8 @@ class VaultService {
        _authRepository = authRepository,
        _proofCourierService = proofCourierService,
        _transactionalPersister = transactionalPersister,
-       _pathResolver = pathResolver ?? VaultPathResolver(storage);
+       _pathResolver = pathResolver ?? VaultPathResolver(storage),
+       _vaultSyncCoordinator = vaultSyncCoordinator;
 
   static const _vaultKeyName = 'factlockcam:vault_key';
   static const _legacyVaultKeyName = 'snapseal:vault_key';
@@ -149,6 +152,7 @@ class VaultService {
   final ProofCourierService? _proofCourierService;
   final TransactionalArchivePersister? _transactionalPersister;
   final VaultPathResolver _pathResolver;
+  final VaultSyncCoordinator? _vaultSyncCoordinator;
   Future<void>? _captureSealChain;
 
   Future<T> _enqueueCaptureSeal<T>(Future<T> Function() action) async {
@@ -331,6 +335,13 @@ class VaultService {
       );
     }
 
+    await _attemptCloudVaultSync(
+      sourcePath: sourcePath,
+      fileHash: fileHash,
+      mimeType: mimeType,
+      userId: userId,
+    );
+
     return SealCaptureResult(
       assetFingerprint: fileHash,
       pendingSync: pendingSync,
@@ -461,6 +472,13 @@ class VaultService {
         chainTxHash: chainTxHash,
       );
     }
+
+    await _attemptCloudVaultSync(
+      sourcePath: sourcePath,
+      fileHash: fileHash,
+      mimeType: mimeType,
+      userId: userId,
+    );
 
     return SealCaptureResult(
       assetFingerprint: fileHash,
@@ -1304,6 +1322,37 @@ class VaultService {
       'video/mp4' || 'video/x-m4v' => '.mp4',
       _ => '.jpg',
     };
+  }
+
+  Future<void> _attemptCloudVaultSync({
+    required String? sourcePath,
+    required String fileHash,
+    required String mimeType,
+    required String userId,
+  }) async {
+    final coordinator = _vaultSyncCoordinator;
+    if (coordinator == null) {
+      return;
+    }
+    final path = sourcePath?.trim();
+    if (path == null || path.isEmpty) {
+      return;
+    }
+
+    try {
+      final keyBytes = await _loadOrCreateKeyBytes();
+      final encodedVaultKey = _vaultEncryption.encodeKey(keyBytes);
+      await coordinator.syncAfterNotarization(
+        rawSourceFile: File(path),
+        assetHash: fileHash,
+        mimeType: mimeType,
+        userId: userId,
+        encodedVaultKey: encodedVaultKey,
+        cloudSealPassword: encodedVaultKey,
+      );
+    } catch (_) {
+      // Cloud vault sync is best-effort; local seal + ledger state must not roll back.
+    }
   }
 
   Future<void> _deleteTemporaryCapture(String path) async {

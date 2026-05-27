@@ -1,0 +1,73 @@
+---
+export const prerender = true;
+
+import LegalLayout from '../layouts/LegalLayout.astro';
+---
+
+<LegalLayout title="Privacy Policy">
+  <h2>1. Data Sovereignty &amp; Privacy</h2>
+  <p>
+    FactLockCam is built on a zero-knowledge architecture. We do not track, profile, or monetize
+    your personal information. Our systems are designed so that we never have access to your
+    unencrypted files, cryptographic keys, or private data.
+  </p>
+
+  <h2>2. Authentication and Identity</h2>
+  <p>
+    Your email address is used exclusively to generate a unique identity record. This enables you to
+    anchor digital certificates to the Polygon blockchain without centralized account management
+    beyond authentication. We do not use your email for marketing, and it is never shared with third
+    parties.
+  </p>
+
+  <h2>3. Zero-Knowledge Architecture</h2>
+  <p>
+    FactLockCam operates on a strict zero-knowledge principle. All cryptographic operations and
+    file encryptions occur locally on your device before any data transmission. We cannot see,
+    access, or recover your files or private keys. Your unencrypted data never leaves your device
+    except when you explicitly export or share it.
+  </p>
+
+  <h2>4. Local Encryption &amp; Secure Storage</h2>
+  <p>
+    Assets are encrypted on-device using AES-GCM before being stored in the protected archive on
+    your device. FactLockCam manages cryptographic keys using the device&apos;s native hardware
+    security modules (iOS Keychain / Secure Enclave where available). These keys are never
+    transmitted to or stored on our servers.
+  </p>
+
+  <h2>5. Public Ledger Integrity</h2>
+  <p>
+    When you certify a file, only a mathematical hash (SHA-256) is sent to the Polygon blockchain.
+    Your filenames, identity, and actual file contents are never exposed on the public ledger. The
+    ledger serves only as an immutable timestamped proof of the file&apos;s integrity.
+  </p>
+
+  <h2>6. Data Protection and AI</h2>
+  <p>
+    FactLockCam does not share your data, files, or identity with third-party AI or machine learning
+    services. All file hashing and processing are performed locally on your hardware to support
+    maximum data privacy.
+  </p>
+
+  <h2>7. Non-Custodial Security Policy</h2>
+  <p>
+    Because FactLockCam is non-custodial and operates on zero-knowledge principles, we do not store
+    your encryption keys or credentials. Consequently, we cannot reset passwords or recover
+    accounts. Users are solely responsible for maintaining access to their credentials and backing
+    up their encrypted assets.
+  </p>
+
+  <h2>8. Location Data</h2>
+  <p>
+    When you grant location permission, FactLockCam displays live GPS coordinates on the camera
+    viewfinder for forensic metadata capture. Location readings are embedded in your local capture
+    workflow and are not uploaded to our servers unless you explicitly include them in an exported
+    proof bundle.
+  </p>
+
+  <p>
+    <a href="/legal/privacy-policy.pdf">Download PDF version</a> (fallback for reviewers without
+    JavaScript).
+  </p>
+</LegalLayout>

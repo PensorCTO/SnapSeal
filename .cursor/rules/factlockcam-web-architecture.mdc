@@ -1,0 +1,17 @@
+---
+description: Enforces Astro/Tailwind architectural standards for the FactLockCam compliance site.
+globs: ["projects/FactLockCam_Site/src/**/*.{astro,ts,tsx,html}"]
+---
+# FactLockCam Web Architecture Rules
+
+- **Framework**: Astro.build with Tailwind CSS.
+- **Rendering Strategy**: Strictly Static Site Generation (SSG) for Legal (`/privacy`, `/terms`) and Support (`/support`) pages to ensure 100% uptime for App Store Review.
+- **Vault Hydration**: The Web Vault (`/vault/[id]` and legacy `/courier?pkg=`) must use client-side hydration (`client:only="react"`) to interact with Supabase RPCs. Never bake vault secrets into the SSG build.
+- **Styling**: Enforce Tailwind utility classes. Extract repeated UI elements (buttons, legal headers) into Astro components (`.astro`).
+- **Assets**: All legal PDFs or compliance assets must reside in `public/legal/` to guarantee absolute path resolution for Apple Reviewers.
+- **Hosting**: Cloudflare Pages with `@astrojs/cloudflare` — compliance routes prerendered (`prerender = true`), vault dynamic route on-demand (`prerender = false`).
+- **Context Anchors**:
+  - Legal Layout: `src/layouts/LegalLayout.astro`
+  - Support Page: `src/pages/support.astro`
+  - Web Vault: `src/pages/vault/[package_id].astro`
+  - Flutter link compat: `src/pages/courier.astro` (`?pkg=` query param)

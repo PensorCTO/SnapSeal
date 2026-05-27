@@ -1,0 +1,77 @@
+---
+export const prerender = true;
+
+import Layout from '../layouts/Layout.astro';
+
+const faqs = [
+  {
+    q: 'How do I sign in?',
+    a: 'FactLockCam uses passwordless email OTP. Enter your email in the app, then paste the one-time code from your inbox. No password is stored on our servers.',
+  },
+  {
+    q: 'Can FactLockCam recover my encrypted files?',
+    a: 'No. FactLockCam is non-custodial. Encryption keys live on your device. We cannot reset access or decrypt your archive.',
+  },
+  {
+    q: 'How does Send Proof work?',
+    a: 'From an archive item, tap Send Proof, set a one-time password, and share the certificate PDF plus courier URL through the iOS share sheet. Recipients unlock media in a browser at the link you send.',
+  },
+  {
+    q: 'What data leaves my device?',
+    a: 'Only SHA-256 hashes and optional ledger metadata you explicitly sync. Original media bytes stay encrypted locally unless you export or send proof.',
+  },
+  {
+    q: 'How do I delete my account?',
+    a: 'Open Account & Settings in the app, choose Burn Account, and confirm twice. This calls the perform_full_burn RPC and removes your profile-linked cloud data.',
+  },
+];
+---
+
+<Layout
+  title="Support"
+  description="FactLockCam support contact and frequently asked questions for App Store Guideline 5.1.1."
+>
+  <section class="mx-auto max-w-3xl px-6 py-12 lg:py-16">
+    <header class="mb-10">
+      <p class="mono-label mb-3">Guideline 5.1.1</p>
+      <h1 class="font-mono text-3xl font-bold text-verified-neon md:text-4xl">Support</h1>
+      <p class="mt-4 text-white/70">
+        Need help with capture, archive sync, or Send Proof? Reach us directly — we respond to
+        support requests for active App Store builds.
+      </p>
+    </header>
+
+    <div class="panel mb-10 p-6">
+      <p class="mono-label mb-2">Direct contact</p>
+      <a
+        href="mailto:support@factlockcam.com"
+        class="font-mono text-xl text-kinetic-green hover:text-verified-neon"
+      >
+        support@factlockcam.com
+      </a>
+      <p class="mt-3 text-sm text-white/60">
+        Include your device model, iOS version, and a description of the issue. Do not email
+        encryption keys, OTP codes, or courier passwords.
+      </p>
+    </div>
+
+    <h2 class="mb-6 font-mono text-xl text-white">FAQ</h2>
+    <dl class="space-y-6">
+      {
+        faqs.map((item) => (
+          <div class="panel p-5">
+            <dt class="font-mono text-sm font-semibold text-kinetic-green">{item.q}</dt>
+            <dd class="mt-2 text-sm text-white/70">{item.a}</dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    <p class="mt-10 text-sm text-white/50">
+      Legal documents:
+      <a href="/privacy" class="text-kinetic-green hover:underline">Privacy Policy</a>
+      ·
+      <a href="/terms" class="text-kinetic-green hover:underline">Terms of Service</a>
+    </p>
+  </section>
+</Layout>

@@ -5,6 +5,16 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-05-27
+
+- **Cloud vault wiring + twelfth QA pass**:
+  - **Supabase:** Migration **`20260527120000_vault_storage.sql`** — private **`factlock_vault`** bucket, `file_size_bytes` on `courier_packages`, Storage RLS; remote **21/21** migrations synced.
+  - **Flutter:** `VaultSyncCoordinator` wired into `VaultService.proofLockFile` after ledger commit, before source unlink; isolate encrypt + iOS background upload; `CourierCrypto.encrypt`, `SupabaseVaultService`, `QuotaExceededException`.
+  - **Rules:** `.cursor/rules/supabase-cloud-vault.mdc`, `.cursor/rules/factlockcam-wiring.mdc`.
+  - **Tests:** `test/cloud_vault_e2e_test.dart` passing; user-confirmed QA pass.
+  - **Wiki:** Added [[Cloud_Vault_Wiring_2026-05]]; refreshed [[index]], [[overview]], [[glossary]].
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 ## 2026-05-24
 
 - **UI polish + eleventh QA pass**:

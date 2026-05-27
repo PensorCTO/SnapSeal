@@ -1,0 +1,72 @@
+---
+export const prerender = true;
+
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="FactLockCam"
+  description="Tamper-evident digital archive for photos and video with chain-of-custody tooling."
+>
+  <section class="mx-auto max-w-6xl px-6 py-16 lg:py-24">
+    <div class="grid items-center gap-12 lg:grid-cols-2">
+      <div>
+        <p class="mono-label mb-4">Digital Archive Utility</p>
+        <h1 class="font-mono text-4xl font-bold leading-tight text-white md:text-5xl">
+          Capture.<br />
+          <span class="text-verified-neon">Seal.</span><br />
+          Prove.
+        </h1>
+        <p class="mt-6 max-w-lg text-lg text-white/70">
+          FactLockCam encrypts media on-device, anchors integrity hashes to a public ledger, and
+          delivers tamper-evident proof packages through Send Proof courier links.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <a
+            href="https://apps.apple.com/app/factlockcam"
+            class="btn-primary"
+            rel="noopener noreferrer"
+          >
+            App Store
+          </a>
+          <a href="/guide" class="btn-ghost">Read the guide</a>
+        </div>
+      </div>
+      <div class="panel overflow-hidden">
+        <img
+          src="/images/FactlockcamPanel1.jpg"
+          alt="FactLockCam hub showing Archive, Picture, Video, and Account tiles"
+          class="h-full w-full object-cover"
+          loading="eager"
+          width="1200"
+          height="900"
+        />
+      </div>
+    </div>
+
+    <div class="mt-20 grid gap-6 md:grid-cols-3">
+      <article class="panel p-6">
+        <p class="mono-label mb-2">Integrity</p>
+        <h2 class="font-mono text-lg text-kinetic-green">SHA-256 fingerprint</h2>
+        <p class="mt-2 text-sm text-white/60">
+          Every archive item is hashed and encrypted locally before any remote sync.
+        </p>
+      </article>
+      <article class="panel p-6">
+        <p class="mono-label mb-2">Chain-of-custody</p>
+        <h2 class="font-mono text-lg text-kinetic-green">Send Proof</h2>
+        <p class="mt-2 text-sm text-white/60">
+          Share a certificate PDF plus a password-protected courier link — delivery via the iOS
+          share sheet only.
+        </p>
+      </article>
+      <article class="panel p-6">
+        <p class="mono-label mb-2">Compliance</p>
+        <h2 class="font-mono text-lg text-kinetic-green">Review-ready URLs</h2>
+        <p class="mt-2 text-sm text-white/60">
+          Privacy, Terms, and Support pages are statically generated for App Store Guideline 5.1.1.
+        </p>
+      </article>
+    </div>
+  </section>
+</Layout>

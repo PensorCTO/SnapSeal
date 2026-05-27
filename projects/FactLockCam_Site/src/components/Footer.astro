@@ -1,0 +1,49 @@
+---
+const year = new Date().getFullYear();
+
+const complianceLinks = [
+  { href: '/privacy', label: 'Privacy Policy' },
+  { href: '/terms', label: 'Terms of Service (EULA)' },
+  { href: '/support', label: 'Support' },
+  { href: '/guide', label: 'User Guide' },
+];
+---
+
+<footer class="mt-auto border-t border-titanium-edge bg-titanium-panel">
+  <div class="mx-auto max-w-6xl px-6 py-10">
+    <div class="grid gap-8 md:grid-cols-2">
+      <div>
+        <p class="font-mono text-sm font-semibold text-verified-neon">FactLockCam</p>
+        <p class="mt-2 max-w-md text-sm text-white/60">
+          Tamper-evident digital archive emphasizing chain-of-custody. Supports workflow and
+          disclosure; does not guarantee admissibility under FRE 902.
+        </p>
+      </div>
+      <div>
+        <p class="mono-label mb-3">App Store Compliance</p>
+        <ul class="space-y-2">
+          {
+            complianceLinks.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  class="font-mono text-sm text-white/70 transition hover:text-kinetic-green"
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+    <div
+      class="mt-8 flex flex-col gap-2 border-t border-titanium-edge pt-6 font-mono text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <span>&copy; {year} FactLockCam. All rights reserved.</span>
+      <a href="mailto:support@factlockcam.com" class="hover:text-kinetic-green">
+        support@factlockcam.com
+      </a>
+    </div>
+  </div>
+</footer>

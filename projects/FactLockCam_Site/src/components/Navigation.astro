@@ -1,0 +1,43 @@
+---
+const navLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/guide', label: 'Guide' },
+  { href: '/support', label: 'Support' },
+  { href: '/privacy', label: 'Privacy' },
+  { href: '/terms', label: 'Terms' },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<header class="border-b border-titanium-edge bg-titanium-deep/95 backdrop-blur">
+  <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+    <a href="/" class="group flex items-center gap-3">
+      <span
+        class="flex h-9 w-9 items-center justify-center rounded-lg border border-kinetic-green/40 bg-titanium-panel font-mono text-xs font-bold text-verified-neon"
+        >FL</span
+      >
+      <span class="font-mono text-sm font-semibold tracking-wide text-white group-hover:text-kinetic-green">
+        FactLockCam
+      </span>
+    </a>
+    <nav class="hidden items-center gap-1 md:flex" aria-label="Primary">
+      {
+        navLinks.map((link) => (
+          <a
+            href={link.href}
+            class:list={[
+              'rounded-md px-3 py-2 font-mono text-xs uppercase tracking-wide transition',
+              currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href))
+                ? 'bg-titanium-panel text-kinetic-green'
+                : 'text-white/70 hover:text-white',
+            ]}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+    <a href="/support" class="btn-primary hidden text-xs sm:inline-flex">Get Support</a>
+  </div>
+</header>

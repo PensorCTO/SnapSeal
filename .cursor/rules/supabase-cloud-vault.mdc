@@ -1,0 +1,13 @@
+---
+description: Enforces Supabase Cloud Storage patterns for FactLockCam's encrypted assets.
+globs: ["factlockcam_app/lib/core/cloud/**/*.dart", "supabase/migrations/**/*.sql"]
+---
+# Supabase Cloud Vault Rules
+
+- **Zero-Knowledge Principle**: Plaintext media files must NEVER touch Supabase. Use `CourierCrypto.encrypt` locally before calling `supabase.storage.from('factlock_vault').upload()`.
+- **Chunked Uploads**: For files > 10MB, utilize Dart `Stream` combined with Supabase's resumable uploads to prevent memory spiking on the iOS UI isolate.
+- **Row Level Security (RLS)**: The `factlock_vault` storage bucket must be private. RLS policies must strictly map `bucket_id` and `name` (the package storage path) to the `owner_id` in `auth.users()`.
+- **Egress Protection**: Implement a `download_count` and `max_downloads` column in the `courier_packages` table. Deny Supabase Storage signed URL generation if `download_count >= max_downloads`.
+- **Context Anchors**:
+  - Vault Service: `factlockcam_app/lib/core/cloud/supabase_vault_service.dart`
+  - DB Schema: `supabase/migrations/20260527120000_vault_storage.sql`

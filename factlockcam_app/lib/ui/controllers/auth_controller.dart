@@ -146,8 +146,9 @@ class AuthController extends Notifier<AuthUiState> {
     }
   }
 
+  /// Ends the Supabase session only. Local archive data remains on this device.
+  /// Use [performFullBurn] to wipe local vault files and delete the remote account.
   Future<void> signOut() async {
-    await ref.read(vaultServiceProvider).burnLocalWallet();
     await ref.read(authRepositoryProvider).signOut();
     state = state.copyWith(isAuthenticated: false, otpSent: false);
   }

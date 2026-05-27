@@ -1,0 +1,98 @@
+---
+export const prerender = true;
+
+import LegalLayout from '../layouts/LegalLayout.astro';
+---
+
+<LegalLayout title="Terms of Service">
+  <h2>1. Acceptance of Terms</h2>
+  <p>
+    By using FactLockCam, you agree to these Terms of Service. FactLockCam provides tamper-evident
+    digital archive services for media certification, encryption, and workflow support.
+  </p>
+
+  <h2>2. Digital Archive Certification</h2>
+  <p>FactLockCam supports authenticity heuristics through three technical pillars:</p>
+  <ul>
+    <li><strong>Integrity:</strong> Cryptographic proof that a file is unaltered (SHA-256).</li>
+    <li>
+      <strong>Ownership:</strong> Association with your authenticated identity and device signing
+      where enabled.
+    </li>
+    <li>
+      <strong>Timestamping:</strong> An immutable anchor on the Polygon blockchain when notarization
+      is active.
+    </li>
+  </ul>
+  <p>
+    This produces a certificate draft that documents the state of a digital asset at a specific
+    point in time. It supports disclosure workflows but does not guarantee admissibility under FRE
+    902.
+  </p>
+
+  <h2>3. Permanent Ledger Records</h2>
+  <p>
+    You acknowledge that the Polygon blockchain is a permanent record. Once a cryptographic hash is
+    anchored, it cannot be modified or deleted. FactLockCam has no authority or ability to alter
+    blockchain records.
+  </p>
+
+  <h2>4. User Responsibility (The Verification Bridge)</h2>
+  <p>A successful verification requires two components under your exclusive control:</p>
+  <ul>
+    <li><strong>The Artifact:</strong> The original, unaltered file.</li>
+    <li><strong>The Identity:</strong> The credentials used to sign the asset.</li>
+  </ul>
+  <p>
+    If either is lost or modified, the cryptographic link for verification cannot be restored.
+  </p>
+
+  <h2>5. Non-Custodial Access Protocol</h2>
+  <p>
+    <strong>CRITICAL:</strong> FactLockCam utilizes non-custodial security. We do not store your
+    keys or password hashes. We cannot reset your password, restore encrypted files, or recover
+    cryptographic keys. Users are solely responsible for securing their device access and backing
+    up their encrypted data.
+  </p>
+
+  <h2>6. Integrity Maintenance</h2>
+  <p>
+    If the original file is modified or access to the certifying identity is lost, the link to the
+    blockchain record is broken. FactLockCam cannot restore this connection.
+  </p>
+
+  <h2>7. Professional Asset Backup</h2>
+  <p>
+    To support long-term verification, we recommend backing up the encrypted version of your assets.
+    Modifications to file metadata by third-party operating systems can alter a file&apos;s hash;
+    maintaining the encrypted archive copy preserves cryptographic integrity.
+  </p>
+
+  <h2>8. Secure Delivery Expiration</h2>
+  <p>
+    The FactLockCam delivery system allows for secure, time-limited file access. Assets may have an
+    expiration policy or limited access attempts. FactLockCam is not liable for assets that become
+    inaccessible after expiration. Users are responsible for managing access permissions for their
+    recipients.
+  </p>
+
+  <h2>9. Limitation of Liability</h2>
+  <p>
+    A certificate draft is a mathematical record of a digital state. It is not a guarantee of
+    physical truth, accuracy of content, or legal standing. FactLockCam documents that a file
+    existed in an exact state at an exact time; it does not verify the underlying claims within the
+    file.
+  </p>
+
+  <h2>10. Service Availability</h2>
+  <p>
+    Services are provided &quot;as is&quot;. FactLockCam is not liable for blockchain network
+    congestion, device-level hardware failure, or third-party service interruptions that may affect
+    the transmission or verification of assets.
+  </p>
+
+  <p>
+    <a href="/legal/terms-of-service.pdf">Download PDF version</a> (fallback for reviewers without
+    JavaScript).
+  </p>
+</LegalLayout>

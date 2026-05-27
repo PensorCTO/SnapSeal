@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-titanium-deep font-sans text-white antialiased;
+  }
+
+  ::selection {
+    @apply bg-kinetic-green/30 text-white;
+  }
+}
+
+@layer components {
+  .mono-label {
+    @apply font-mono text-xs uppercase tracking-widest text-white/60;
+  }
+
+  .panel {
+    @apply rounded-xl border border-titanium-edge bg-titanium-panel;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-kinetic-green px-5 py-2.5 font-mono text-sm font-semibold text-titanium-deep transition hover:bg-verified-neon disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-lg border border-titanium-edge px-5 py-2.5 font-mono text-sm text-white transition hover:border-kinetic-green hover:text-kinetic-green;
+  }
+
+  .input-field {
+    @apply w-full rounded-lg border border-titanium-edge bg-titanium-deep px-4 py-3 font-mono text-sm text-white placeholder:text-white/30 focus:border-kinetic-green focus:outline-none focus:ring-1 focus:ring-kinetic-green/40;
+  }
+}

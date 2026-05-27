@@ -90,6 +90,9 @@ summary: "Terminology reference for the LLM Wiki."
 | wallet_history | Supabase table archiving prior `profiles.evm_address` values on rotation; `owner_id → profiles.id ON DELETE CASCADE`. | [[Identity_Lifecycle_And_Data_Lineage]] |
 | Historical archive placeholder | UI state when local `wallet_address != profiles.evm_address`; missing local file shows `RestoreArchiveBanner`. | [[Identity_Lifecycle_And_Data_Lineage]], `archive_grid_item.dart` |
 | ProofCourierService | JIT courier blob upload: isolate byte copy + Supabase Storage inside iOS `beginBackgroundTask` scope. | [[Identity_Lifecycle_And_Data_Lineage]], `proof_courier_service.dart` |
+| factlock_vault (bucket) | Private Supabase Storage bucket for post-capture cloud backup ciphertext (`{uid}/{packageId}.enc`). Distinct from Send Proof **`courier-blobs`**. Migration `20260527120000`. | [[Cloud_Vault_Wiring_2026-05]] |
+| VaultSyncCoordinator | Post-notarization orchestrator: `get_or_create_courier_package` → `Isolate.run` + `CourierCrypto.encrypt` → `IPlatformChannelCoordinator` background upload. | [[Cloud_Vault_Wiring_2026-05]], `vault_sync_coordinator.dart` |
+| SupabaseVaultService | Upload-only cloud vault client; ciphertext in, updates `courier_packages.storage_path` / `file_size_bytes`. | [[Cloud_Vault_Wiring_2026-05]], `supabase_vault_service.dart` |
 | PlatformChannelCoordinator | MethodChannel `com.factlockcam.app/platform` for background tasks and iOS backup restore picker. | [[Identity_Lifecycle_And_Data_Lineage]] |
 | perform_full_burn | RPC deleting courier storage blobs then `auth.users` row; cascade purges profile-linked tables (App Store 5.1.1). | [[Identity_Lifecycle_And_Data_Lineage]], migration `20260521120000_identity_lifecycle.sql` |
 

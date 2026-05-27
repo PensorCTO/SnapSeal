@@ -6,6 +6,8 @@ import '../../data/services/local_vault_storage.dart';
 import '../../data/services/vault_path_resolver.dart';
 import '../../data/supabase/auth_repository.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
+import '../../application/vault/vault_sync_coordinator.dart';
+import '../../core/cloud/supabase_vault_service.dart';
 import '../../data/supabase/courier_repository.dart';
 import '../../data/supabase/supabase_client_handle.dart';
 import '../crypto/vault_encryption_handler.dart';
@@ -114,6 +116,16 @@ Future<void> configureDependencies() async {
         channelCoordinator: getIt<IPlatformChannelCoordinator>(),
       ),
     );
+    getIt.registerLazySingleton<SupabaseVaultService>(
+      () => SupabaseVaultService(handle: getIt<SupabaseClientHandle>()),
+    );
+    getIt.registerLazySingleton<VaultSyncCoordinator>(
+      () => VaultSyncCoordinator(
+        sealLedgerRepository: getIt<SealLedgerRepository>(),
+        vaultService: getIt<SupabaseVaultService>(),
+        channelCoordinator: getIt<IPlatformChannelCoordinator>(),
+      ),
+    );
     getIt.registerLazySingleton<ArchiveRepository>(
       () => ArchiveRepository(
         database: getIt<VaultDatabase>(),
@@ -188,6 +200,7 @@ Future<void> configureDependencies() async {
       authRepository: getIt<AuthRepository>(),
       proofCourierService: kIsWeb ? null : getIt<ProofCourierService>(),
       pathResolver: getIt<VaultPathResolver>(),
+      vaultSyncCoordinator: kIsWeb ? null : getIt<VaultSyncCoordinator>(),
       transactionalPersister: kIsWeb
           ? null
           : getIt<TransactionalArchivePersister>(),

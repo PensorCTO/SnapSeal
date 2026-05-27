@@ -1,0 +1,13 @@
+---
+description: Enforces correct orchestration and pipeline sequence for the cloud vault upload subsystem.
+globs: ["factlockcam_app/lib/application/**/*.dart", "factlockcam_app/lib/presentation/**/*.dart", "factlockcam_app/lib/domain/services/vault_service_io.dart"]
+---
+# FactLockCam Execution Wiring Rules
+
+- **Upload Sequencing**: Cloud synchronization via `SupabaseVaultService` must occur *after* successful local journal/WAL logging and blockchain anchoring, but *before* source file elimination.
+- **Background Execution**: Any method invoking cloud vault upload must be enclosed within an iOS background task execution block via `IPlatformChannelCoordinator` (see `VaultSyncCoordinator`).
+- **Dependency Ingestion**: Always target the explicit GetIt locator instance `getIt<SupabaseVaultService>()` and `getIt<VaultSyncCoordinator>()`. Do not instantiate service classes manually or attempt riverpod-level instantiation of structural infrastructure.
+- **Context Anchors**:
+  - Sync Coordinator: `factlockcam_app/lib/application/vault/vault_sync_coordinator.dart`
+  - Vault Hub Flow: `factlockcam_app/lib/domain/services/vault_service_io.dart`
+  - Platform Coordination: `factlockcam_app/lib/core/platform/platform_channel_coordinator.dart`
