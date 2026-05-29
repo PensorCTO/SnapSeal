@@ -1,6 +1,6 @@
 ---
 tags: [analysis, factlockcam, courier, send_proof, app_store, 2026-05]
-summary: "Send Proof workflow: certificate PDF + courier link via share sheet; no in-app email; production blocked until public web vault is deployed."
+summary: "Send Proof workflow: certificate PDF + courier link via share sheet; recipient unlock on courier-only archive web deploy."
 ---
 
 # Send Proof & Courier (May 2026)
@@ -11,9 +11,9 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; n
 
 **Product positioning (App Store):** FactLockCam is a **capture-and-archive utility**, not a messaging app. The mobile app **does not send email** (no Resend/SMTP, no server-side outbound mail from the app). Delivery is **owner-side only** via the iOS **share sheet** (Messages, Mail, AirDrop, etc.). The owner shares the PDF and link; the password is communicated **out-of-band** by the owner.
 
-**Production gate:** Recipient links require a **live public HTTPS** Flutter Web deploy at **`WEB_ARCHIVE_BASE_URL`** (production default: `https://archive.factlockcam.com`). Confirm the host serves `/courier?pkg=…` before **App Store review**. For **TestFlight**, an Ngrok tunnel origin in `.env.local` is acceptable ([[App_Store_Remediation_2026-05]]).
+**Production gate:** Recipient links require a **live public HTTPS** Flutter Web deploy at **`WEB_ARCHIVE_BASE_URL`** (production default: `https://archive.factlockcam.com`). The archive host is **courier-only** — not a browser edition of the mobile app ([[Web_Deployment_Architecture_2026-05]]). Deploy via `./scripts/deploy_web_archive_cf.sh`; bind custom domain in Cloudflare Pages. For **TestFlight**, an Ngrok tunnel origin in `.env.local` is acceptable ([[App_Store_Remediation_2026-05]]).
 
-### What works today (no public website)
+### What works today (fourteenth QA, 2026-05-29)
 
 | Capability | Status |
 |------------|--------|
@@ -22,7 +22,7 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; n
 | Courier package upload + link creation (`createCourierPackage`, Supabase RPC + Storage) | Implemented |
 | `SendProof` Riverpod notifier (`send_proof_provider.dart`) | Wired to UI |
 | Share sheet: PDF + courier URL text | Default Send Proof UX |
-| Recipient opens link in browser and unlocks | **Requires live HTTPS origin** (purchased domain or Ngrok for TestFlight) |
+| Recipient opens link in browser and unlocks | **Verified** on Cloudflare Pages (`/courier?pkg=…`); custom domain bind required for production URL |
 
 ### What does not ship in the app
 
@@ -71,7 +71,7 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; n
 
 ### Open decision (owner, 2026-05)
 
-**Finalize Send Proof for App Store when:** a public Flutter Web archive is deployed at a stable HTTPS origin and the release build bakes that URL into **`WEB_ARCHIVE_BASE_URL`**. **TestFlight** may use Ngrok; trademark/domain purchase can wait until after internal validation ([[App_Store_Remediation_2026-05]]).
+**Finalize Send Proof for App Store when:** `archive.factlockcam.com` custom domain is **Active** in Cloudflare Pages and `./scripts/verify_web_archive_deploy.sh` passes. Marketing at **`factlockcam.com`** deploys separately via `./scripts/deploy_factlockcam_site_cf.sh` ([[Web_Deployment_Architecture_2026-05]]).
 
 ## Provenance Tracking
 
@@ -81,6 +81,7 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; n
 
 ## Related Notes
 
+* [[Web_Deployment_Architecture_2026-05]]
 * [[Production_Transition_2026-05]]
 * [[FactLockCam_Product_Baseline_2026-05]]
 * [[App_Store_Prep_Capture_Seal_2026-05]]

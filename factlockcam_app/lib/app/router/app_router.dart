@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,7 @@ import '../../ui/mobile/settings/burn_account_view.dart';
 import '../../ui/mobile/settings/restore_archive_view.dart';
 import '../../ui/mobile/vault_home_view.dart';
 import '../../ui/web/courier_unlock_view.dart';
+import '../../ui/web/web_archive_gate_view.dart';
 
 /// Keeps a single [GoRouter] instance while auth/custody changes trigger redirect.
 class AppRouterRefreshNotifier extends ChangeNotifier {
@@ -20,20 +22,45 @@ class AppRouterRefreshNotifier extends ChangeNotifier {
   final Ref _ref;
 
   String? redirect(BuildContext context, GoRouterState state) {
+    final location = state.matchedLocation;
+    final isCourierRoute = location == CourierUnlockView.routePath;
+    final isArchiveGate = location == WebArchiveGateView.routePath;
+
+    // Archive subdomain web bundle: courier unlock + gate page only.
+    if (kIsWeb) {
+      if (isCourierRoute || isArchiveGate) {
+        return null;
+      }
+      return WebArchiveGateView.routePath;
+    }
+
     final authChange = _ref.read(authStateProvider).asData?.value;
     final session = authChange?.session;
     final isAuthenticated = session != null;
-    final location = state.matchedLocation;
     final isOnLogon = location == LogonView.routePath;
-    final isCourierRoute = location == CourierUnlockView.routePath;
     final isOnRestore = location == RestoreArchiveView.routePath;
     final isOnBurn = location == BurnAccountView.routePath;
+    const cameraRoutePath = '/camera';
+    final isCaptureRoute = location == cameraRoutePath;
+
+    if (isCaptureRoute) {
+      return VaultHomeView.routePath;
+    }
 
     final custody = _ref.read(keyCustodyProvider);
+    final custodyPending = custody.isLoading ||
+        custody.maybeWhen(
+          data: (status) => status == KeyCustodyStatus.unknown,
+          orElse: () => false,
+        );
     final keysMissing = custody.maybeWhen(
       data: (status) => status == KeyCustodyStatus.keysMissing,
       orElse: () => false,
     );
+
+    if (isAuthenticated && custodyPending && !isOnRestore) {
+      return null;
+    }
 
     if (isAuthenticated && keysMissing && !isOnRestore) {
       return RestoreArchiveView.routePath;
@@ -71,7 +98,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     refreshListenable: refreshNotifier,
     redirect: refreshNotifier.redirect,
     routes: [
-      GoRoute(path: '/', redirect: (_, _) => LogonView.routePath),
+      GoRoute(
+        path: WebArchiveGateView.routePath,
+        redirect: (_, _) => kIsWeb ? null : LogonView.routePath,
+        builder: (context, state) => const WebArchiveGateView(),
+      ),
       GoRoute(
         path: LogonView.routePath,
         builder: (context, state) => const LogonView(),
@@ -91,6 +122,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: BurnAccountView.routePath,
         builder: (context, state) => const BurnAccountView(),
+      ),
+      GoRoute(
+        path: '/camera',
+        redirect: (_, _) => VaultHomeView.routePath,
       ),
       GoRoute(
         path: CourierUnlockView.routePath,

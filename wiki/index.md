@@ -11,6 +11,7 @@ Read this page first when answering questions about the wiki.
 
 | Page | When to read |
 |------|----------------|
+| [[Web_Deployment_Architecture_2026-05]] | **Fourteenth QA (2026-05-29)** — factlockcam.com sales pitch + archive courier-only gate; Cloudflare Pages deploy |
 | [[Sovereign_Key_Lifecycle_2026-05]] | **Thirteenth QA (2026-05-29)** — multi-key `.factlock` backup/restore, brick mode, burn hardening, 52/52 tests |
 | [[Cloud_Vault_Wiring_2026-05]] | **Twelfth QA (2026-05-27)** — `factlock_vault` bucket, post-seal cloud sync, VaultSyncCoordinator, smoke test |
 | [[UI_Polish_Hub_Archive_2026-05]] | **Eleventh QA (2026-05-24)** — shared logo banner, Account hub tiles, chronology scroll clarity, 41/41 tests |
@@ -34,6 +35,7 @@ Read this page first when answering questions about the wiki.
 ## Concepts
 
 - [[LLM_Wiki_Pattern]] - The source-to-wiki compilation model.
+- [[Web_Deployment_Architecture_2026-05]] - Fourteenth QA: decoupled web (Astro sales + archive courier-only Flutter gate).
 - [[Sovereign_Key_Lifecycle_2026-05]] - Thirteenth QA: multi-key `.factlock`, brick/restore, burn UX, compliance URL routing.
 - [[Cloud_Vault_Wiring_2026-05]] - Twelfth QA: factlock_vault cloud sync wired into capture seal pipeline.
 - [[UI_Polish_Hub_Archive_2026-05]] - Eleventh QA: logo banner, Account heavy-metal tiles, chronology scroll fix.
@@ -50,6 +52,7 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses (active)
 
+- [[Web_Deployment_Architecture_2026-05]] - Fourteenth QA: public web split, courier-only archive subdomain, Cloudflare deploy scripts (May 2026).
 - [[Sovereign_Key_Lifecycle_2026-05]] - Thirteenth QA: `.factlock` multi-key backup, zero-knowledge lock, restore router gate, Account layout (May 2026).
 - [[Cloud_Vault_Wiring_2026-05]] - Twelfth QA: post-notarization cloud vault sync, factlock_vault migration, coordinator wiring (May 2026).
 - [[UI_Polish_Hub_Archive_2026-05]] - Eleventh QA: shared logo header, Account panel backdrop + hub tiles, chronology opacity fix (May 2026).

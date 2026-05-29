@@ -1,0 +1,68 @@
+---
+description: Enforces structural boundaries, routing limits, and build parameters for the archive.factlockcam.com web compilation target.
+globs:
+  - factlockcam_app/lib/ui/web/**/*.dart
+  - factlockcam_app/web/**
+  - factlockcam_app/lib/core/crypto/cipher_engine_web.dart
+  - factlockcam_app/lib/app/router/app_router.dart
+  - factlockcam_app/lib/core/di/injection.dart
+  - factlockcam_app/pubspec.yaml
+---
+
+# Archive Subdomain Web Target Constraints
+
+Production courier unlock surface: `https://archive.factlockcam.com/courier?pkg={uuid}`.
+
+## Architecture Boundaries
+
+- Enforce strict isolation for all code executed on the archive subdomain web target.
+- The web target MUST NOT import `package:sqflite`, `package:sqlite3`, or native platform bridges directly.
+- Use conditional exports (`*_web.dart` / `*_io.dart` barrels) and `kIsWeb` gates in `injection.dart` to bypass WAL journal, SQLite, and mobile-only services.
+- Do not register mobile lifecycle providers (`pendingSyncSchedulerProvider`, `polygonNotarizationLifecycleProvider`, `assetLockStateProvider`) on web — see `factlockcam_app.dart`.
+
+## Routing Rules
+
+- `GoRouter` MUST parse `/courier` query parameters from the browser URI.
+- Unauthenticated sessions MUST reach `/courier` without redirect to `/logon`.
+- Route resolution: `final packageId = state.uri.queryParameters['pkg'];`
+- Context: `factlockcam_app/lib/app/router/app_router.dart`
+- **Courier-only gate:** On web, `AppRouterRefreshNotifier` allows only `/` ([WebArchiveGateView]) and `/courier`. All other paths redirect to the gate page.
+- Unauthenticated `/courier?pkg=…` MUST NOT redirect to `/logon`.
+
+## Capture & Attestation (Web)
+
+- The archive subdomain is **courier unlock only** — not a browser edition of the mobile app. Marketing lives on `factlockcam.com` (Astro `FactLockCam_Site`).
+- The web target MUST NOT originate ProofLock captures or expose mobile logon/hub routes in production.
+- Use conditional exports (`capture_panel.dart`, `vault_service.dart`) so `package:camera` and native enclave bridges are excluded from the web compile graph.
+- Do not register `NativeEnclaveChannel` in `injection.dart` when `kIsWeb`.
+- `REQUIRE_HARDWARE_ATTESTATION` applies to native capture paths only; web must never simulate or stub enclave signing for seal origination.
+
+## Cryptographic Operations
+
+- SHA-256 MUST prefer `window.crypto.subtle` via `cipher_engine_web.dart`.
+- AES-GCM uses async `package:cryptography` (non-blocking on web).
+- Pure-Dart `package:crypto` fallback is allowed only for insecure HTTP dev contexts — not the production HTTPS path.
+- Recipient decryption MUST flow through `CourierCrypto.decryptAndVerifyFingerprint` — do not duplicate logic in UI controllers.
+
+## Backend Integration
+
+- Courier web uses `CourierRepository` only — never `Supabase.instance.client` from widgets.
+- Recipient RPCs: `check_courier_attempts` (PostgREST) and Edge Function `courier-unlock`.
+- Do **not** use `check_proof_status` on the recipient unlock path (that RPC is for mobile seal pre-flight).
+- Blob download uses signed URLs returned by `courier-unlock`; bucket: `courier-blobs`.
+
+## Compile-Time Configuration
+
+- Courier share links use `WEB_ARCHIVE_BASE_URL` (`--dart-define-from-file=dart_defines.json`).
+- Production origin: `https://archive.factlockcam.com`. A non-empty compile-time define MUST NOT be overridden at runtime.
+- Deprecated `WEB_VAULT_BASE_URL` must not be reintroduced.
+
+## Build & Deploy
+
+- Release build: `scripts/build_web_archive.sh` → `factlockcam_app/build/web/`
+- **Primary host:** Cloudflare Pages project `factlockcam-archive` via `scripts/deploy_web_archive_cf.sh`
+- Wrangler: `projects/FactLockCam_Site/node_modules/.bin/wrangler` (run `npm install` in that directory first)
+- First Wrangler deploy: press Enter at project-creation and `main` branch prompts (see `.cursor/rules/cli-execution-gating.mdc`)
+- SPA rewrites: `factlockcam_app/web/_redirects` (Cloudflare Pages); `web/vercel.json` (Vercel alternate)
+- Custom domain: `archive.factlockcam.com` → Pages project custom domain wizard
+- Post-deploy: `scripts/verify_web_archive_deploy.sh https://archive.factlockcam.com`

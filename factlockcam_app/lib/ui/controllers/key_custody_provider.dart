@@ -48,8 +48,16 @@ class KeyCustodyNotifier extends AsyncNotifier<KeyCustodyStatus> {
       return KeyCustodyStatus.keysPresent;
     }
 
-    final profile = ref.read(currentProfileProvider).asData?.value;
-    final remoteWallet = profile?.activeWalletAddress?.trim();
+    // Wait for profile before auto-provisioning keys or forcing restore.
+    // Without this, a loading profile looks like a brand-new account and
+    // either mints orphan keys or redirects to restore mid-capture.
+    final profileAsync = ref.read(currentProfileProvider);
+    if (profileAsync.isLoading || !profileAsync.hasValue) {
+      return KeyCustodyStatus.unknown;
+    }
+
+    final remoteWallet =
+        profileAsync.requireValue.activeWalletAddress?.trim();
     if (remoteWallet == null || remoteWallet.isEmpty) {
       await getIt<WalletService>().ensureEvmAddress();
       await getIt<VaultService>().ensureVaultKey();

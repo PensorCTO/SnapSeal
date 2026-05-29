@@ -93,7 +93,7 @@ def resolve_values(env_file: Path | None, existing_out: Path | None = None) -> d
     if "APP_ENVIRONMENT" not in merged:
         merged["APP_ENVIRONMENT"] = "production"
     if "WEB_BASE_URL" not in merged:
-        merged["WEB_BASE_URL"] = "https://factlockcam.pages.dev"
+        merged["WEB_BASE_URL"] = "https://factlockcam.com"
     if "WEB_ARCHIVE_BASE_URL" not in merged:
         merged["WEB_ARCHIVE_BASE_URL"] = "https://archive.factlockcam.com"
     return merged
@@ -116,7 +116,7 @@ def write_generated_dart_defines(path: Path, merged: dict[str, str]) -> None:
         f"  static const supabaseUrl = {_dart_string_literal(merged.get('SUPABASE_URL', ''))};",
         f"  static const supabaseAnonKey = {_dart_string_literal(merged.get('SUPABASE_ANON_KEY', ''))};",
         f"  static const localAnonKey = {_dart_string_literal(merged.get('LOCAL_ANON_KEY', ''))};",
-        f"  static const webBaseUrl = {_dart_string_literal(merged.get('WEB_BASE_URL', 'https://factlockcam.pages.dev'))};",
+        f"  static const webBaseUrl = {_dart_string_literal(merged.get('WEB_BASE_URL', 'https://factlockcam.com'))};",
         f"  static const webArchiveBaseUrl = {_dart_string_literal(merged.get('WEB_ARCHIVE_BASE_URL', ''))};",
         f"  static const appEnvironment = {_dart_string_literal(merged.get('APP_ENVIRONMENT', 'production'))};",
         f"  static const supportUrl = {_dart_string_literal(merged.get('SUPPORT_URL', ''))};",

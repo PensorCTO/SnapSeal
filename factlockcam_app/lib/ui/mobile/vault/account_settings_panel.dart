@@ -66,9 +66,17 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
       final file = await getIt<WalletBackupService>().exportFactlock(
         backupPassword: passwords.$1,
       );
-      await Share.shareXFiles(
-        [XFile(file.path, mimeType: 'application/octet-stream')],
-        subject: 'FactLockCam Archive Key Backup',
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [
+            XFile(
+              file.path,
+              mimeType: 'application/octet-stream',
+              name: 'factlockcam-archive-keys.factlock',
+            ),
+          ],
+          subject: 'FactLockCam Archive Key Backup',
+        ),
       );
     } catch (error) {
       if (!mounted) return;
@@ -175,6 +183,8 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
       );
       return;
     }
+
+    if (!mounted) return;
 
     final confirmed = await showCupertinoDialog<bool>(
       context: context,

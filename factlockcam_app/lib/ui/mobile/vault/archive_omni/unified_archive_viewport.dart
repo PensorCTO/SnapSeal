@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -46,8 +47,6 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0;
   bool _initialSyncTriggered = false;
-
-  static const double _imageOverlapFraction = 0.75;
 
   @override
   void initState() {
@@ -248,6 +247,8 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final captureEnabled = !kIsWeb && onCaptureRequested != null;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -265,23 +266,29 @@ class _EmptyState extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Capture a photo or video to begin.',
+          captureEnabled
+              ? 'Capture a photo or video to begin.'
+              : 'Use the native iOS or Android app to capture securely '
+                  'authenticated media.',
+          textAlign: TextAlign.center,
           style: AppTextStyles.monoSm(
             color: AppColors.starkWhite.withValues(alpha: 0.32),
           ),
         ),
-        const SizedBox(height: 32),
-        _QuickActionTile(
-          icon: Icons.photo_camera_outlined,
-          label: 'Picture',
-          onTap: () => onCaptureRequested?.call(1),
-        ),
-        const SizedBox(height: 12),
-        _QuickActionTile(
-          icon: Icons.videocam_outlined,
-          label: 'Video',
-          onTap: () => onCaptureRequested?.call(2),
-        ),
+        if (captureEnabled) ...[
+          const SizedBox(height: 32),
+          _QuickActionTile(
+            icon: Icons.photo_camera_outlined,
+            label: 'Picture',
+            onTap: () => onCaptureRequested!.call(1),
+          ),
+          const SizedBox(height: 12),
+          _QuickActionTile(
+            icon: Icons.videocam_outlined,
+            label: 'Video',
+            onTap: () => onCaptureRequested!.call(2),
+          ),
+        ],
       ],
     );
   }

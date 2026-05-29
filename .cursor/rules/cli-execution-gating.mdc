@@ -1,0 +1,20 @@
+---
+description: Constraints for CLI interactions and terminal blocking states in deploy scripts.
+globs: ["scripts/**"]
+---
+
+# Terminal Execution Constraints
+
+## Wrangler Pages Deploy
+
+1. **Sequential prompts:** The first `wrangler pages deploy` to a new account may block on project creation and production-branch binding. Treat this as expected — not a hung terminal.
+2. **Default acceptance:** Accept "Create a new project" (`factlockcam-archive`) and production branch `main` by pressing Enter at each prompt.
+3. **Do not bypass blindly:** Do not pipe empty stdin or use undocumented `--yes` flags to skip Wrangler confirmations on virgin accounts unless a documented non-interactive path exists.
+4. **Agent behavior:** When running `scripts/deploy_web_archive_cf.sh`, monitor terminal output for Wrangler prompts. If the agent cannot answer interactively, instruct the operator to press Enter twice on first run, then re-run the script for idempotent deploys.
+5. **Idempotent path:** After project `factlockcam-archive` exists, `deploy_web_archive_cf.sh` should complete without prompts.
+
+## Context
+
+- Deploy script: `scripts/deploy_web_archive_cf.sh`
+- Wrangler binary: `projects/FactLockCam_Site/node_modules/.bin/wrangler`
+- Archive subdomain rule: `.cursor/rules/web-subdomain-deployment.mdc`

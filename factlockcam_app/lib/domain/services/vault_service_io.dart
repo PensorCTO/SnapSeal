@@ -7,6 +7,7 @@ import 'dart:ui' as ui;
 import 'package:camera/camera.dart';
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image/image.dart' as img;
@@ -1409,6 +1410,8 @@ class VaultService {
     if (error is SocketException) return true;
     if (error is HandshakeException) return true;
     if (error is TimeoutException) return true;
+    if (error is PlatformException) return true;
+    if (error is MissingPluginException) return true;
     final message = error.toString().toLowerCase();
     return message.contains('socket') ||
         message.contains('connection refused') ||
@@ -1416,6 +1419,8 @@ class VaultService {
         message.contains('failed host lookup') ||
         message.contains('timed out') ||
         message.contains('connection reset') ||
-        message.contains('connection closed');
+        message.contains('connection closed') ||
+        message.contains('native enclave') ||
+        message.contains('evm private key missing');
   }
 }

@@ -36,4 +36,40 @@
   .input-field {
     @apply w-full rounded-lg border border-titanium-edge bg-titanium-deep px-4 py-3 font-mono text-sm text-white placeholder:text-white/30 focus:border-kinetic-green focus:outline-none focus:ring-1 focus:ring-kinetic-green/40;
   }
+
+  .sales-hero__bg {
+    @apply absolute inset-0 h-full w-full object-cover object-center;
+  }
+
+  .sales-hero__shade {
+    @apply pointer-events-none absolute inset-0 bg-gradient-to-t from-titanium-deep via-titanium-deep/40 to-transparent;
+  }
+
+  .sales-logo {
+    @apply font-mono text-xl font-bold tracking-tight text-white md:text-2xl;
+  }
+
+  .sales-logo__lock {
+    @apply text-white/90;
+  }
+
+  .sales-logo__cam {
+    @apply text-verified-neon;
+  }
+
+  .sales-nav-link {
+    @apply font-mono text-xs uppercase tracking-widest text-white/70 transition hover:text-kinetic-green;
+  }
+
+  .sales-panel {
+    @apply overflow-hidden rounded-xl border border-titanium-edge bg-titanium-panel/90 backdrop-blur-sm;
+  }
+
+  .sales-panel__title {
+    @apply border-b border-titanium-edge bg-titanium-deep/80 px-5 py-3 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-white/80;
+  }
+
+  .sales-panel__body {
+    @apply p-5 md:p-6;
+  }
 }

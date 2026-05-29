@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -111,6 +112,7 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
                               compact: constraints.maxHeight < 420 ||
                                   constraints.maxWidth >
                                       constraints.maxHeight * 1.1,
+                              captureEnabled: !kIsWeb,
                               onArchive: () => _handleHubTap(
                                 () => widget.onHubDestinationSelected?.call(3),
                               ),
@@ -143,6 +145,7 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
 class _HubTileLauncher extends StatelessWidget {
   const _HubTileLauncher({
     required this.compact,
+    required this.captureEnabled,
     required this.onArchive,
     required this.onPicture,
     required this.onVideo,
@@ -150,6 +153,7 @@ class _HubTileLauncher extends StatelessWidget {
   });
 
   final bool compact;
+  final bool captureEnabled;
   final VoidCallback onArchive;
   final VoidCallback onPicture;
   final VoidCallback onVideo;
@@ -187,6 +191,27 @@ class _HubTileLauncher extends StatelessWidget {
       subtitle: 'Logout, legal, delete account',
       onTap: onAccount,
     );
+
+    if (!captureEnabled) {
+      if (compact) {
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: archive),
+            const SizedBox(width: _spacing),
+            Expanded(child: account),
+          ],
+        );
+      }
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          archive,
+          const SizedBox(height: _spacing),
+          account,
+        ],
+      );
+    }
 
     if (compact) {
       return Column(

@@ -117,7 +117,11 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<VaultPathResolver>(
     () => VaultPathResolver(getIt<LocalVaultStorage>()),
   );
-  getIt.registerLazySingleton<NativeEnclaveChannel>(NativeEnclaveChannel.new);
+  if (!kIsWeb) {
+    getIt.registerLazySingleton<NativeEnclaveChannel>(
+      NativeEnclaveChannel.new,
+    );
+  }
 
   getIt.registerLazySingleton<VaultEncryptionHandler>(
     DefaultVaultEncryptionHandler.new,
@@ -173,12 +177,15 @@ Future<void> configureDependencies() async {
   );
 
   getIt.registerLazySingleton<WalletService>(
-    () => AppConfig.usePolygonNotarizer
-        ? PolygonWalletService(
-            secureStorage: getIt<FlutterSecureStorage>(),
-            sealLedgerRepository: getIt<SealLedgerRepository>(),
-          )
-        : SimulatedWalletService(getIt<NativeEnclaveChannel>()),
+    () {
+      if (kIsWeb || AppConfig.usePolygonNotarizer) {
+        return PolygonWalletService(
+          secureStorage: getIt<FlutterSecureStorage>(),
+          sealLedgerRepository: getIt<SealLedgerRepository>(),
+        );
+      }
+      return SimulatedWalletService(getIt<NativeEnclaveChannel>());
+    },
   );
 
   getIt.registerLazySingleton<VaultBlockchainHandler>(
@@ -190,21 +197,23 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<ProofSyncNotifier>(ProofSyncNotifier.new);
 
   getIt.registerLazySingleton<NotarizationMonitorService>(
-    () => AppConfig.usePolygonNotarizer
-        ? PolygonNotarizationMonitorService(
+    () => kIsWeb || !AppConfig.usePolygonNotarizer
+        ? SimulatedNotarizationMonitorService()
+        : PolygonNotarizationMonitorService(
             handle: getIt<SupabaseClientHandle>(),
             database: getIt<VaultDatabase>(),
             proofSyncNotifier: getIt<ProofSyncNotifier>(),
             sealLedgerRepository: getIt<SealLedgerRepository>(),
-          )
-        : SimulatedNotarizationMonitorService(),
+          ),
   );
 
-  getIt.registerLazySingleton<CertificateExportService>(
-    () => CertificateExportService(
-      sealLedgerRepository: getIt<SealLedgerRepository>(),
-    ),
-  );
+  if (!kIsWeb) {
+    getIt.registerLazySingleton<CertificateExportService>(
+      () => CertificateExportService(
+        sealLedgerRepository: getIt<SealLedgerRepository>(),
+      ),
+    );
+  }
 
   if (!kIsWeb) {
     getIt.registerLazySingleton<ProofBundleExportService>(
@@ -225,7 +234,7 @@ Future<void> configureDependencies() async {
       walletService: getIt<WalletService>(),
       blockchainHandler: getIt<VaultBlockchainHandler>(),
       proofSyncNotifier: getIt<ProofSyncNotifier>(),
-      nativeEnclave: getIt<NativeEnclaveChannel>(),
+      nativeEnclave: _nativeEnclaveForVaultService(),
       authRepository: getIt<AuthRepository>(),
       proofCourierService: kIsWeb ? null : getIt<ProofCourierService>(),
       pathResolver: getIt<VaultPathResolver>(),
@@ -248,4 +257,12 @@ Future<void> configureDependencies() async {
   }
 
   _diConfigured = true;
+}
+
+/// Web uses a throw-on-call stub; native uses the GetIt singleton.
+NativeEnclaveChannel _nativeEnclaveForVaultService() {
+  if (kIsWeb) {
+    return NativeEnclaveChannel();
+  }
+  return getIt<NativeEnclaveChannel>();
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,10 +13,12 @@ class FactLockCamApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(pendingSyncSchedulerProvider);
-    ref.watch(assetLockStateProvider);
-    ref.watch(polygonNotarizationLifecycleProvider);
-    ref.watch(polygonProofSyncRefreshProvider);
+    if (!kIsWeb) {
+      ref.watch(pendingSyncSchedulerProvider);
+      ref.watch(assetLockStateProvider);
+      ref.watch(polygonNotarizationLifecycleProvider);
+      ref.watch(polygonProofSyncRefreshProvider);
+    }
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(

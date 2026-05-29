@@ -7,6 +7,15 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 ## 2026-05-29
 
+- **Decoupled public web + fourteenth QA pass**:
+  - **Marketing:** Astro master sales pitch at `factlockcam.com` (`FactLockCam_Site/src/pages/index.astro`, hero `factlockcam-hero-sales.png`); deploy via `scripts/deploy_factlockcam_site_cf.sh`.
+  - **Archive subdomain:** Flutter courier-only gate — `WebArchiveGateView` at `/`, `CourierUnlockView` at `/courier`; web router blocks logon/hub; browser capture disabled (`capture_panel` conditional exports, hub tile gating).
+  - **Deploy:** `scripts/build_web_archive.sh`, `scripts/deploy_web_archive_cf.sh`, `scripts/verify_web_archive_deploy.sh`; Cloudflare Pages project `factlockcam-archive`.
+  - **Defines:** `WEB_BASE_URL` default → `https://factlockcam.com`; `WEB_ARCHIVE_BASE_URL` → `https://archive.factlockcam.com`.
+  - **Rules:** `.cursor/rules/web-subdomain-deployment.mdc`, `.cursor/rules/cli-execution-gating.mdc`.
+  - **Tests:** **52/52**; user-confirmed QA pass.
+  - **Wiki:** Added [[Web_Deployment_Architecture_2026-05]]; refreshed [[index]], [[overview]], [[glossary]], [[FactLockCam_Product_Baseline_2026-05]], [[Send_Proof_Courier_2026-05]].
+
 - **Sovereign multi-key lifecycle + thirteenth QA pass**:
   - **Key custody:** `KeyCustodyService`, `FactlockKeystore`, `WalletBackupService`, `AppLockCoordinator` under `lib/core/ghost_key/`; composite `.factlock` (EVM + vault AES).
   - **UX:** Export/Lock/Burn in Account panel; `BurnAccountView` (typed OBLITERATE); `/restore` bricked shell; stable `GoRouter` refreshListenable.
