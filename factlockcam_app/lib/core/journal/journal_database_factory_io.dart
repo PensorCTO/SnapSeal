@@ -62,6 +62,7 @@ class JournalDatabaseFactory {
     db.execute('PRAGMA journal_mode = WAL;');
     db.execute('PRAGMA synchronous = NORMAL;');
     db.execute('PRAGMA foreign_keys = ON;');
+    db.execute('PRAGMA busy_timeout = 5000;');
 
     _applyBaselineSchema(db);
     _database = db;

@@ -54,15 +54,27 @@ class _LogonViewState extends ConsumerState<LogonView>
                   top: false,
                   child: LayoutBuilder(
                     builder: (context, constraints) {
+                      // Lift the form above the software keyboard; UIKit may still
+                      // log internal TUIKeyboard constraint warnings (benign).
+                      final bottomInset =
+                          MediaQuery.viewInsetsOf(context).bottom;
+                      final contentMinHeight =
+                          (constraints.maxHeight - bottomInset)
+                              .clamp(0.0, double.infinity);
                       return SingleChildScrollView(
                         keyboardDismissBehavior:
                             ScrollViewKeyboardDismissBehavior.onDrag,
                         child: ConstrainedBox(
                           constraints: BoxConstraints(
-                            minHeight: constraints.maxHeight,
+                            minHeight: contentMinHeight,
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                            padding: EdgeInsets.fromLTRB(
+                              24,
+                              24,
+                              24,
+                              24 + bottomInset,
+                            ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.end,
                               crossAxisAlignment: CrossAxisAlignment.stretch,

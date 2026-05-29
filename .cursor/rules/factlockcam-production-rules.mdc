@@ -50,7 +50,7 @@ All tests under `factlockcam_app/test/` that touch DI or widgets MUST:
 - **Rule**: Do not modify `Info.plist` without cross-referencing App Store Guideline **5.1.1** (purpose strings must match actual behavior).
 - **Current baseline** (do not regress):
   - `NSPrivacyAccessedAPITypes`: DiskSpace (`E174.1`), FileTimestamp (`C617.1`), UserDefaults (`CA92.1`)
-  - `NSPrivacyCollectedDataTypes`: Photos/Videos, UserID, EmailAddress, PreciseLocation — all linked, AppFunctionality, tracking=false
+  - `NSPrivacyCollectedDataTypes`: Photos/Videos, UserID, EmailAddress, PreciseLocation (linked); OtherUserContent for encrypted `.seal` blobs (unlinked); AppFunctionality, tracking=false
   - `ITSAppUsesNonExemptEncryption` = `false` in `Info.plist`
 - **Pre-upload**: Archive in Xcode → **Generate Privacy Report**; resolve any aggregated third-party SDK gaps before App Store Connect upload.
 

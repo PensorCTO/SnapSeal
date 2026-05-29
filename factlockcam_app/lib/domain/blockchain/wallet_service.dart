@@ -8,6 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:web3dart/web3dart.dart';
 
 import '../../core/di/locator.dart';
+import '../../core/ghost_key/key_storage_keys.dart';
 import '../../core/ghost_key/native_enclave_channel.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
 
@@ -45,7 +46,7 @@ class PolygonWalletService implements WalletService {
   })  : _secureStorage = secureStorage,
         _sealLedgerRepository = sealLedgerRepository;
 
-  static const _privateKeyStorageKey = 'factlockcam:evm_private_key';
+  static const _privateKeyStorageKey = KeyStorageKeys.evmPrivateKey;
 
   final FlutterSecureStorage _secureStorage;
   final SealLedgerRepository _sealLedgerRepository;

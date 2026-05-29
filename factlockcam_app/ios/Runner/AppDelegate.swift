@@ -69,7 +69,7 @@ import MobileCoreServices
             self.backgroundTaskId = .invalid
           }
           result(nil)
-        case "pickEncryptedBackupBytes":
+        case "pickEncryptedBackupBytes", "pickFactlockBackupBytes":
           self.pendingBackupPickerResult = result
           let picker = UIDocumentPickerViewController(
             documentTypes: [kUTTypeData as String],

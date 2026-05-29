@@ -1,0 +1,79 @@
+---
+description: Enforces Apple Privacy Manifest compliance, Required Reason API auditing, and App Store data-declaration alignment for FactLockCam iOS.
+globs:
+  - factlockcam_app/ios/Runner/PrivacyInfo.xcprivacy
+  - factlockcam_app/ios/Runner/Info.plist
+  - factlockcam_app/pubspec.yaml
+  - factlockcam_app/lib/core/ghost_key/**
+  - factlockcam_app/lib/data/services/**
+  - factlockcam_app/lib/domain/services/vault_service_io.dart
+  - factlockcam_app/lib/core/platform/**
+---
+# Apple Privacy Manifest & Required Reason API Compliance
+
+## Context
+Apple enforces Guideline 5.1.1 (privacy) and Required Reason API manifests (Guideline 2.5.4). Missing or mismatched entries in `PrivacyInfo.xcprivacy` block App Store Connect ingestion.
+
+**Canonical manifest:** `factlockcam_app/ios/Runner/PrivacyInfo.xcprivacy` (included in Runner target Resources).
+
+## Compliance mapping (FactLockCam)
+
+| System component | Local symbol / path | Apple category | Approved reason |
+|---|---|---|---|
+| Archive path resolution | `VaultPathResolver`, `LocalVaultStorage` (`existsSync`, `lengthSync`, rename) | `NSPrivacyAccessedAPICategoryFileTimestamp` | `C617.1` (metadata inside app container) |
+| Transitive prefs (Supabase stack) | `shared_preferences` via `supabase_flutter` | `NSPrivacyAccessedAPICategoryUserDefaults` | `CA92.1` (in-app preferences) |
+| File size / vault IO | `locked_io_runner.dart`, `vault_service_io.dart` | `NSPrivacyAccessedAPICategoryDiskSpace` | `E174.1` (space checks before writes) |
+| Sovereign keys | `FlutterSecureStorage` / Keychain | Keychain (no Required Reason category) | SDK manifest: `flutter_secure_storage_darwin` |
+| Sealed media + auth | Camera, `geolocator`, Supabase OTP | Collected data types in manifest | See baseline below |
+| Encrypted `.seal` blobs | `factlockcam_vault/originals/*.seal` | `NSPrivacyCollectedDataTypeOtherUserContent` | `Linked=false`, AppFunctionality |
+| Hardware signing (planned) | `NativeEnclaveChannel`, `AppDelegate` enclave channel | N/A until Secure Enclave ships | Do not claim device-bound proof in copy yet |
+
+**Vault directory names:** `factlockcam_vault` (modern), `snapseal_vault` (legacy migration). Do not reference obsolete `prooflock_vault` paths in new docs.
+
+## Baseline manifest (do not regress)
+
+`NSPrivacyAccessedAPITypes`: DiskSpace `E174.1`, FileTimestamp `C617.1`, UserDefaults `CA92.1`.
+
+`NSPrivacyCollectedDataTypes` (`Tracking=false`, purpose AppFunctionality):
+
+- `NSPrivacyCollectedDataTypePhotosorVideos` — **Linked=true**
+- `NSPrivacyCollectedDataTypeUserID` — **Linked=true**
+- `NSPrivacyCollectedDataTypeEmailAddress` — **Linked=true**
+- `NSPrivacyCollectedDataTypePreciseLocation` — **Linked=true**
+- `NSPrivacyCollectedDataTypeOtherUserContent` — **Linked=false** (sovereign-encrypted `.seal` payloads in `factlockcam_vault/originals/`)
+
+`NSPrivacyTracking`: `false`.
+
+**Do not replace** linked declarations with a manifest that only lists `OtherUserContent` — Photos/Videos, auth, and GPS remain linked to account/telemetry flows.
+
+**Reason code trap:** `35F9.1` is for `NSPrivacyAccessedAPICategorySystemBootTime`, not FileTimestamp. FileTimestamp uses `C617.1` (and optionally `DDA9.1` if UI displays file mtimes to users).
+
+## Critical rules
+
+### Required API categories
+- Every `dart:io` existence/length/rename on archive paths must stay covered by FileTimestamp `C617.1`.
+- Any new direct `shared_preferences` usage keeps UserDefaults `CA92.1` in the app manifest (SDKs may ship their own, e.g. `1C8F.1`).
+- Do not add `UIBackgroundModes` audio/location hacks. Use transient `beginBackgroundTask` only (see `PlatformChannelCoordinator` + `AppDelegate.swift`).
+
+### Forbidden
+- Bypassing third-party SDK privacy manifests when adding FFI or native pods.
+- Setting collected data `Linked=false` when data is tied to `auth.uid()` or account email — **except** encrypted `.seal` archive blobs (`OtherUserContent`), which are declared unlinked by design.
+
+### Data collection
+- New sensors or PII flows require matching `NSPrivacyCollectedDataTypes` **and** `Info.plist` purpose strings (Guideline 5.1.1).
+- Mirror changes in App Store Connect App Privacy after manifest edits.
+
+## Enforcement checklist (on every iOS-affecting change)
+
+1. **Scan APIs:** Grep `lib/` for `existsSync`, `lengthSync`, `stat`, `lastModified`, `shared_preferences`, new pods.
+2. **Validate manifest:** Update `factlockcam_app/ios/Runner/PrivacyInfo.xcprivacy` additively; never drop existing categories without proof they are unused.
+3. **Background lifecycle:** `polygonNotarizationLifecycleProvider` stops Realtime on dispose; uploads use `executeWithBackgroundScope` → native `beginBackgroundTask` / `endBackgroundTask`.
+4. **Pre-upload:** Xcode Organizer → Generate Privacy Report; resolve aggregated SDK gaps after `pod install`.
+5. **Cross-check:** `wiki` production rules and `factlockcam-production-rules.mdc` iOS privacy baseline.
+
+## Architecture anchors
+
+- DI bridge: `factlockcam_app/lib/core/di/service_providers.dart`, `injection.dart`
+- Crypto / keys: `factlockcam_app/lib/core/ghost_key/`, `CipherEngine`, `FlutterSecureStorage`
+- Platform background scope: `factlockcam_app/lib/core/platform/platform_channel_coordinator.dart`
+- iOS native: `factlockcam_app/ios/Runner/AppDelegate.swift`

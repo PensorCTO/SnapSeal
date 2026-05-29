@@ -95,8 +95,9 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
                 title: 'Archive',
                 onBack: widget.onBackToHub!,
               ),
-            // ── Logo bar ───────────────────────────────────────
-            const HeavyMetalLogoBanner(),
+            HeavyMetalLogoBanner(
+              includeTopSafeArea: widget.onBackToHub == null,
+            ),
 
             // ── Pending sync banner ────────────────────────────
             _PendingSyncBanner(),

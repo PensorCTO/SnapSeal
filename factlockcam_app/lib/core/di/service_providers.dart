@@ -18,6 +18,7 @@ export '../../features/archive/data/archive_repository.dart'
     show archiveRepositoryProvider, archiveAssetManifestProvider;
 export '../../features/identity/presentation/providers/current_profile_provider.dart'
     show currentProfileProvider;
+export '../../ui/controllers/key_custody_provider.dart' show keyCustodyProvider;
 
 /// ProofLock-facing bridge for archive interactions.
 ///

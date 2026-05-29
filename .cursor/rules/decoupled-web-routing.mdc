@@ -1,0 +1,13 @@
+---
+description: Enforces decoupled external routing for web-based App Store compliance pages.
+globs: ["factlockcam_app/lib/core/config/**/*.dart", "factlockcam_app/lib/core/navigation/**/*.dart", "factlockcam_app/lib/ui/mobile/vault/account_settings_panel.dart"]
+---
+# FactLockCam Decoupled Web Routing Rules
+
+- **Zero Local HTML**: Do not bundle HTML, CSS, or legal PDFs inside the Flutter `assets/` directory for compliance pages.
+- **External URL Configuration**: Centralize compliance web URLs in `lib/core/config/app_config.dart` (`webBaseUrl`, `supportUrl`, `privacyUrl`, `termsUrl`, `guideUrl`). Courier unlock remains on `webArchiveBaseUrl` (`WEB_ARCHIVE_BASE_URL`).
+- **Navigation Protocol**: Use `url_launcher` with `LaunchMode.inAppBrowserView` (SFSafariViewController on iOS) via `ComplianceNavigation.openCompliancePage`.
+- **Context Anchors**:
+  - URL Configuration: `factlockcam_app/lib/core/config/app_config.dart`
+  - Compliance launcher: `factlockcam_app/lib/core/navigation/compliance_navigation.dart`
+  - Account panel: `factlockcam_app/lib/ui/mobile/vault/account_settings_panel.dart`

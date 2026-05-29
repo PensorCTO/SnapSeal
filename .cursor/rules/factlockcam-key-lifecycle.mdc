@@ -1,0 +1,23 @@
+---
+description: Architectural constraints for Sovereign Key Backup, Restore, and Zero-Knowledge Locking.
+globs: ["factlockcam_app/lib/core/ghost_key/**/*.dart", "factlockcam_app/lib/ui/mobile/**/*.dart", "factlockcam_app/lib/app/router/**/*.dart"]
+---
+
+# FactLockCam Key Lifecycle Constraints
+
+1. **Format Constraint**: Key backups MUST utilize a standardized, password-encrypted JSON keystore format to encapsulate sovereign keys within a `.factlock` file.
+2. **Cryptographic Standard**: The backup password MUST be stretched using PBKDF2 (≥100,000 iterations) before encrypting the private key payload. NEVER export plaintext private keys.
+3. **Zero-Knowledge Lock Definition**: The "Lock Archive" function MUST execute destructive `delete` operations on `FlutterSecureStorage`. It must NOT toggle a boolean flag in SharedPreferences to represent brick state. The app transitions to an unauthenticated/bricked shell when keys are absent.
+4. **Burn Semantics**: The `perform_full_burn()` UI flow MUST require a typed confirmation (typing `OBLITERATE`) and explicitly state that local keys will be purged and cloud assets unrecoverable.
+5. **Platform Interaction**: Exporting the `.factlock` file MUST utilize the native iOS Share Sheet via `share_plus`. Importing MUST utilize `file_picker` with strict extension filtering for `.factlock`.
+6. **Multi-Key Payload**: The `.factlock` backup file MUST encapsulate both the EVM private key (`factlockcam:evm_private_key`) and the Archive AES key (`factlockcam:vault_key`) within a single encrypted JSON payload.
+7. **Complete Eradication**: Lock (brick) and account burn MUST explicitly delete both `factlockcam:evm_private_key` AND `factlockcam:vault_key` before transitioning UI state. If either deletion fails, retry until both are confirmed absent.
+
+## Context Anchors
+
+- Key storage constants: `factlockcam_app/lib/core/ghost_key/key_storage_keys.dart`
+- Custody service: `factlockcam_app/lib/core/ghost_key/key_custody_service.dart`
+- Keystore: `factlockcam_app/lib/core/ghost_key/factlock_keystore.dart`
+- Router gate: `factlockcam_app/lib/app/router/app_router.dart`
+- Burn UI: `factlockcam_app/lib/ui/mobile/settings/burn_account_view.dart`
+- Restore UI: `factlockcam_app/lib/ui/mobile/settings/restore_archive_view.dart`

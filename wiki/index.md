@@ -11,6 +11,7 @@ Read this page first when answering questions about the wiki.
 
 | Page | When to read |
 |------|----------------|
+| [[Sovereign_Key_Lifecycle_2026-05]] | **Thirteenth QA (2026-05-29)** — multi-key `.factlock` backup/restore, brick mode, burn hardening, 52/52 tests |
 | [[Cloud_Vault_Wiring_2026-05]] | **Twelfth QA (2026-05-27)** — `factlock_vault` bucket, post-seal cloud sync, VaultSyncCoordinator, smoke test |
 | [[UI_Polish_Hub_Archive_2026-05]] | **Eleventh QA (2026-05-24)** — shared logo banner, Account hub tiles, chronology scroll clarity, 41/41 tests |
 | [[App_Store_Remediation_2026-05]] | **Tenth QA (2026-05-24)** — WEB_ARCHIVE_BASE_URL rename, courier archive indices pushed, TestFlight posture |
@@ -33,6 +34,7 @@ Read this page first when answering questions about the wiki.
 ## Concepts
 
 - [[LLM_Wiki_Pattern]] - The source-to-wiki compilation model.
+- [[Sovereign_Key_Lifecycle_2026-05]] - Thirteenth QA: multi-key `.factlock`, brick/restore, burn UX, compliance URL routing.
 - [[Cloud_Vault_Wiring_2026-05]] - Twelfth QA: factlock_vault cloud sync wired into capture seal pipeline.
 - [[UI_Polish_Hub_Archive_2026-05]] - Eleventh QA: logo banner, Account heavy-metal tiles, chronology scroll fix.
 - [[App_Store_Remediation_2026-05]] - Tenth QA: App Store remediation, WEB_ARCHIVE_BASE_URL, courier archive indices, TestFlight-first.
@@ -48,6 +50,7 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses (active)
 
+- [[Sovereign_Key_Lifecycle_2026-05]] - Thirteenth QA: `.factlock` multi-key backup, zero-knowledge lock, restore router gate, Account layout (May 2026).
 - [[Cloud_Vault_Wiring_2026-05]] - Twelfth QA: post-notarization cloud vault sync, factlock_vault migration, coordinator wiring (May 2026).
 - [[UI_Polish_Hub_Archive_2026-05]] - Eleventh QA: shared logo header, Account panel backdrop + hub tiles, chronology opacity fix (May 2026).
 - [[App_Store_Remediation_2026-05]] - Tenth QA: compliance remediation, archive URL rename, migration push, TestFlight posture (May 2026).

@@ -24,7 +24,12 @@ import '../../domain/blockchain/wallet_service.dart';
 import '../../domain/services/notarization_monitor_service.dart';
 import '../../domain/services/proof_sync_notifier.dart';
 import '../../domain/services/vault_service.dart';
+import '../ghost_key/app_lock_coordinator.dart';
+import '../ghost_key/backup_metadata_store.dart';
+import '../ghost_key/factlock_keystore.dart';
+import '../ghost_key/key_custody_service.dart';
 import '../ghost_key/native_enclave_channel.dart';
+import '../ghost_key/wallet_backup_service.dart';
 import '../../core/platform/platform_channel_coordinator.dart';
 import '../../features/archive/application/proof_courier_service.dart';
 import '../../features/archive/data/archive_repository.dart';
@@ -36,7 +41,12 @@ var _diConfigured = false;
 
 @visibleForTesting
 Future<void> resetDependenciesForTest() async {
-  if (_diConfigured) {
+  await resetDependenciesAfterStartupFailure();
+}
+
+/// Clears a partial GetIt graph when [configureDependencies] fails or times out.
+Future<void> resetDependenciesAfterStartupFailure() async {
+  if (_diConfigured || getIt.isRegistered<VaultDatabase>()) {
     await getIt.reset();
   }
   _diConfigured = false;
@@ -50,10 +60,29 @@ Future<void> configureDependencies() async {
   if (_diConfigured) {
     return;
   }
-  _diConfigured = true;
 
   getIt.registerLazySingleton<FlutterSecureStorage>(
     () => const FlutterSecureStorage(),
+  );
+
+  getIt.registerLazySingleton<KeyCustodyService>(
+    () => KeyCustodyService(secureStorage: getIt<FlutterSecureStorage>()),
+  );
+
+  getIt.registerLazySingleton<FactlockKeystore>(FactlockKeystore.new);
+
+  getIt.registerLazySingleton<BackupMetadataStore>(BackupMetadataStore.new);
+
+  getIt.registerLazySingleton<WalletBackupService>(
+    () => WalletBackupService(
+      keyCustodyService: getIt<KeyCustodyService>(),
+      keystore: getIt<FactlockKeystore>(),
+      backupMetadataStore: getIt<BackupMetadataStore>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<AppLockCoordinator>(
+    () => AppLockCoordinator(keyCustodyService: getIt<KeyCustodyService>()),
   );
 
   getIt.registerLazySingleton<SupabaseClientHandle>(SupabaseClientHandle.new);
@@ -217,4 +246,6 @@ Future<void> configureDependencies() async {
       coordinator: getIt<IsolateLockCoordinator>(),
     );
   }
+
+  _diConfigured = true;
 }

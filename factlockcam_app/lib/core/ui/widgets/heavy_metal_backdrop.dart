@@ -17,6 +17,9 @@ const String kHeavyMetalBackdropAsset =
 const String kHeavyMetalLogoHeaderAsset =
     'assets/images/factlockcam_logoheader.jpg';
 
+/// iOS device QA: a stuck AVFoundation init must not block the logon/hub shell.
+const Duration _backdropInitTimeout = Duration(seconds: 8);
+
 /// Bottom layer of a Heavy Metal [Stack]: a muted, cover-fit
 /// [VideoPlayer] painted over a [AppColors.titaniumDeep] base so the
 /// fallback (asset missing, init failure, or test mode) stays on-brand.
@@ -93,15 +96,19 @@ class HeavyMetalLogoBanner extends StatelessWidget {
     this.contentHeight = 104,
     this.child,
     this.actions = const [],
+    this.includeTopSafeArea = true,
   });
 
   final double contentHeight;
   final Widget? child;
   final List<Widget> actions;
 
+  /// When `false`, omits [MediaQuery.padding.top] — use beneath [VaultPanelNavigationBar].
+  final bool includeTopSafeArea;
+
   @override
   Widget build(BuildContext context) {
-    final topInset = MediaQuery.of(context).padding.top;
+    final topInset = includeTopSafeArea ? MediaQuery.of(context).padding.top : 0.0;
     return DecoratedBox(
       decoration: const BoxDecoration(
         color: AppColors.titaniumDeep,
@@ -187,7 +194,15 @@ mixin HeavyMetalBackdropMixin<W extends StatefulWidget> on State<W> {
       controller =
           (HeavyMetalBackdropMixin.debugControllerFactory ?? _defaultFactory)();
       _videoController = controller;
-      await controller.initialize();
+      await controller.initialize().timeout(
+        _backdropInitTimeout,
+        onTimeout: () {
+          throw TimeoutException(
+            'Heavy Metal backdrop init exceeded '
+            '${_backdropInitTimeout.inSeconds}s',
+          );
+        },
+      );
       if (!mounted) {
         await controller.dispose();
         _videoController = null;

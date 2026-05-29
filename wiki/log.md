@@ -5,6 +5,16 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-05-29
+
+- **Sovereign multi-key lifecycle + thirteenth QA pass**:
+  - **Key custody:** `KeyCustodyService`, `FactlockKeystore`, `WalletBackupService`, `AppLockCoordinator` under `lib/core/ghost_key/`; composite `.factlock` (EVM + vault AES).
+  - **UX:** Export/Lock/Burn in Account panel; `BurnAccountView` (typed OBLITERATE); `/restore` bricked shell; stable `GoRouter` refreshListenable.
+  - **Compliance:** Decoupled legal URLs via `ComplianceNavigation`; removed bundled legal markdown assets.
+  - **Tests:** **52/52** (`factlock_keystore_test`, `key_custody_service_test`, `app_lock_coordinator_test`, `burn_account_view_test`).
+  - **Rules:** `.cursor/rules/factlockcam-key-lifecycle.mdc`, `.cursor/rules/decoupled-web-routing.mdc`, `.cursor/rules/apple-privacy-compliance.mdc`.
+  - **Wiki:** Added [[Sovereign_Key_Lifecycle_2026-05]]; refreshed [[index]], [[overview]], [[glossary]].
+
 ## 2026-05-27
 
 - **Cloud vault wiring + twelfth QA pass**:

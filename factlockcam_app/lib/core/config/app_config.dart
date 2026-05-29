@@ -35,6 +35,10 @@ class AppConfig {
     'APP_ENVIRONMENT',
     defaultValue: GeneratedDartDefines.appEnvironment,
   );
+  static const _webBaseUrl = String.fromEnvironment(
+    'WEB_BASE_URL',
+    defaultValue: GeneratedDartDefines.webBaseUrl,
+  );
   static const _supportUrl = String.fromEnvironment(
     'SUPPORT_URL',
     defaultValue: GeneratedDartDefines.supportUrl,
@@ -99,17 +103,26 @@ class AppConfig {
   /// True while running under `flutter test` (Supabase/network quarantine).
   static bool get isFlutterTest => isRunningFlutterTest;
 
+  /// Cloudflare Pages origin for marketing and compliance (Astro SSG).
+  ///
+  /// Override with `--dart-define=WEB_BASE_URL=...` at build time.
+  static String get webBaseUrl => _webBaseUrl.isNotEmpty
+      ? _webBaseUrl
+      : 'https://factlockcam.pages.dev';
+
   /// Permanent support URL for App Store Connect and in-app settings.
-  static String get supportUrl =>
-      _supportUrl.isNotEmpty ? _supportUrl : 'https://factlockcam.com/support';
+  ///
+  /// Uses [SUPPORT_URL] when set; otherwise `{webBaseUrl}/support`.
+  static String get supportUrl => _supportUrl.isNotEmpty
+      ? _supportUrl
+      : '$webBaseUrl/support';
 
   /// Deprecated alias — prefer [supportUrl].
   static String get supportWebsiteUrl => supportUrl;
 
-  /// Deprecated external legal URLs — native bundled documents are preferred.
-  @Deprecated('Use offline LegalDocumentView assets instead.')
-  static const legalEulaUrl = 'https://factlockcam.com/eula';
+  static String get privacyUrl => '$webBaseUrl/privacy';
 
-  @Deprecated('Use offline LegalDocumentView assets instead.')
-  static const legalPrivacyUrl = 'https://factlockcam.com/privacy';
+  static String get termsUrl => '$webBaseUrl/terms';
+
+  static String get guideUrl => '$webBaseUrl/guide';
 }

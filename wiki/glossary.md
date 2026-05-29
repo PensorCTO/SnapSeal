@@ -95,6 +95,12 @@ summary: "Terminology reference for the LLM Wiki."
 | SupabaseVaultService | Upload-only cloud vault client; ciphertext in, updates `courier_packages.storage_path` / `file_size_bytes`. | [[Cloud_Vault_Wiring_2026-05]], `supabase_vault_service.dart` |
 | PlatformChannelCoordinator | MethodChannel `com.factlockcam.app/platform` for background tasks and iOS backup restore picker. | [[Identity_Lifecycle_And_Data_Lineage]] |
 | perform_full_burn | RPC deleting courier storage blobs then `auth.users` row; cascade purges profile-linked tables (App Store 5.1.1). | [[Identity_Lifecycle_And_Data_Lineage]], migration `20260521120000_identity_lifecycle.sql` |
+| .factlock | Password-encrypted JSON keystore exporting both `factlockcam:evm_private_key` and `factlockcam:vault_key`; PBKDF2 + AES-GCM envelope. | [[Sovereign_Key_Lifecycle_2026-05]], `factlock_keystore.dart` |
+| KeyCustodyService | Singleton read/write/purge for both sovereign secure-storage keys; used by burn, brick, and restore. | [[Sovereign_Key_Lifecycle_2026-05]], `key_custody_service.dart` |
+| AppLockCoordinator | Zero-knowledge brick orchestrator; deletes both keys with retry before custody redirect. | [[Sovereign_Key_Lifecycle_2026-05]], `app_lock_coordinator.dart` |
+| BackupMetadataStore | SharedPreferences flag `key_backup_completed_at`; brick pre-flight only (not brick state). | [[Sovereign_Key_Lifecycle_2026-05]] |
+| keyCustodyProvider | Riverpod gate: bootstraps keys for new accounts; redirects bricked sessions to `/restore`. | [[Sovereign_Key_Lifecycle_2026-05]], `key_custody_provider.dart` |
+| ComplianceNavigation | Opens Terms/Privacy/Guide/Support via `url_launcher` in-app browser (`AppConfig` URLs). | [[Sovereign_Key_Lifecycle_2026-05]], `compliance_navigation.dart` |
 
 ## Provenance Tracking
 

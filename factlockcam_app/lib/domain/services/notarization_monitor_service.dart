@@ -74,6 +74,15 @@ class PolygonNotarizationMonitorService
       return;
     }
 
+    // Do not block the first frame on Realtime socket connect.
+    unawaited(_startRealtimeSubscription(client));
+    _initWeb3Client();
+  }
+
+  Future<void> _startRealtimeSubscription(SupabaseClient client) async {
+    if (_channel != null) {
+      return;
+    }
     _channel = client
         .channel('proof-ledger-polygon-monitor')
         .onPostgresChanges(
@@ -85,9 +94,6 @@ class PolygonNotarizationMonitorService
           },
         )
         .subscribe();
-
-    // Initialize Web3Client for RPC polling if RPC URL is configured
-    _initWeb3Client();
   }
 
   /// Initializes the Web3Client from the POLYGON_RPC_URL dart-define.

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 
@@ -7,6 +9,8 @@ abstract class IPlatformChannelCoordinator {
   );
 
   Future<Uint8List?> pickEncryptedBackupBytes();
+
+  Future<Uint8List?> pickFactlockBackupBytes();
 }
 
 class PlatformChannelCoordinator implements IPlatformChannelCoordinator {
@@ -41,6 +45,20 @@ class PlatformChannelCoordinator implements IPlatformChannelCoordinator {
     }
     final bytes = await _channel.invokeMethod<Uint8List>(
       'pickEncryptedBackupBytes',
+    );
+    if (bytes == null || bytes.isEmpty) {
+      return null;
+    }
+    return bytes;
+  }
+
+  @override
+  Future<Uint8List?> pickFactlockBackupBytes() async {
+    if (kIsWeb) {
+      return null;
+    }
+    final bytes = await _channel.invokeMethod<Uint8List>(
+      'pickFactlockBackupBytes',
     );
     if (bytes == null || bytes.isEmpty) {
       return null;

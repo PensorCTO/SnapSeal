@@ -102,6 +102,10 @@ class VaultService {
 
   Future<void> burnLocalWallet() async {}
 
+  Future<void> ensureVaultKey() async {}
+
+  Future<void> reloadVaultKey() async {}
+
   Future<bool> retryPendingRemoteSync(String assetFingerprint) async => false;
 
   Future<void> updateArchiveMetadata({

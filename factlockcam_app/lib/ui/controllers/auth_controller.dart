@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../data/supabase/auth_repository.dart';
 import '../../domain/services/vault_service.dart';
+import 'key_custody_provider.dart';
 
 final authStateProvider = StreamProvider<AuthState?>((ref) {
   final client = ref.watch(supabaseClientProvider);
@@ -170,6 +171,7 @@ class AuthController extends Notifier<AuthUiState> {
         isAuthenticated: false,
         otpSent: false,
       );
+      ref.invalidate(keyCustodyProvider);
     }
   }
 }

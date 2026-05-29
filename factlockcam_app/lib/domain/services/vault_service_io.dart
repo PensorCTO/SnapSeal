@@ -21,6 +21,8 @@ import '../../core/di/locator.dart';
 import '../../core/journal/journal_repository.dart';
 import '../../core/journal/transactional_archive_persister.dart';
 import '../../core/lock/isolate_lock_coordinator.dart';
+import '../../core/ghost_key/key_custody_service.dart';
+import '../../core/ghost_key/key_storage_keys.dart';
 import '../../core/ghost_key/native_enclave_channel.dart';
 import '../../data/local/vault_database.dart';
 import '../../data/models/archive_item.dart';
@@ -130,8 +132,8 @@ class VaultService {
        _pathResolver = pathResolver ?? VaultPathResolver(storage),
        _vaultSyncCoordinator = vaultSyncCoordinator;
 
-  static const _vaultKeyName = 'factlockcam:vault_key';
-  static const _legacyVaultKeyName = 'snapseal:vault_key';
+  static const _vaultKeyName = KeyStorageKeys.vaultAesKey;
+  static const _legacyVaultKeyName = KeyStorageKeys.legacyVaultAesKey;
 
   /// Compile-time **only**. Has no Dart default — empty means "not passed"; see [_effectiveCourierWebArchiveBase].
   static const String _webArchiveCompilerDefine = String.fromEnvironment(
@@ -843,20 +845,32 @@ class VaultService {
     }
   }
 
-  /// DB rows plus path resolution and missing-thumbnail regeneration (same path as dashboard load).
+  /// DB rows plus path resolution. Thumbnail repair runs after return so the
+  /// hub/archive shell is not blocked decrypting every `.seal` on cold start.
   Future<List<ArchiveItem>> listArchiveItems() async {
     final raw = await _database.listArchiveItems();
     final out = <ArchiveItem>[];
     for (final item in raw) {
-      var next = await _pathResolver.resolve(item);
-      next = await regenerateMissingThumbnail(next);
-      out.add(next);
-      if (next.thumbnailPath != item.thumbnailPath ||
-          next.encryptedPath != item.encryptedPath) {
-        await _database.upsertArchiveItem(next);
+      out.add(await _pathResolver.resolve(item));
+    }
+    unawaited(_repairMissingThumbnailsInBackground(out));
+    return out;
+  }
+
+  Future<void> _repairMissingThumbnailsInBackground(
+    List<ArchiveItem> items,
+  ) async {
+    for (final item in items) {
+      try {
+        final repaired = await regenerateMissingThumbnail(item);
+        if (repaired.thumbnailPath != item.thumbnailPath ||
+            repaired.encryptedPath != item.encryptedPath) {
+          await _database.upsertArchiveItem(repaired);
+        }
+      } catch (_) {
+        // Best-effort repair; dashboard refresh picks up successful writes.
       }
     }
-    return out;
   }
 
   Future<void> updateArchiveMetadata({
@@ -1018,8 +1032,17 @@ class VaultService {
   Future<void> burnLocalWallet() async {
     await _database.deleteAll();
     await _storage.deleteAll();
-    await _secureStorage.delete(key: _vaultKeyName);
-    await _secureStorage.delete(key: _legacyVaultKeyName);
+    await getIt<KeyCustodyService>().purgeAllLocalKeys();
+  }
+
+  /// Ensures the archive AES key exists in secure storage (creates if absent).
+  Future<void> ensureVaultKey() async {
+    await _loadOrCreateKeyBytes();
+  }
+
+  /// Re-reads sovereign archive key from secure storage after restore.
+  Future<void> reloadVaultKey() async {
+    await _secureStorage.read(key: _vaultKeyName);
   }
 
   /// Removes the local SQLite row and encrypted + thumbnail files for one asset.
@@ -1063,6 +1086,8 @@ class VaultService {
     return _retryPendingSimulatedSync(assetFingerprint);
   }
 
+  static const _pendingSyncNetworkTimeout = Duration(seconds: 15);
+
   Future<bool> _retryPendingPolygonSync(String assetFingerprint) async {
     final item = await _database.findArchiveItem(assetFingerprint);
     if (item == null || !item.pendingSync) {
@@ -1077,13 +1102,21 @@ class VaultService {
     }
 
     try {
-      await _sealLedgerRepository.syncAssetFingerprint(assetFingerprint);
+      await _sealLedgerRepository
+          .syncAssetFingerprint(assetFingerprint)
+          .timeout(_pendingSyncNetworkTimeout);
+    } on TimeoutException {
+      await _database.markSyncDeferred(
+        assetFingerprint: assetFingerprint,
+        nextRetryAt: _nextRetryAt(item.syncAttemptCount + 1),
+      );
+      return false;
     } catch (_) {}
 
     try {
-      final remoteStatus = await _sealLedgerRepository.fetchProofNotarizationStatus(
-        assetFingerprint,
-      );
+      final remoteStatus = await _sealLedgerRepository
+          .fetchProofNotarizationStatus(assetFingerprint)
+          .timeout(_pendingSyncNetworkTimeout);
       if (remoteStatus == 'notarized') {
         final chainTxHash = await _sealLedgerRepository.fetchProofChainTxHash(
           assetFingerprint,

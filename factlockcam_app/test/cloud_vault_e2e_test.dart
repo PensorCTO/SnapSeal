@@ -24,6 +24,12 @@ class _FakePlatformCoordinator extends Fake
   ) {
     return criticalUploadTask();
   }
+
+  @override
+  Future<Uint8List?> pickEncryptedBackupBytes() async => null;
+
+  @override
+  Future<Uint8List?> pickFactlockBackupBytes() async => null;
 }
 
 void main() {

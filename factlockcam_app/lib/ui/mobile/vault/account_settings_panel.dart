@@ -1,21 +1,28 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart' show Icons, Scaffold;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:postgrest/postgrest.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/config/app_config.dart';
+import '../../../core/di/locator.dart';
+import '../../../core/ghost_key/app_lock_coordinator.dart';
+import '../../../core/ghost_key/backup_metadata_store.dart';
+import '../../../core/ghost_key/wallet_backup_service.dart';
+import '../../../core/navigation/compliance_navigation.dart';
 import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
 import '../../../core/ui/widgets/heavy_metal_hub_tile.dart';
 import '../../../core/ui/widgets/vault_panel_navigation_bar.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/dashboard_controller.dart';
-import '../settings/legal_document_view.dart';
-import 'providers/thumbnail_cache_provider.dart';
+import '../../controllers/key_custody_provider.dart';
+import '../settings/burn_account_view.dart';
+import '../vault/providers/thumbnail_cache_provider.dart';
 
-/// Account & Settings panel — logout, account deletion, legal links.
+/// Account & Settings panel — logout, key custody, account deletion, legal links.
 class AccountSettingsPanel extends ConsumerStatefulWidget {
   const AccountSettingsPanel({super.key, this.onBackToHub});
 
@@ -28,37 +35,21 @@ class AccountSettingsPanel extends ConsumerStatefulWidget {
 
 class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
     with HeavyMetalBackdropMixin<AccountSettingsPanel> {
-  bool _isBurning = false;
+  bool _busy = false;
 
-  Future<void> _openExternalUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (!await canLaunchUrl(uri)) {
+  bool get _keyCustodyEnabled => !kIsWeb && AppConfig.usePolygonNotarizer;
+
+  Future<void> _openCompliancePage(String url) async {
+    try {
+      await ComplianceNavigation.openCompliancePage(url);
+    } catch (error) {
       if (!mounted) return;
-      await _showAlert('Unable to open link', url);
-      return;
+      await _showAlert('Unable to open link', error.toString());
     }
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
-  Future<void> _openSupportWebsite() => _openExternalUrl(AppConfig.supportUrl);
-
-  void _openLegalDocument({
-    required String title,
-    required String assetPath,
-  }) {
-    Navigator.of(context).push(
-      CupertinoPageRoute<void>(
-        builder: (_) => LegalDocumentView(title: title, assetPath: assetPath),
-      ),
-    );
-  }
-
-  Future<void> _showComingSoon(String feature) {
-    return _showAlert(
-      'Coming soon',
-      '$feature will be available in a future update.',
-    );
-  }
+  Future<void> _openSupportWebsite() =>
+      _openCompliancePage(AppConfig.supportUrl);
 
   Future<void> _signOut() async {
     await ref.read(authControllerProvider.notifier).signOut();
@@ -66,70 +57,165 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
     ref.invalidate(thumbnailCacheProvider);
   }
 
-  Future<void> _confirmBurnAccount() async {
-    final first = await showCupertinoDialog<bool>(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Delete account?'),
-        content: const Text(
-          'This permanently deletes your account, remote proof data, '
-          'and courier packages. Local archive data on this device will also '
-          'be erased. This cannot be undone.',
-        ),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Continue'),
-          ),
-        ],
-      ),
-    );
-    if (first != true || !mounted) return;
+  Future<void> _exportArchiveKeys() async {
+    final passwords = await _promptBackupPasswords();
+    if (passwords == null || !mounted) return;
 
-    final second = await showCupertinoDialog<bool>(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Final confirmation'),
-        content: const Text(
-          'Tap Delete Account to permanently remove your FactLockCam '
-          'account and all associated server data.',
-        ),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete account'),
-          ),
-        ],
-      ),
-    );
-    if (second != true || !mounted) return;
-
-    setState(() => _isBurning = true);
+    setState(() => _busy = true);
     try {
-      await ref.read(authControllerProvider.notifier).performFullBurn();
-      ref.invalidate(dashboardControllerProvider);
-      ref.invalidate(thumbnailCacheProvider);
-    } on PostgrestException catch (error) {
-      if (!mounted) return;
-      await _showAlert('Account deletion failed', error.message);
+      final file = await getIt<WalletBackupService>().exportFactlock(
+        backupPassword: passwords.$1,
+      );
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'application/octet-stream')],
+        subject: 'FactLockCam Archive Key Backup',
+      );
     } catch (error) {
       if (!mounted) return;
-      await _showAlert('Account deletion failed', error.toString());
+      await _showAlert('Export failed', error.toString());
     } finally {
       if (mounted) {
-        setState(() => _isBurning = false);
+        setState(() => _busy = false);
       }
     }
+  }
+
+  Future<(String, String)?> _promptBackupPasswords() async {
+    final passwordController = TextEditingController();
+    final confirmController = TextEditingController();
+    String? errorText;
+    String? capturedPassword;
+
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return CupertinoAlertDialog(
+              title: const Text('Export Archive Keys'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Create a strong one-time backup password. You will need this '
+                    'password to restore your keys from the .factlock file.',
+                  ),
+                  const SizedBox(height: 12),
+                  CupertinoTextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    placeholder: 'Backup password',
+                  ),
+                  const SizedBox(height: 8),
+                  CupertinoTextField(
+                    controller: confirmController,
+                    obscureText: true,
+                    placeholder: 'Confirm password',
+                  ),
+                  if (errorText != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      errorText!,
+                      style: const TextStyle(
+                        color: CupertinoColors.destructiveRed,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                CupertinoDialogAction(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                CupertinoDialogAction(
+                  isDefaultAction: true,
+                  onPressed: () {
+                    final password = passwordController.text;
+                    final confirm = confirmController.text;
+                    if (password.length < 8) {
+                      setDialogState(() {
+                        errorText = 'Password must be at least 8 characters.';
+                      });
+                      return;
+                    }
+                    if (password != confirm) {
+                      setDialogState(() {
+                        errorText = 'Passwords do not match.';
+                      });
+                      return;
+                    }
+                    capturedPassword = password;
+                    Navigator.of(dialogContext).pop(true);
+                  },
+                  child: const Text('Export'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    passwordController.dispose();
+    confirmController.dispose();
+
+    if (confirmed != true || capturedPassword == null) return null;
+    return (capturedPassword!, capturedPassword!);
+  }
+
+  Future<void> _lockArchive() async {
+    final hasBackup = await getIt<BackupMetadataStore>().hasCompletedBackup();
+    if (!hasBackup) {
+      await _showAlert(
+        'Backup required',
+        'Export Archive Keys at least once before locking the archive.',
+      );
+      return;
+    }
+
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text('Lock Archive?'),
+        content: const Text(
+          'This removes your cryptographic keys from this device. '
+          'You will need your .factlock backup file and password to open '
+          'the app again.',
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Lock Archive'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _busy = true);
+    try {
+      await getIt<AppLockCoordinator>().lockArchive();
+      await ref.read(keyCustodyProvider.notifier).refresh();
+    } catch (error) {
+      if (!mounted) return;
+      await _showAlert('Lock failed', error.toString());
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  void _openBurnAccount() {
+    context.push(BurnAccountView.routePath);
   }
 
   Future<void> _showAlert(String title, String message) {
@@ -151,7 +237,7 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authControllerProvider);
-    final busy = _isBurning || auth.isLoading;
+    final busy = _busy || auth.isLoading;
 
     return Scaffold(
       backgroundColor: AppColors.titaniumDeep,
@@ -162,7 +248,9 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
               title: 'Account',
               onBack: widget.onBackToHub!,
             ),
-          const HeavyMetalLogoBanner(),
+          HeavyMetalLogoBanner(
+            includeTopSafeArea: widget.onBackToHub == null,
+          ),
           Expanded(
             child: Stack(
               fit: StackFit.expand,
@@ -176,14 +264,12 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
                   top: false,
                   child: busy
                       ? const Center(child: CupertinoActivityIndicator())
-                      : LayoutBuilder(
-                          builder: (context, constraints) {
-                            return SingleChildScrollView(
-                              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  minHeight: constraints.maxHeight - 40,
-                                ),
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: SingleChildScrollView(
+                                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
@@ -196,45 +282,32 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
                                       ),
                                     ),
                                     const SizedBox(height: 24),
-                                    _ActionButton(
-                                      label: 'Log out',
-                                      color: AppColors.kineticGreen,
-                                      onPressed: busy ? null : _signOut,
-                                    ),
-                                    const SizedBox(height: 12),
-                                    _ActionButton(
-                                      label: 'Burn account',
-                                      color: CupertinoColors.destructiveRed,
-                                      onPressed: busy ? null : _confirmBurnAccount,
-                                    ),
-                                    const SizedBox(height: 28),
                                     _SectionLabel('LEGAL & SUPPORT'),
                                     const SizedBox(height: 12),
                                     HeavyMetalHubTile(
                                       icon: Icons.description_outlined,
                                       label: 'Terms of Service',
                                       subtitle: 'End-user license and usage terms',
-                                      onTap: () => _openLegalDocument(
-                                        title: 'Terms of Service',
-                                        assetPath: LegalDocumentView.termsAssetPath,
+                                      onTap: () => _openCompliancePage(
+                                        AppConfig.termsUrl,
                                       ),
                                     ),
                                     const SizedBox(height: 12),
                                     HeavyMetalHubTile(
                                       icon: Icons.shield_outlined,
                                       label: 'Privacy Policy',
-                                      subtitle: 'How we handle your data on this device',
-                                      onTap: () => _openLegalDocument(
-                                        title: 'Privacy Policy',
-                                        assetPath:
-                                            LegalDocumentView.privacyAssetPath,
+                                      subtitle:
+                                          'How we handle your data on this device',
+                                      onTap: () => _openCompliancePage(
+                                        AppConfig.privacyUrl,
                                       ),
                                     ),
                                     const SizedBox(height: 12),
                                     HeavyMetalHubTile(
                                       icon: Icons.help_outline,
                                       label: 'Help & Support',
-                                      subtitle: 'Contact support and troubleshooting',
+                                      subtitle:
+                                          'Contact support and troubleshooting',
                                       onTap: _openSupportWebsite,
                                     ),
                                     const SizedBox(height: 12),
@@ -242,20 +315,59 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
                                       icon: Icons.language_outlined,
                                       label: 'App Web Page',
                                       subtitle: 'Visit the FactLockCam website',
-                                      onTap: () => _showComingSoon('App Web Page'),
+                                      onTap: () => _openCompliancePage(
+                                        AppConfig.webBaseUrl,
+                                      ),
                                     ),
                                     const SizedBox(height: 12),
                                     HeavyMetalHubTile(
                                       icon: Icons.menu_book_outlined,
                                       label: 'User Guide',
-                                      subtitle: 'Documentation and how-to guides',
-                                      onTap: () => _showComingSoon('User Guide'),
+                                      subtitle:
+                                          'Documentation and how-to guides',
+                                      onTap: () => _openCompliancePage(
+                                        AppConfig.guideUrl,
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
-                            );
-                          },
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _ActionButton(
+                                    label: 'Log out',
+                                    color: AppColors.kineticGreen,
+                                    onPressed: busy ? null : _signOut,
+                                  ),
+                                  if (_keyCustodyEnabled) ...[
+                                    const SizedBox(height: 12),
+                                    _ActionButton(
+                                      label: 'Export archive keys',
+                                      color: AppColors.kineticGreen,
+                                      onPressed:
+                                          busy ? null : _exportArchiveKeys,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    _ActionButton(
+                                      label: 'Lock archive',
+                                      color: CupertinoColors.systemOrange,
+                                      onPressed: busy ? null : _lockArchive,
+                                    ),
+                                  ],
+                                  const SizedBox(height: 12),
+                                  _ActionButton(
+                                    label: 'Burn account',
+                                    color: CupertinoColors.destructiveRed,
+                                    onPressed: busy ? null : _openBurnAccount,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                 ),
               ],
