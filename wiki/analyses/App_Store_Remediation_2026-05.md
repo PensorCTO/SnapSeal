@@ -76,6 +76,7 @@ TestFlight does **not** require live marketing domains; App Store Connect review
 
 ## Related Notes
 
+* [[App_Store_Hardening_2026-05]] — fifteenth QA (2026-05-30): hardware signing, manifest remediation
 * [[Production_Transition_2026-05]]
 * [[Send_Proof_Courier_2026-05]]
 * [[FactLockCam_Product_Baseline_2026-05]]

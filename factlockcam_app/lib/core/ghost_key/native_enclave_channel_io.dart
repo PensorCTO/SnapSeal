@@ -1,7 +1,10 @@
 import 'package:flutter/services.dart';
 
 /// Hardware-backed signing bridge (Secure Enclave / Android Keystore).
+///
 /// Native handlers register `com.factlockcam.app/enclave` and implement `signHash`.
+/// [hash] is a lowercase hex SHA-256 digest; the return value is a base64-encoded
+/// ECDSA signature over that digest (P-256 / secp256r1).
 ///
 /// For widget/unit tests without a platform engine, pass [signHashForTests].
 class NativeEnclaveChannel {

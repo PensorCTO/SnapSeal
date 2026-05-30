@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/config/app_config.dart';
 import '../../../../core/di/service_providers.dart';
 import '../../../../data/models/archive_item.dart';
 
@@ -56,6 +57,12 @@ class SendProof extends _$SendProof {
   }
 
   Future<SendProofResult> _executeSend(SendProofRequest request) async {
+    if (!AppConfig.enableProofLinks) {
+      throw StateError(
+        'Send Proof is not available in this build. Courier links require '
+        'ENABLE_PROOF_LINKS and a live archive origin.',
+      );
+    }
     final vaultService = ref.read(vaultServiceProvider);
     final certificateService = ref.read(certificateExportServiceProvider);
     final storage = ref.read(localVaultStorageProvider);

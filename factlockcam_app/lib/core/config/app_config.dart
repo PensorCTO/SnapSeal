@@ -43,6 +43,10 @@ class AppConfig {
     'SUPPORT_URL',
     defaultValue: GeneratedDartDefines.supportUrl,
   );
+  static const _enableProofLinks = bool.fromEnvironment(
+    'ENABLE_PROOF_LINKS',
+    defaultValue: GeneratedDartDefines.enableProofLinks,
+  );
 
   static String get supabaseAnonKey => _supabaseAnonKey;
   static String get localAnonKey => _localAnonKey;
@@ -76,6 +80,9 @@ class AppConfig {
   static bool get usePolygonNotarizer => _usePolygonNotarizer;
   static bool get requireHardwareAttestation => _requireHardwareAttestation;
 
+  /// When false, Send Proof / courier URL generation is compile-time pruned.
+  static bool get enableProofLinks => _enableProofLinks;
+
   /// Polygon JSON-RPC endpoint for on-chain transaction receipt monitoring.
   ///
   /// Set via `--dart-define=POLYGON_RPC_URL=...` at build time.
@@ -83,6 +90,9 @@ class AppConfig {
   static String? get polygonRpcUrl {
     const fromEnv = String.fromEnvironment('POLYGON_RPC_URL');
     if (fromEnv.isNotEmpty) return fromEnv;
+    if (kReleaseMode || kProfileMode) {
+      return null;
+    }
     const fromGenerated = GeneratedDartDefines.polygonRpcUrl;
     if (fromGenerated.isNotEmpty) return fromGenerated;
     return null;

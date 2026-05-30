@@ -27,10 +27,18 @@ import MobileCoreServices
             )
             return
           }
-          // TODO: Replace with Secure Enclave / CryptoKit signing.
-          let payload = "SIMULATED_DEV|\(hash)"
-          let sig = Data(payload.utf8).base64EncodedString()
-          result(sig)
+          do {
+            let signature = try EnclaveSigner.signHash(hex: hash)
+            result(signature)
+          } catch {
+            result(
+              FlutterError(
+                code: "enclave_sign_failed",
+                message: error.localizedDescription,
+                details: nil,
+              ),
+            )
+          }
         } else {
           result(FlutterMethodNotImplemented)
         }

@@ -59,6 +59,9 @@ class VaultService {
     Object? pathResolver,
     Object? transactionalPersister,
     Object? vaultSyncCoordinator,
+    Object? keyCustodyService,
+    Object? isolateLockCoordinator,
+    Object? journalRepository,
   });
 
   Future<String> sealAndStore(

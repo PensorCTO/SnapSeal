@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/config/app_config.dart';
 import '../../data/supabase/auth_repository.dart';
 import '../../domain/services/vault_service.dart';
 import 'key_custody_provider.dart';
@@ -47,6 +48,15 @@ class AuthUiState {
   );
 }
 
+String _supabaseAuthUnavailableMessage() {
+  if (!AppConfig.hasSupabaseConfig) {
+    return 'Supabase is not configured.';
+  }
+  return 'Supabase client is not ready. Stop the app, run '
+      '../scripts/sync_flutter_dart_defines.sh, then rebuild with '
+      'flutter run --dart-define-from-file=dart_defines.json or ./run_device.sh.';
+}
+
 class AuthController extends Notifier<AuthUiState> {
   @override
   AuthUiState build() {
@@ -61,7 +71,7 @@ class AuthController extends Notifier<AuthUiState> {
     });
 
     return AuthUiState(
-      isConfigured: repository.isConfigured,
+      isConfigured: AppConfig.hasSupabaseConfig && repository.isConfigured,
       isAuthenticated: repository.currentSession != null,
     );
   }
@@ -84,7 +94,7 @@ class AuthController extends Notifier<AuthUiState> {
       if (client == null) {
         state = state.copyWith(
           isLoading: false,
-          error: 'Supabase is not configured.',
+          error: _supabaseAuthUnavailableMessage(),
         );
         return false;
       }
@@ -125,7 +135,7 @@ class AuthController extends Notifier<AuthUiState> {
       if (client == null) {
         state = state.copyWith(
           isLoading: false,
-          error: 'Supabase is not configured.',
+          error: _supabaseAuthUnavailableMessage(),
         );
         return false;
       }

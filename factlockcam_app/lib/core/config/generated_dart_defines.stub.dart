@@ -6,7 +6,11 @@ abstract final class GeneratedDartDefines {
   static const supabaseUrl = '';
   static const supabaseAnonKey = '';
   static const localAnonKey = '';
-  static const webArchiveBaseUrl = '';
+  static const webBaseUrl = 'https://factlockcam.com';
+  static const webArchiveBaseUrl = 'https://archive.factlockcam.com';
+  static const appEnvironment = 'production';
+  static const supportUrl = '';
   static const usePolygonNotarizer = false;
   static const polygonRpcUrl = '';
+  static const enableProofLinks = false;
 }

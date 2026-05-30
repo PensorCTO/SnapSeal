@@ -242,6 +242,9 @@ Future<void> configureDependencies() async {
       transactionalPersister: kIsWeb
           ? null
           : getIt<TransactionalArchivePersister>(),
+      keyCustodyService: getIt<KeyCustodyService>(),
+      isolateLockCoordinator: getIt<IsolateLockCoordinator>(),
+      journalRepository: getIt<JournalRepository>(),
     ),
   );
 

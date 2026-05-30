@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
@@ -6,7 +7,8 @@ import 'dart:ui' as ui;
 
 import 'package:camera/camera.dart';
 import 'package:crypto/crypto.dart' as crypto;
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart'
+    show kDebugMode, kProfileMode, kReleaseMode;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -117,6 +119,9 @@ class VaultService {
     TransactionalArchivePersister? transactionalPersister,
     VaultPathResolver? pathResolver,
     VaultSyncCoordinator? vaultSyncCoordinator,
+    required KeyCustodyService keyCustodyService,
+    required IsolateLockCoordinator isolateLockCoordinator,
+    required JournalRepository journalRepository,
   }) : _database = database,
        _storage = storage,
        _secureStorage = secureStorage,
@@ -131,7 +136,10 @@ class VaultService {
        _proofCourierService = proofCourierService,
        _transactionalPersister = transactionalPersister,
        _pathResolver = pathResolver ?? VaultPathResolver(storage),
-       _vaultSyncCoordinator = vaultSyncCoordinator;
+       _vaultSyncCoordinator = vaultSyncCoordinator,
+       _keyCustodyService = keyCustodyService,
+       _isolateLockCoordinator = isolateLockCoordinator,
+       _journalRepository = journalRepository;
 
   static const _vaultKeyName = KeyStorageKeys.vaultAesKey;
   static const _legacyVaultKeyName = KeyStorageKeys.legacyVaultAesKey;
@@ -156,7 +164,41 @@ class VaultService {
   final TransactionalArchivePersister? _transactionalPersister;
   final VaultPathResolver _pathResolver;
   final VaultSyncCoordinator? _vaultSyncCoordinator;
+  final KeyCustodyService _keyCustodyService;
+  final IsolateLockCoordinator _isolateLockCoordinator;
+  final JournalRepository _journalRepository;
   Future<void>? _captureSealChain;
+
+  static const _simulatedSignaturePrefix = 'SIMULATED_DEV|';
+
+  String _validatedDeviceSignature(String signature) {
+    if (!AppConfig.requireHardwareAttestation) {
+      return signature;
+    }
+    if (!(kReleaseMode || kProfileMode)) {
+      return signature;
+    }
+    try {
+      final decoded = utf8.decode(base64Decode(signature));
+      if (decoded.startsWith(_simulatedSignaturePrefix)) {
+        throw StateError(
+          'Hardware attestation is required but the device signature is simulated.',
+        );
+      }
+    } catch (_) {
+      if (signature.contains(_simulatedSignaturePrefix)) {
+        throw StateError(
+          'Hardware attestation is required but the device signature is simulated.',
+        );
+      }
+    }
+    return signature;
+  }
+
+  Future<String> _signDeviceHash(String fileHash) async {
+    final signature = await _nativeEnclave.signHash(fileHash);
+    return _validatedDeviceSignature(signature);
+  }
 
   Future<T> _enqueueCaptureSeal<T>(Future<T> Function() action) async {
     final previous = _captureSealChain;
@@ -265,7 +307,7 @@ class VaultService {
     String? deviceSignature;
     if (!pendingRemoteSync) {
       try {
-        deviceSignature = await _nativeEnclave.signHash(fileHash);
+        deviceSignature = await _signDeviceHash(fileHash);
       } catch (e) {
         if (_isRecoverableRemoteFailure(e)) {
           pendingRemoteSync = true;
@@ -406,7 +448,7 @@ class VaultService {
     String? sealingWalletAddress;
     if (!pendingRemoteSync) {
       try {
-        deviceSignature = await _nativeEnclave.signHash(fileHash);
+        deviceSignature = await _signDeviceHash(fileHash);
         ownerSignature = await _walletService.signMessageHash(fileHash);
         sealingWalletAddress = await _walletService.ensureEvmAddress();
       } catch (e) {
@@ -576,6 +618,12 @@ class VaultService {
     required String assetHash,
     required String verifierPassword,
   }) async {
+    if (!AppConfig.enableProofLinks) {
+      throw StateError(
+        'Send Proof links are disabled for this build. Set ENABLE_PROOF_LINKS=true '
+        'after the archive web surface is live.',
+      );
+    }
     final userId = _authRepository.currentUserId;
     if (userId == null || userId.isEmpty) {
       throw StateError('No authenticated user for courier package creation.');
@@ -1033,7 +1081,7 @@ class VaultService {
   Future<void> burnLocalWallet() async {
     await _database.deleteAll();
     await _storage.deleteAll();
-    await getIt<KeyCustodyService>().purgeAllLocalKeys();
+    await _keyCustodyService.purgeAllLocalKeys();
   }
 
   /// Ensures the archive AES key exists in secure storage (creates if absent).
@@ -1043,7 +1091,14 @@ class VaultService {
 
   /// Re-reads sovereign archive key from secure storage after restore.
   Future<void> reloadVaultKey() async {
-    await _secureStorage.read(key: _vaultKeyName);
+    var existing = await _secureStorage.read(key: _vaultKeyName);
+    existing ??= await _secureStorage.read(key: _legacyVaultKeyName);
+    if (existing == null) {
+      throw StateError(
+        'Archive encryption key not found after restore. Import a valid .factlock backup.',
+      );
+    }
+    _vaultEncryption.decodeKey(existing);
   }
 
   /// Removes the local SQLite row and encrypted + thumbnail files for one asset.
@@ -1051,11 +1106,22 @@ class VaultService {
   /// Does **not** delete remote `proof_ledger` / chain artifacts; those may
   /// remain as historical records on Supabase.
   Future<void> deleteArchiveItem(String assetFingerprint) async {
-    getIt<IsolateLockCoordinator>().unlock(assetFingerprint);
+    _isolateLockCoordinator.unlock(assetFingerprint);
 
     final item = await _database.findArchiveItem(assetFingerprint);
     if (item == null) {
       return;
+    }
+
+    final rowsDeleted = await _database.deleteArchiveItem(assetFingerprint);
+    if (rowsDeleted == 0) {
+      return;
+    }
+
+    final journal = _journalRepository;
+    if (journal.isAvailable) {
+      await journal.open();
+      journal.purgeAsset(assetFingerprint);
     }
 
     final resolved = await _pathResolver.resolve(item);
@@ -1066,16 +1132,6 @@ class VaultService {
       resolved.thumbnailPath,
       ...transactionalPaths.pathsForPurge,
     ]);
-
-    try {
-      final journal = getIt<JournalRepository>();
-      if (journal.isAvailable) {
-        await journal.open();
-        journal.purgeAsset(assetFingerprint);
-      }
-    } catch (_) {}
-
-    await _database.deleteArchiveItem(assetFingerprint);
   }
 
   /// Background-friendly: `seal_ledger` active-wallet row + proof ledger completion.
@@ -1137,7 +1193,7 @@ class VaultService {
     String? deviceSignature;
     String? ownerSignature;
     try {
-      deviceSignature = await _nativeEnclave.signHash(assetFingerprint);
+      deviceSignature = await _signDeviceHash(assetFingerprint);
       ownerSignature = await _walletService.signMessageHash(assetFingerprint);
     } catch (e) {
       if (_isRecoverableRemoteFailure(e)) {
@@ -1221,7 +1277,7 @@ class VaultService {
 
     String? deviceSignature;
     try {
-      deviceSignature = await _nativeEnclave.signHash(assetFingerprint);
+      deviceSignature = await _signDeviceHash(assetFingerprint);
     } catch (e) {
       if (_isRecoverableRemoteFailure(e)) {
         pendingRemote = true;
@@ -1407,11 +1463,17 @@ class VaultService {
   }
 
   bool _isRecoverableRemoteFailure(Object error) {
+    if (error is MissingPluginException) return false;
     if (error is SocketException) return true;
     if (error is HandshakeException) return true;
     if (error is TimeoutException) return true;
-    if (error is PlatformException) return true;
-    if (error is MissingPluginException) return true;
+    if (error is PlatformException) {
+      final code = error.code.toLowerCase();
+      return code.contains('network') ||
+          code.contains('connection') ||
+          code.contains('timeout') ||
+          code.contains('unavailable');
+    }
     final message = error.toString().toLowerCase();
     return message.contains('socket') ||
         message.contains('connection refused') ||

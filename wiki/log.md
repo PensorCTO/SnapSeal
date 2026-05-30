@@ -5,6 +5,17 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-05-30
+
+- **Fifteenth QA pass — App Store hardening (architectural manifest)** — user-confirmed on physical iPhone:
+  - **Config:** `ENABLE_PROOF_LINKS` dart-define + `AppConfig.enableProofLinks` (default false for submission); `POLYGON_RPC_URL` generated fallback debug-only; `.cursor/rules/factlock-remediation.mdc`; `run_device.sh` (sync + `--dart-define-from-file`).
+  - **Auth pitfall fixed:** Empty `generated_dart_defines.dart` stub broke plain `flutter run` login — requires `sync_flutter_dart_defines.sh` or `run_device.sh` + cold restart.
+  - **Sync/delete:** `MissingPluginException` terminal in `_isRecoverableRemoteFailure`; `deleteArchiveItem` DB-before-files; `reloadVaultKey` validates restored key.
+  - **DI:** `KeyCustodyService`, `IsolateLockCoordinator`, `JournalRepository` injected into `VaultService`; UI `getIt` leaves bridged via `service_providers.dart`.
+  - **Native:** iOS `EnclaveSigner.swift` (Secure Enclave P-256); Android `DeviceEnclaveSigner.kt` (Keystore/StrongBox); `SIMULATED_DEV` removed; `REQUIRE_HARDWARE_ATTESTATION` wired in Dart.
+  - **Tests:** **55/55**; `MockVideoPlayerPlatform` in `test/helpers/mock_platform_interfaces.dart`.
+  - **Wiki:** [[App_Store_Hardening_2026-05]]; refreshed [[index]], [[overview]], [[glossary]], [[FactLockCam_Product_Baseline_2026-05]], [[ProofLock_Refactor_Scope]].
+
 ## 2026-05-29
 
 - **Decoupled public web + fourteenth QA pass**:

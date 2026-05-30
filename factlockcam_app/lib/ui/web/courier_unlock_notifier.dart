@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_config.dart';
 import '../../core/crypto/courier_crypto.dart';
 import '../../core/crypto/vault_encryption_handler.dart';
-import '../../core/di/locator.dart';
+import '../../core/di/service_providers.dart';
 import '../../data/supabase/courier_repository.dart';
 
 final courierUnlockProvider =
@@ -56,7 +56,7 @@ class CourierUnlockNotifier extends Notifier<CourierUnlockState> {
 
   @override
   CourierUnlockState build() {
-    _courierRepository = getIt<CourierRepository>();
+    _courierRepository = ref.read(courierRepositoryProvider);
     return const CourierUnlockState();
   }
 

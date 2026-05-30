@@ -1,0 +1,24 @@
+---
+description: Enforces secret segregation, strict compile-time configurations, secure platform-channel exception hierarchies, and dependency locator constraints.
+globs: "factlockcam_app/lib/**/*.dart", "factlockcam_app/test/**/*.dart", ".gitignore"
+---
+# FactLockCam Remediation and Hardening Standards
+
+## Configuration & Secret Segregation
+- **NEVER** commit secret material, RPC keys, or infrastructure tracking metrics directly into codebase parameters. All configuration targets must be managed via standard compilation injections (`--dart-define`, `dart_defines.json`, repo-root `.env.local` via `scripts/sync_flutter_dart_defines.sh`).
+- `factlockcam_app/lib/core/config/generated_dart_defines.dart` and `factlockcam_app/dart_defines.json` MUST remain gitignored.
+
+## Error Handling Constraints
+- `MissingPluginException` must **NEVER** be categorized as an environment recovery path. Treat platform channel absences as absolute terminal failures in [`vault_service_io.dart`](factlockcam_app/lib/domain/services/vault_service_io.dart) `_isRecoverableRemoteFailure`.
+- Do not treat broad `PlatformException` as recoverable unless the error code is a known transient network/channel case.
+
+## Service Isolation & Dependency Injection
+- Do **NOT** invoke raw service locators (`getIt<T>()`) directly within UI widget leaves or ephemeral controller scopes. All dependencies must pass through verified architectural provider interfaces or state notifier contracts.
+- Inject `KeyCustodyService` and `IsolateLockCoordinator` into `VaultService` — no `getIt` inside domain service methods.
+
+## Async Naming Rules
+- Methods performing network transitions, storage writes, or isolate interactions using the `async` boundary must **NEVER** include the suffix `Sync` in **new** APIs. Existing `retryPendingRemoteSync` / `setPendingSync` names are grandfathered.
+
+## Native Signing
+- Release/profile builds must use hardware-backed `signHash` (iOS Secure Enclave, Android Keystore). No `SIMULATED_DEV` payloads in production native targets.
+- Courier link generation requires `AppConfig.enableProofLinks` (`ENABLE_PROOF_LINKS` dart-define).

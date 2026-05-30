@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_typography.dart';
+import '../../core/config/app_config.dart';
 import '../../core/services/haptic_service.dart';
 import '../../core/ui/widgets/heavy_metal_backdrop.dart';
 import '../controllers/auth_controller.dart';
@@ -106,7 +107,7 @@ class _LogonViewState extends ConsumerState<LogonView>
         ),
       ),
       const SizedBox(height: 20),
-      if (!auth.isConfigured) const _ConfigNotice(),
+      if (!AppConfig.hasSupabaseConfig) const _ConfigNotice(),
       CupertinoTextField(
         controller: _emailController,
         enabled: !auth.isLoading,
@@ -127,7 +128,7 @@ class _LogonViewState extends ConsumerState<LogonView>
       CupertinoButton(
         color: AppColors.verifiedNeon,
         disabledColor: AppColors.titaniumPanel,
-        onPressed: auth.isLoading || !auth.isConfigured ? null : _sendOtp,
+        onPressed: auth.isLoading || !AppConfig.hasSupabaseConfig ? null : _sendOtp,
         child: auth.isLoading && !auth.otpSent
             ? const CupertinoActivityIndicator()
             : Text(

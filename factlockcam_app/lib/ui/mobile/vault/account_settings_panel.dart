@@ -8,17 +8,13 @@ import 'package:share_plus/share_plus.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/config/app_config.dart';
-import '../../../core/di/locator.dart';
-import '../../../core/ghost_key/app_lock_coordinator.dart';
-import '../../../core/ghost_key/backup_metadata_store.dart';
-import '../../../core/ghost_key/wallet_backup_service.dart';
+import '../../../core/di/service_providers.dart';
 import '../../../core/navigation/compliance_navigation.dart';
 import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
 import '../../../core/ui/widgets/heavy_metal_hub_tile.dart';
 import '../../../core/ui/widgets/vault_panel_navigation_bar.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/dashboard_controller.dart';
-import '../../controllers/key_custody_provider.dart';
 import '../settings/burn_account_view.dart';
 import '../vault/providers/thumbnail_cache_provider.dart';
 
@@ -63,7 +59,7 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
 
     setState(() => _busy = true);
     try {
-      final file = await getIt<WalletBackupService>().exportFactlock(
+      final file = await ref.read(walletBackupServiceProvider).exportFactlock(
         backupPassword: passwords.$1,
       );
       await SharePlus.instance.share(
@@ -175,7 +171,8 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
   }
 
   Future<void> _lockArchive() async {
-    final hasBackup = await getIt<BackupMetadataStore>().hasCompletedBackup();
+    final hasBackup =
+        await ref.read(backupMetadataStoreProvider).hasCompletedBackup();
     if (!hasBackup) {
       await _showAlert(
         'Backup required',
@@ -212,7 +209,7 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
 
     setState(() => _busy = true);
     try {
-      await getIt<AppLockCoordinator>().lockArchive();
+      await ref.read(appLockCoordinatorProvider).lockArchive();
       await ref.read(keyCustodyProvider.notifier).refresh();
     } catch (error) {
       if (!mounted) return;

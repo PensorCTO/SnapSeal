@@ -5,11 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
-import '../../../core/di/locator.dart';
-import '../../../core/ghost_key/wallet_backup_service.dart';
-import '../../../core/platform/platform_channel_coordinator.dart';
-import '../../../domain/services/vault_service.dart';
-import '../../controllers/key_custody_provider.dart';
+import '../../../core/di/service_providers.dart';
 
 /// Bricked-state shell: import `.factlock` and rehydrate sovereign keys.
 class RestoreArchiveView extends ConsumerStatefulWidget {
@@ -49,7 +45,7 @@ class _RestoreArchiveViewState extends ConsumerState<RestoreArchiveView> {
     }
 
     final bytes =
-        await getIt<IPlatformChannelCoordinator>().pickFactlockBackupBytes();
+        await ref.read(platformChannelCoordinatorProvider).pickFactlockBackupBytes();
 
     // Document picker can restore focus to the password field on iOS.
     await _dismissKeyboard();
@@ -61,7 +57,7 @@ class _RestoreArchiveViewState extends ConsumerState<RestoreArchiveView> {
     if (!mounted) return;
     setState(() => _isRestoring = true);
     try {
-      await getIt<WalletBackupService>().importFactlock(
+      await ref.read(walletBackupServiceProvider).importFactlock(
         fileBytes: bytes,
         backupPassword: password,
       );

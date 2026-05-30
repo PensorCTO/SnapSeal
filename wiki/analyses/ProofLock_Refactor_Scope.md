@@ -7,7 +7,7 @@ summary: "Maps the ProofLock architectural manifest to current FactLockCam code 
 
 ## Core Synthesis
 
-The **ProofLock manifest** ([[ProofLock_Architectural_Manifest]]) describes a **target architecture** that is **significantly ahead** of the current **FactLockCam** codebase ([[FactLockCam_Master_Blueprint]]). Today’s app delivers a credible **local-first wallet** with a **ProofLock-shaped online path**: capture → isolate read/hash → **`check_proof_status`** preflight (conflict → `ProofLockConflictException`) → **`NativeEnclaveChannel` `signHash`** (currently **simulated** on iOS/Android) → **`SimulatedChainNotarizer` / `simulate_chain_notarize`** → **AES-GCM** vault encryption → SQLite + thumbnails → **`proof_ledger` insert** when remote steps succeed, with **`pending_sync` + backoff retries** (`PendingSyncScheduler`, hub/archive **`syncPendingInBackground`**) when they do not. Best-effort **`seal_ledger`** sync remains in **`retryPendingRemoteSync`**. Owner-side archive interactions now have a media-type-driven Domain Interaction Contract, but this **still is not** the manifest **viability gate**: **production hardware-backed signing**, **real Polygon** (`PolygonChainNotarizer` throws), **C2PA**, and **`courier_packages` / RPC-only courier** are missing or stubbed.
+The **ProofLock manifest** ([[ProofLock_Architectural_Manifest]]) describes a **target architecture** that remains **ahead** of the current **FactLockCam** codebase ([[FactLockCam_Master_Blueprint]]) on several tracks, though **device signing MVP** landed in fifteenth QA ([[App_Store_Hardening_2026-05]]). Today’s app delivers a credible **local-first wallet** with a **ProofLock-shaped online path**: capture → isolate read/hash → **`check_proof_status`** preflight (conflict → `ProofLockConflictException`) → **`NativeEnclaveChannel` `signHash`** (Secure Enclave / Keystore on iOS/Android) → Polygon saga or **`SimulatedChainNotarizer` / `simulate_chain_notarize`** → **AES-GCM** vault encryption → SQLite + thumbnails → **`proof_ledger` insert** when remote steps succeed, with **`pending_sync` + backoff retries** (`PendingSyncScheduler`, hub/archive **`syncPendingInBackground`**) when they do not. Best-effort **`seal_ledger`** sync remains in **`retryPendingRemoteSync`**. Owner-side archive interactions use a media-type-driven Domain Interaction Contract. Remaining manifest gaps: **server-side device-signature verify**, **C2PA**, and **`courier_packages` / RPC-only courier** depth.
 
 Refactor effort is therefore **large and multi-track**, not a single feature. A practical sequencing is: (1) **docs and contracts** frozen in wiki + ADR-style notes, (2) **Supabase evolution** (new tables/RPC, RLS, indexes) without breaking existing wallets, (3) **vault pipeline hardening** (atomicity, pending-sync worker), (4) **native enclave channel MVP** (sign hash or bind attestation), (5) **Polygon write path** + persistence of `polygon_tx_hash`, (6) **C2PA** as a parallel track, (7) **verification / public read** UX and tests.
 
@@ -40,7 +40,7 @@ flowchart LR
 | :--- | :--- | :--- |
 | Isolate SHA-256 + UI perf | `VaultService` uses `Isolate.run` for temp file read/delete; hashing via `CipherEngine` | Align naming/docs with manifest; optional dedicated hash worker file |
 | Pre-flight `check_proof_status` | **`SealLedgerRepository.checkProofStatus`** + **`VaultService.proofLockFile`** / retry path | Hardening, UX for non-`new` status, policy review |
-| Hardware enclave signing | **`MethodChannel` `com.factlockcam.app/enclave`** with **TODO-simulated** `signHash` in iOS/Android | Replace with Secure Enclave / Keystore; wire **`REQUIRE_HARDWARE_ATTESTATION`** |
+| Hardware enclave signing | **`EnclaveSigner.swift`** + **`DeviceEnclaveSigner.kt`**; P-256 ECDSA over SHA-256 hex; **`REQUIRE_HARDWARE_ATTESTATION`** wired in Dart | Server-side P-256 pubkey verify in `anchor-relay` (follow-up) |
 | Polygon notarization | **Live async saga** when `USE_POLYGON_NOTARIZER=true`: `PolygonWalletService` + `anchor-relay` + `notarization_status`; sim `chain_tx_hash` until mainnet RPC wired ([[Polygon_Saga_Live]]) | Wire real Polygon contract broadcast + persist on-chain hash |
 | `proof_ledger` vs `seal_ledger` | **`proof_ledger`** + **`seal_ledger`** + **`profiles`** (retry path still touches `seal_ledger`) | Consolidate naming/semantics if product wants a single ledger story |
 | Courier black-box (`courier_packages`, no SELECT) | `extractForCourier` is local-only; no Supabase courier table | Schema + SECURITY DEFINER RPCs + policy review |
@@ -51,7 +51,7 @@ flowchart LR
 
 ## Phased effort (indicative)
 
-**Polygon Try 2 (2026-05-21):** PR0–PR5 **complete**; physical iPhone QA passes. **Live Polygon mainnet** verified eighth QA 2026-05-22 — see [[Polygon_Saga_Live]], [[Polygon_Mainnet_Wiring_2026-05]].
+**Polygon Try 2 (2026-05-21):** PR0–PR5 **complete**; physical iPhone QA passes. **Live Polygon mainnet** verified eighth QA 2026-05-22 — see [[Polygon_Saga_Live]], [[Polygon_Mainnet_Wiring_2026-05]]. **Hardware device signing MVP** verified fifteenth QA 2026-05-30 — [[App_Store_Hardening_2026-05]].
 
 Rough calendar estimates for a **small team**; actuals depend on chain UX, attestation depth, and App Store review.
 
@@ -74,6 +74,7 @@ Rough calendar estimates for a **small team**; actuals depend on chain UX, attes
 
 ## Related Notes
 
+* [[App_Store_Hardening_2026-05]]
 * [[ProofLock_Architectural_Manifest]]
 * [[FactLockCam_Master_Blueprint]]
 * [[Polygon_Saga_Live]]

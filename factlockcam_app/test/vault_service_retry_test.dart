@@ -2,14 +2,18 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart' as crypto;
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:postgrest/postgrest.dart';
 import 'package:factlockcam/core/config/app_config.dart';
 import 'package:factlockcam/core/crypto/vault_encryption_handler.dart';
+import 'package:factlockcam/core/ghost_key/key_custody_service.dart';
 import 'package:factlockcam/core/ghost_key/native_enclave_channel.dart';
+import 'package:factlockcam/core/journal/journal_repository.dart';
 import 'package:factlockcam/core/journal/transactional_archive_persister.dart';
+import 'package:factlockcam/core/lock/isolate_lock_coordinator.dart';
 import 'package:factlockcam/data/services/vault_transactional_paths.dart';
 import 'package:factlockcam/data/local/vault_database.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
@@ -45,6 +49,13 @@ class _MockAuthRepository extends Mock implements AuthRepository {}
 class _MockTransactionalArchivePersister extends Mock
     implements TransactionalArchivePersister {}
 
+class _MockKeyCustodyService extends Mock implements KeyCustodyService {}
+
+class _MockIsolateLockCoordinator extends Mock
+    implements IsolateLockCoordinator {}
+
+class _MockJournalRepository extends Mock implements JournalRepository {}
+
 void main() {
   late _MockVaultDatabase database;
   late _MockLocalVaultStorage storage;
@@ -58,6 +69,9 @@ void main() {
   late _MockNativeEnclaveChannel native;
   late _MockAuthRepository auth;
   late _MockTransactionalArchivePersister transactionalPersister;
+  late _MockKeyCustodyService keyCustody;
+  late _MockIsolateLockCoordinator isolateLock;
+  late _MockJournalRepository journal;
   late VaultService service;
 
   const assetFingerprint = 'abc123';
@@ -97,6 +111,12 @@ void main() {
     native = _MockNativeEnclaveChannel();
     auth = _MockAuthRepository();
     transactionalPersister = _MockTransactionalArchivePersister();
+    keyCustody = _MockKeyCustodyService();
+    isolateLock = _MockIsolateLockCoordinator();
+    journal = _MockJournalRepository();
+
+    when(() => journal.isAvailable).thenReturn(false);
+    when(() => isolateLock.unlock(any())).thenReturn(null);
 
     service = VaultService(
       database: database,
@@ -111,6 +131,9 @@ void main() {
       nativeEnclave: native,
       authRepository: auth,
       transactionalPersister: transactionalPersister,
+      keyCustodyService: keyCustody,
+      isolateLockCoordinator: isolateLock,
+      journalRepository: journal,
     );
 
     when(
@@ -564,5 +587,70 @@ void main() {
 
     expect(result, isFalse);
     verifyNever(() => ledger.checkProofStatus(any()));
+  });
+
+  test(
+    'retry does not defer when signHash throws MissingPluginException',
+    () async {
+      if (AppConfig.usePolygonNotarizer) {
+        when(
+          () => ledger.fetchProofNotarizationStatus(assetFingerprint),
+        ).thenAnswer((_) async => 'pending');
+      } else {
+        when(
+          () => ledger.checkProofStatus(assetFingerprint),
+        ).thenAnswer((_) async => 'new');
+      }
+      when(
+        () => native.signHash(assetFingerprint),
+      ).thenThrow(MissingPluginException('enclave'));
+
+      final result = await service.retryPendingRemoteSync(assetFingerprint);
+
+      expect(result, isFalse);
+      verifyNever(
+        () => database.markSyncDeferred(
+          assetFingerprint: any(named: 'assetFingerprint'),
+          nextRetryAt: any(named: 'nextRetryAt'),
+        ),
+      );
+    },
+  );
+
+  test('deleteArchiveItem skips file purge when database delete removes zero rows', () async {
+    when(
+      () => database.findArchiveItem(assetFingerprint),
+    ).thenAnswer((_) async => item);
+    when(() => database.deleteArchiveItem(assetFingerprint)).thenAnswer((_) async => 0);
+
+    await service.deleteArchiveItem(assetFingerprint);
+
+    verify(() => isolateLock.unlock(assetFingerprint)).called(1);
+    verify(() => database.deleteArchiveItem(assetFingerprint)).called(1);
+    verifyNever(() => storage.purgePaths(any()));
+  });
+
+  test('deleteArchiveItem purges files only after database row is removed', () async {
+    when(
+      () => database.findArchiveItem(assetFingerprint),
+    ).thenAnswer((_) async => item);
+    when(() => storage.resolveArchivePaths(item)).thenAnswer((_) async => item);
+    when(() => database.deleteArchiveItem(assetFingerprint)).thenAnswer((_) async => 1);
+    when(() => storage.resolveTransactionalPaths(assetFingerprint)).thenAnswer(
+      (_) async => VaultTransactionalPaths(
+        encryptedFinalPath: '/tmp/a.seal',
+        thumbnailFinalPath: '/tmp/a.jpg',
+        encryptedStagingPath: '/tmp/a.seal.staging',
+        thumbnailStagingPath: '/tmp/a.jpg.staging',
+      ),
+    );
+    when(() => storage.purgePaths(any())).thenAnswer((_) async {});
+
+    await service.deleteArchiveItem(assetFingerprint);
+
+    verifyInOrder([
+      () => database.deleteArchiveItem(assetFingerprint),
+      () => storage.purgePaths(any()),
+    ]);
   });
 }
