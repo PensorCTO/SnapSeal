@@ -13,6 +13,7 @@ class AssetActionRegistry {
   static const _viewableActions = <MediaActionType>[
     MediaActionType.view,
     MediaActionType.verify,
+    MediaActionType.export,
     MediaActionType.share,
     MediaActionType.delete,
   ];
@@ -34,7 +35,10 @@ class AssetActionRegistry {
     final actions = _resolveActions(mediaType);
     if (kIsWeb) {
       return actions
-          .where((a) => a != MediaActionType.verify)
+          .where(
+            (a) =>
+                a != MediaActionType.verify && a != MediaActionType.export,
+          )
           .toList(growable: false);
     }
     return actions;

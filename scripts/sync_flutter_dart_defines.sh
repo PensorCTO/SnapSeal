@@ -2,7 +2,9 @@
 # Merge repo-root .env.local (if present) with current shell env and write
 # factlockcam_app/dart_defines.json for IDE / flutter --dart-define-from-file.
 #
-# Optional keys include ENABLE_PROOF_LINKS (false for App Store until archive is live).
+# Optional keys include ENABLE_PROOF_LINKS (false for App Store release until archive
+# is live; set true in .env.local for device Send Proof QA). Debug builds also
+# enable Send Proof when WEB_ARCHIVE_BASE_URL is set unless ENABLE_PROOF_LINKS=false.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

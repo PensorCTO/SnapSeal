@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -251,6 +252,11 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
                   ),
                 ),
               ),
+              Positioned(
+                top: 10,
+                left: 10,
+                child: _ArchiveActionsButton(item: widget.item),
+              ),
               if (showPendingBadge && pendingLabel != null)
                 Positioned(
                   top: 10,
@@ -306,6 +312,39 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
         _lastDistanceFromCenter.abs() >= 8.0) {
       unawaited(ref.read(hapticServiceProvider).success());
     }
+  }
+}
+
+/// Opens the archive asset action sheet (Send Proof, Download Media, etc.).
+class _ArchiveActionsButton extends ConsumerWidget {
+  const _ArchiveActionsButton({required this.item});
+
+  final ArchiveItem item;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Material(
+      color: Colors.black.withValues(alpha: 0.55),
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: IconButton(
+        tooltip: 'Asset actions',
+        icon: const Icon(
+          CupertinoIcons.ellipsis,
+          color: AppColors.starkWhite,
+          size: 20,
+        ),
+        onPressed: () {
+          unawaited(
+            ArchiveItemActions.showBottomSheet(
+              context: context,
+              ref: ref,
+              item: item,
+            ),
+          );
+        },
+      ),
+    );
   }
 }
 

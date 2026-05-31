@@ -11,6 +11,7 @@ Read this page first when answering questions about the wiki.
 
 | Page | When to read |
 |------|----------------|
+| [[Archive_Owner_UX_2026-05]] | **Sixteenth QA (2026-05-30)** — Download Media, Send Proof metadata, View/Play labels, debug proof-links gate |
 | [[App_Store_Hardening_2026-05]] | **Fifteenth QA (2026-05-30)** — manifest remediation: hardware signing, ENABLE_PROOF_LINKS gate, sync/delete/DI hardening, 55/55 tests |
 | [[Web_Deployment_Architecture_2026-05]] | **Fourteenth QA (2026-05-29)** — factlockcam.com sales pitch + archive courier-only gate; Cloudflare Pages deploy |
 | [[Sovereign_Key_Lifecycle_2026-05]] | **Thirteenth QA (2026-05-29)** — multi-key `.factlock` backup/restore, brick mode, burn hardening, 52/52 tests |
@@ -42,6 +43,7 @@ Read this page first when answering questions about the wiki.
 - [[UI_Polish_Hub_Archive_2026-05]] - Eleventh QA: logo banner, Account heavy-metal tiles, chronology scroll fix.
 - [[App_Store_Remediation_2026-05]] - Tenth QA: App Store remediation, WEB_ARCHIVE_BASE_URL, courier archive indices, TestFlight-first.
 - [[Production_Transition_2026-05]] - Ninth QA: production config, courier lookup migrations, iOS compliance, test suite.
+- [[Archive_Owner_UX_2026-05]] - Sixteenth QA: Download Media, certificate metadata from asset, View/Play labels, chronology actions icon.
 - [[Send_Proof_Courier_2026-05]] - Send Proof: certificate PDF + courier link; utility positioning; production web vault URL.
 - [[FactLockCam_Product_Baseline_2026-05]] - Verified hub/archive/capture workflow and compressed Supabase baseline (start here for FactLockCam status).
 - [[Heavy_Metal_Design_System]] - FactLockCam titanium/mono/iris visual system for secure-hardware UI feel.
@@ -53,6 +55,7 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses (active)
 
+- [[Archive_Owner_UX_2026-05]] - Sixteenth QA: Download Media, Send Proof metadata from asset, View/Play labels, chronology actions icon (May 2026).
 - [[App_Store_Hardening_2026-05]] - Fifteenth QA: architectural manifest remediation, Secure Enclave / Keystore signing, compile-time gates (May 2026).
 - [[Web_Deployment_Architecture_2026-05]] - Fourteenth QA: public web split, courier-only archive subdomain, Cloudflare deploy scripts (May 2026).
 - [[Sovereign_Key_Lifecycle_2026-05]] - Thirteenth QA: `.factlock` multi-key backup, zero-knowledge lock, restore router gate, Account layout (May 2026).

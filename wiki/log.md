@@ -7,6 +7,14 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 ## 2026-05-30
 
+- **Sixteenth QA pass — archive owner UX** — user-confirmed on device:
+  - **Download Media:** Decrypt + share-sheet export (`archive_media_download_io.dart`, `archive_media_extension.dart`); primary action-sheet row; inspector tile; chronology **⋯** opens sheet (default view had hidden long-press-only path).
+  - **Send Proof:** Password-only dialog; certificate title/description from `ArchiveItem` metadata; fresh row from dashboard before PDF.
+  - **Labels:** **View/Play media** for photo and video in toolbar + inspector.
+  - **Config:** `AppConfig.enableProofLinks` — debug enables Send Proof when `WEB_ARCHIVE_BASE_URL` set even if `ENABLE_PROOF_LINKS=false` in defines; release/profile unchanged.
+  - **Tests:** **55/55**.
+  - **Wiki:** [[Archive_Owner_UX_2026-05]]; refreshed [[Send_Proof_Courier_2026-05]], [[App_Store_Hardening_2026-05]], [[index]], [[overview]], [[glossary]], [[FactLockCam_Product_Baseline_2026-05]].
+
 - **Fifteenth QA pass — App Store hardening (architectural manifest)** — user-confirmed on physical iPhone:
   - **Config:** `ENABLE_PROOF_LINKS` dart-define + `AppConfig.enableProofLinks` (default false for submission); `POLYGON_RPC_URL` generated fallback debug-only; `.cursor/rules/factlock-remediation.mdc`; `run_device.sh` (sync + `--dart-define-from-file`).
   - **Auth pitfall fixed:** Empty `generated_dart_defines.dart` stub broke plain `flutter run` login — requires `sync_flutter_dart_defines.sh` or `run_device.sh` + cold restart.

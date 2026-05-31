@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
@@ -24,7 +25,7 @@ import 'providers/thumbnail_cache_provider.dart';
 /// Displays the thumbnail via Hero transition, provides editable title
 /// and description fields with optimistic metadata mutation via
 /// [assetMetadataProvider], and presents an action matrix for Send Proof,
-/// View Full Asset, View Certificate, and Back to Dashboard.
+/// View/Play media, View Certificate, and Back to Dashboard.
 class AssetInspectorScreen extends ConsumerStatefulWidget {
   const AssetInspectorScreen({
     super.key,
@@ -226,6 +227,8 @@ class _AssetInspectorScreenState extends ConsumerState<AssetInspectorScreen>
         _onSendProof();
       case InspectorAction.viewFull:
         _onViewFull();
+      case InspectorAction.downloadMedia:
+        _onDownloadMedia();
       case InspectorAction.viewCertificate:
         _onViewCertificate();
       case InspectorAction.delete:
@@ -243,6 +246,13 @@ class _AssetInspectorScreenState extends ConsumerState<AssetInspectorScreen>
         ref,
         widget.item,
       ),
+    );
+  }
+
+  void _onDownloadMedia() {
+    if (!mounted || kIsWeb) return;
+    unawaited(
+      ArchiveItemActions.downloadMedia(context, ref, widget.item),
     );
   }
 
@@ -607,7 +617,14 @@ class _InfoStrip extends StatelessWidget {
 }
 
 /// Action buttons at the bottom of the inspector.
-enum InspectorAction { sendProof, viewFull, viewCertificate, delete, exit }
+enum InspectorAction {
+  sendProof,
+  viewFull,
+  downloadMedia,
+  viewCertificate,
+  delete,
+  exit,
+}
 
 class _ActionMatrix extends StatelessWidget {
   const _ActionMatrix({required this.onAction});
@@ -628,10 +645,19 @@ class _ActionMatrix extends StatelessWidget {
         const SizedBox(height: 10),
         _ActionTile(
           icon: Icons.visibility_outlined,
-          label: 'VIEW FULL ASSET',
+          label: 'VIEW/PLAY MEDIA',
           subtitle: 'Decrypt and view the original media',
           onTap: () => onAction(InspectorAction.viewFull),
         ),
+        if (!kIsWeb) ...[
+          const SizedBox(height: 10),
+          _ActionTile(
+            icon: Icons.download_outlined,
+            label: 'DOWNLOAD MEDIA',
+            subtitle: 'Save an unencrypted copy via the share sheet',
+            onTap: () => onAction(InspectorAction.downloadMedia),
+          ),
+        ],
         const SizedBox(height: 10),
         _ActionTile(
           icon: Icons.shield_outlined,

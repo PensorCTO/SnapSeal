@@ -32,10 +32,13 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; r
 
 ### Owner flow (current UI)
 
-1. Archive → **Send Proof** → password (+ optional certificate title/description).
-2. `SendProof` builds PDF, calls `VaultService.createCourierPackage`, returns URL + PDF path.
-3. iOS share sheet: attach **factlockcam-certificate.pdf** + paste **courier URL** in share text.
-4. Owner tells recipient the password separately.
+1. Set title/description via inspector or **Manage title and description** on the action sheet (sixteenth QA).
+2. Archive → **Send Proof** → **recipient password only** (certificate fields come from stored metadata).
+3. `SendProof` resolves fresh `ArchiveItem` from dashboard, builds PDF (no title/description overrides), calls `createCourierPackage`.
+4. iOS share sheet: attach **factlockcam-certificate.pdf** + paste **courier URL** in share text.
+5. Owner tells recipient the password separately.
+
+**Debug QA:** `AppConfig.enableProofLinks` is true when `WEB_ARCHIVE_BASE_URL` is set, even if `dart_defines.json` has `ENABLE_PROOF_LINKS=false`. Release/profile builds still require explicit `true` after `verify_web_archive_deploy.sh` ([[Archive_Owner_UX_2026-05]], [[App_Store_Hardening_2026-05]]).
 
 ### Recipient flow (when web vault is live)
 
@@ -81,6 +84,7 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; r
 
 ## Related Notes
 
+* [[Archive_Owner_UX_2026-05]]
 * [[Web_Deployment_Architecture_2026-05]]
 * [[Production_Transition_2026-05]]
 * [[FactLockCam_Product_Baseline_2026-05]]

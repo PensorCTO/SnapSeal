@@ -6,6 +6,6 @@ alwaysApply: true
 # Asset Inspector Constraints
 
 1. **Hero Animation Continuity**: The transition from `chronology_card.dart` to the inspector MUST use a `Hero` widget keyed strictly by `assetFingerprint` to ensure visual continuity.
-2. **Deferred Decryption**: The inspector MUST initially display the `thumbnailCacheProvider` image. Do NOT trigger full-file decryption until the user explicitly selects the "View Full Picture" action.
+2. **Deferred Decryption**: The inspector MUST initially display the `thumbnailCacheProvider` image. Do NOT trigger full-file decryption until the user explicitly selects the "View/Play media" action.
 3. **Optimistic Metadata Mutation**: When updating Title and Description, use a Riverpod `AsyncNotifier` to optimistically update the UI while syncing the changes to the local database in the background. Ensure the `proof_ledger` is NEVER modified.
 4. **Action Matrix Layout**: Use a structured `Wrap` or `Column` for the action buttons (Send, View Full, Certs, Exit) at the bottom of the screen, styled with the `HeavyMetalBackdropMixin` and `AppColors` accents.

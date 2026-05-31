@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../core/archive/domain/archive_media_extension.dart';
 import '../../core/di/locator.dart';
 import '../../core/legal/disclaimers.dart';
 import '../../data/models/archive_item.dart';
@@ -36,7 +37,7 @@ class ProofBundleExportService {
     }
 
     final chainTxHash = await _resolveChainTxHash(item);
-    final extension = _extensionForMime(item.mimeType);
+    final extension = archiveMediaExtensionForMime(item.mimeType);
     final assetFileName = 'asset$extension';
 
     final manifest = <String, Object?>{
@@ -110,15 +111,6 @@ class ProofBundleExportService {
     } catch (_) {
       return null;
     }
-  }
-
-  String _extensionForMime(String? mimeType) {
-    final mime = mimeType?.toLowerCase() ?? '';
-    if (mime.contains('quicktime')) return '.mov';
-    if (mime.contains('webm')) return '.webm';
-    if (mime.startsWith('video/')) return '.mp4';
-    if (mime.contains('png')) return '.png';
-    return '.jpg';
   }
 
   static const _readme = '''

@@ -43,11 +43,6 @@ class AppConfig {
     'SUPPORT_URL',
     defaultValue: GeneratedDartDefines.supportUrl,
   );
-  static const _enableProofLinks = bool.fromEnvironment(
-    'ENABLE_PROOF_LINKS',
-    defaultValue: GeneratedDartDefines.enableProofLinks,
-  );
-
   static String get supabaseAnonKey => _supabaseAnonKey;
   static String get localAnonKey => _localAnonKey;
 
@@ -80,8 +75,31 @@ class AppConfig {
   static bool get usePolygonNotarizer => _usePolygonNotarizer;
   static bool get requireHardwareAttestation => _requireHardwareAttestation;
 
-  /// When false, Send Proof / courier URL generation is compile-time pruned.
-  static bool get enableProofLinks => _enableProofLinks;
+  /// When false, Send Proof / courier URL generation is disabled.
+  ///
+  /// **Release/profile:** enabled only when `ENABLE_PROOF_LINKS=true` at compile
+  /// time (set in `.env.local` + sync after `verify_web_archive_deploy.sh`).
+  ///
+  /// **Debug device QA:** enabled when [webArchiveBaseUrl] is set, even if
+  /// `dart_defines.json` has `ENABLE_PROOF_LINKS=false` (submission default).
+  /// Pass `ENABLE_PROOF_LINKS=false` in debug only to test the disabled path.
+  static bool get enableProofLinks {
+    const raw = String.fromEnvironment('ENABLE_PROOF_LINKS');
+    final generated = GeneratedDartDefines.enableProofLinks;
+    final archiveOriginConfigured = _webArchiveBaseUrl.isNotEmpty;
+
+    if (raw == 'true' || raw == '1') return true;
+
+    if (kReleaseMode || kProfileMode) {
+      if (raw == 'false' || raw == '0') return false;
+      return generated;
+    }
+
+    // Debug / JIT: `ENABLE_PROOF_LINKS=false` in dart_defines is the App Store
+    // default — do not treat it as an opt-out during device QA.
+    if (generated) return true;
+    return archiveOriginConfigured;
+  }
 
   /// Polygon JSON-RPC endpoint for on-chain transaction receipt monitoring.
   ///

@@ -11,12 +11,14 @@ void main() {
     expect(AssetActionRegistry.getActionsForType('image/jpeg'), [
       MediaActionType.view,
       MediaActionType.verify,
+      MediaActionType.export,
       MediaActionType.share,
       MediaActionType.delete,
     ]);
     expect(AssetActionRegistry.getActionsForType('video/mp4'), [
       MediaActionType.view,
       MediaActionType.verify,
+      MediaActionType.export,
       MediaActionType.share,
       MediaActionType.delete,
     ]);
@@ -29,7 +31,7 @@ void main() {
     ]);
   });
 
-  testWidgets('toolbar renders video view as play action', (tester) async {
+  testWidgets('toolbar renders video view as View/Play media', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: CupertinoApp(
@@ -41,14 +43,15 @@ void main() {
       ),
     );
 
-    expect(find.text('Play video'), findsOneWidget);
+    expect(find.text('View/Play media'), findsOneWidget);
     expect(find.text('Verify integrity'), findsOneWidget);
+    expect(find.text('Download Media'), findsOneWidget);
     expect(find.text('Send Proof'), findsOneWidget);
     expect(find.byIcon(CupertinoIcons.share_up), findsOneWidget);
     expect(find.text('Delete from this device'), findsOneWidget);
   });
 
-  testWidgets('toolbar renders photo view action', (tester) async {
+  testWidgets('toolbar renders photo view as View/Play media', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: CupertinoApp(
@@ -60,8 +63,9 @@ void main() {
       ),
     );
 
-    expect(find.text('View full-size photo'), findsOneWidget);
+    expect(find.text('View/Play media'), findsOneWidget);
     expect(find.text('Verify integrity'), findsOneWidget);
+    expect(find.text('Download Media'), findsOneWidget);
     expect(find.text('Send Proof'), findsOneWidget);
     expect(find.byIcon(CupertinoIcons.share_up), findsOneWidget);
     expect(find.text('Delete from this device'), findsOneWidget);

@@ -15,7 +15,7 @@ This pass closes audit gaps called out for **App Store ingestion**: no simulated
 
 | Define / artifact | Role |
 |-------------------|------|
-| `ENABLE_PROOF_LINKS` | Compile-time gate for Send Proof / `createCourierPackage`; default **`false`** for submission until archive TLS verified |
+| `ENABLE_PROOF_LINKS` | Compile-time gate for Send Proof / `createCourierPackage`; **`false`** in release/profile until archive verified; **debug** auto-enables when `WEB_ARCHIVE_BASE_URL` is set ([[Archive_Owner_UX_2026-05]]) |
 | `WEB_ARCHIVE_BASE_URL` | Unchanged canonical courier origin (`AppConfig.webArchiveBaseUrl`) |
 | `POLYGON_RPC_URL` | `AppConfig.polygonRpcUrl` uses `GeneratedDartDefines` fallback **debug only**; release/profile return null if unset |
 | `generated_dart_defines.dart` | Gitignored; populated by `scripts/sync_flutter_dart_defines.sh` from `.env.local` |
@@ -66,6 +66,7 @@ This pass closes audit gaps called out for **App Store ingestion**: no simulated
 
 ## Related Notes
 
+* [[Archive_Owner_UX_2026-05]]
 * [[App_Store_Remediation_2026-05]]
 * [[Production_Transition_2026-05]]
 * [[ProofLock_Refactor_Scope]]

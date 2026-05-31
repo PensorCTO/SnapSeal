@@ -13,14 +13,10 @@ class SendProofRequest {
   const SendProofRequest({
     required this.item,
     required this.password,
-    this.title,
-    this.description,
   });
 
   final ArchiveItem item;
   final String password;
-  final String? title;
-  final String? description;
 }
 
 class SendProofResult {
@@ -60,7 +56,10 @@ class SendProof extends _$SendProof {
     if (!AppConfig.enableProofLinks) {
       throw StateError(
         'Send Proof is not available in this build. Courier links require '
-        'ENABLE_PROOF_LINKS and a live archive origin.',
+        'ENABLE_PROOF_LINKS=true and a live WEB_ARCHIVE_BASE_URL. '
+        'For device QA: set ENABLE_PROOF_LINKS=true in .env.local, run '
+        'scripts/sync_flutter_dart_defines.sh, then cold-restart with '
+        'run_device.sh or --dart-define-from-file=dart_defines.json.',
       );
     }
     final vaultService = ref.read(vaultServiceProvider);
@@ -70,8 +69,6 @@ class SendProof extends _$SendProof {
     final resolved = await storage.resolveArchivePaths(request.item);
     final certificateFile = await certificateService.writeCertificatePdfToCache(
       request.item,
-      titleOverride: request.title,
-      descriptionOverride: request.description,
       thumbnailPath: resolved.thumbnailPath,
     );
 

@@ -117,19 +117,30 @@ class UniversalAssetToolbar extends ConsumerWidget {
       case MediaActionType.share:
         return 'Send Proof';
       case MediaActionType.export:
-        return 'Export';
+        return _exportLabelForMediaType(mediaType);
     }
+  }
+
+  static String _exportLabelForMediaType(String mediaType) {
+    final normalized = mediaType.trim().toLowerCase();
+    if (normalized.startsWith('video/') ||
+        normalized == 'video' ||
+        normalized.startsWith('image/') ||
+        normalized == 'picture' ||
+        normalized == 'photo') {
+      return 'Download Media';
+    }
+    return 'Export';
   }
 
   static String _viewLabelForMediaType(String mediaType) {
     final normalized = mediaType.trim().toLowerCase();
-    if (normalized.startsWith('video/') || normalized == 'video') {
-      return 'Play video';
-    }
-    if (normalized.startsWith('image/') ||
+    if (normalized.startsWith('video/') ||
+        normalized == 'video' ||
+        normalized.startsWith('image/') ||
         normalized == 'picture' ||
         normalized == 'photo') {
-      return 'View full-size photo';
+      return 'View/Play media';
     }
     if (normalized == 'document' || normalized.startsWith('application/')) {
       return 'View document';

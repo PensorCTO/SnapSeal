@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,6 +14,7 @@ import '../../core/di/service_providers.dart';
 import '../../data/models/archive_item.dart';
 import '../controllers/dashboard_controller.dart';
 import '../../features/archive/presentation/providers/send_proof_provider.dart';
+import 'archive_media_download.dart';
 import 'vault/providers/thumbnail_cache_provider.dart';
 import 'archive_photo_view.dart';
 import 'archive_video_view.dart';
@@ -64,6 +66,8 @@ class ArchiveItemActions {
                     await showSendProofDialog(context, ref, item);
                     break;
                   case MediaActionType.export:
+                    if (!context.mounted) return;
+                    await downloadMedia(context, ref, item);
                     break;
                 }
               },
@@ -146,12 +150,25 @@ class ArchiveItemActions {
     );
   }
 
+  static ArchiveItem _resolveArchiveItem(WidgetRef ref, ArchiveItem item) {
+    final list = ref.read(dashboardControllerProvider).value;
+    if (list != null) {
+      for (final row in list) {
+        if (row.assetFingerprint == item.assetFingerprint) {
+          return row;
+        }
+      }
+    }
+    return item;
+  }
+
   static Future<void> showSendProofDialog(
     BuildContext context,
     WidgetRef ref,
     ArchiveItem item,
   ) async {
-    final form = await _promptForSendProofDetails(context, item);
+    final resolvedItem = _resolveArchiveItem(ref, item);
+    final form = await _promptForSendProofDetails(context);
     if (form == null) {
       return;
     }
@@ -167,10 +184,8 @@ class ArchiveItemActions {
     try {
       final result = await ref.read(sendProofProvider.notifier).send(
             SendProofRequest(
-              item: item,
+              item: resolvedItem,
               password: form.password,
-              title: form.title,
-              description: form.description,
             ),
           );
 
@@ -200,15 +215,55 @@ class ArchiveItemActions {
     }
   }
 
+  /// Decrypts the asset and opens the system share sheet with a plaintext copy.
+  static Future<void> downloadMedia(
+    BuildContext context,
+    WidgetRef ref,
+    ArchiveItem item,
+  ) async {
+    if (!context.mounted) return;
+    unawaited(_showLoadingDialog(context));
+
+    try {
+      final sealed = await ref
+          .read(vaultServiceProvider)
+          .extractForCourier(item.assetFingerprint);
+      if (!context.mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+      await shareDecryptedArchiveMedia(item: item, sealed: sealed);
+    } catch (error) {
+      if (!context.mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+      await _showDownloadErrorDialog(context, error);
+    }
+  }
+
+  static Future<void> _showDownloadErrorDialog(
+    BuildContext context,
+    Object error,
+  ) {
+    return showCupertinoDialog<void>(
+      context: context,
+      builder: (dialogContext) => CupertinoAlertDialog(
+        title: const Text('Could not download media'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(error.toString()),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   static Future<_SendProofForm?> _promptForSendProofDetails(
     BuildContext context,
-    ArchiveItem item,
   ) {
     final passwordController = TextEditingController();
-    final titleController = TextEditingController(text: item.title ?? '');
-    final descriptionController = TextEditingController(
-      text: item.description ?? '',
-    );
 
     return showCupertinoDialog<_SendProofForm>(
       context: context,
@@ -234,17 +289,6 @@ class ArchiveItemActions {
                     obscureText: true,
                     placeholder: 'Password for recipient',
                   ),
-                  const SizedBox(height: 8),
-                  CupertinoTextField(
-                    controller: titleController,
-                    placeholder: 'Title on certificate (optional)',
-                  ),
-                  const SizedBox(height: 8),
-                  CupertinoTextField(
-                    controller: descriptionController,
-                    placeholder: 'Description on certificate (optional)',
-                    maxLines: 2,
-                  ),
                 ],
               ),
             ),
@@ -260,8 +304,6 @@ class ArchiveItemActions {
                 Navigator.of(dialogContext).pop(
                   _SendProofForm(
                     password: passwordController.text.trim(),
-                    title: titleController.text.trim(),
-                    description: descriptionController.text.trim(),
                   ),
                 );
               },
@@ -270,11 +312,7 @@ class ArchiveItemActions {
           ],
         );
       },
-    ).whenComplete(() {
-      passwordController.dispose();
-      titleController.dispose();
-      descriptionController.dispose();
-    });
+    ).whenComplete(passwordController.dispose);
   }
 
   static Future<void> _showLoadingDialog(BuildContext context) {
@@ -311,6 +349,13 @@ class ArchiveItemActions {
 
   static String _friendlyCourierError(Object error) {
     final message = error.toString();
+    if (message.contains('ENABLE_PROOF_LINKS') ||
+        message.contains('Send Proof is not available')) {
+      return 'Send Proof is disabled in this build. For device QA, add '
+          'ENABLE_PROOF_LINKS=true to repo-root .env.local, run '
+          './scripts/sync_flutter_dart_defines.sh, then cold-restart with '
+          './factlockcam_app/run_device.sh (not hot reload).';
+    }
     if (message.contains('Supabase is not configured')) {
       return 'Supabase is not configured for this build.';
     }
@@ -463,13 +508,7 @@ class ArchiveItemActions {
 }
 
 class _SendProofForm {
-  const _SendProofForm({
-    required this.password,
-    required this.title,
-    required this.description,
-  });
+  const _SendProofForm({required this.password});
 
   final String password;
-  final String title;
-  final String description;
 }
