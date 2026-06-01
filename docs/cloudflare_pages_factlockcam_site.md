@@ -29,6 +29,18 @@ Common causes:
 | **Build output directory** | `dist` |
 | **Node.js version** | `20` (recommended) |
 
+### `Cannot find cwd: .../users/paulensor/pojects/...` (wrong root directory)
+
+Cloudflare clones the **GitHub repo** into `/opt/buildhome/repo/`. The **Root directory** must be a **path inside that repo**, never a path on your Mac.
+
+| Wrong (fails) | Right |
+|---------------|--------|
+| `/Users/paulensor/Projects/ProofLockCleanup` | `projects/FactLockCam_Site` |
+| `users/paulensor/pojects/prooflockcleanup` | `projects/FactLockCam_Site` |
+| Repo root only, with no `npm run build` in site folder | `projects/FactLockCam_Site` |
+
+In the dashboard: **Workers & Pages** → **factlockcam** → **Settings** → **Builds & deployments** → **Build configuration** → set **Root directory** to exactly `projects/FactLockCam_Site` (no leading `/`, no `Users/...`) → **Save** → **Retry deployment**.
+
 Environment variables (optional — courier page on this site only; production courier is on `archive.factlockcam.com`):
 
 | Variable | Notes |
