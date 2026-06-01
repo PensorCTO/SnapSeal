@@ -12,7 +12,7 @@ Compliance and courier web surface for FactLockCam, built with **Astro**, **Tail
 | `/terms` | SSG | Terms of Service (EULA) |
 | `/guide` | SSG | Consumer user guide (legal detail in Terms) |
 | `/courier?pkg={uuid}` | SSG shell + client hydrate | **Flutter Send Proof links** (current app format) |
-| `/vault/{uuid}` | SSR shell + client hydrate | Blueprint dynamic courier route |
+| `/courier?pkg={uuid}` | SSG + client hydrate | Optional courier demo on marketing site; production links use `archive.factlockcam.com` |
 
 ## Hero background (marketing)
 
@@ -31,6 +31,8 @@ npm run dev
 ```
 
 ## Cloudflare Pages deploy
+
+**Exact dashboard values and failure fixes:** [`docs/cloudflare_pages_factlockcam_site.md`](../../docs/cloudflare_pages_factlockcam_site.md)
 
 ### Option A — GitHub Actions (recommended)
 
