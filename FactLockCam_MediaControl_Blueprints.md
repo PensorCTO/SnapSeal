@@ -1,8 +1,8 @@
 # FactLockCam Media Control Blueprints — 17 May 2026
 
 **Purpose:** A high-resolution technical breakdown of the two primary media-browsing and asset-inspection surfaces in the FactLockCam Flutter application:
-1. **Vault** — the standalone grid-based archive (`/archive`) entered via the "Vault" action tile on the Home tab.
-2. **Archive** — the embedded chronology viewport (tab index 3 of the vault shell) entered via the "Archive" tab in the bottom `ProfessionalNavBar`.
+1. **Archive** — the standalone grid-based archive (`/archive`) entered via the "Archive" action tile on the Home tab.
+2. **Archive** — the embedded chronology viewport (tab index 3 of the archive shell) entered via the "Archive" tab in the bottom `ProfessionalNavBar`.
 
 **Wiki twin (schema reference):** See `wiki/index.md` → `wiki/analyses/MASTER_CONTEXT16MAY2026.md` for the full architecture snapshot; `wiki/analyses/FactLockCam_Master_Blueprint.md` for capability inventory; `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md` for verified workflows.
 
@@ -14,9 +14,9 @@
 
 | Term | Meaning in this document |
 |------|--------------------------|
-| **Vault** | The standalone `ArchiveView` (`/archive` route) — a `GridView`-based browser with Photos / Videos tabs. Entered by tapping the **Vault** action tile on the Home hub. |
+| **Archive** | The standalone `ArchiveView` (`/archive` route) — a `GridView`-based browser with Photos / Videos tabs. Entered by tapping the **Archive** action tile on the Home hub. |
 | **Archive** | The embedded `ChronologyViewport` (index 3 of `VaultHomeView`'s `IndexedStack`) — a vertically-scrolling card-stack browser with Hero transitions. Entered by tapping the **Archive** tab in the bottom `ProfessionalNavBar`. |
-| **Hub** | The `HapticHubPanel` (Home tab, index 0) — the landing screen with three action tiles (Vault, Picture, Video) over a video backdrop. |
+| **Hub** | The `HapticHubPanel` (Home tab, index 0) — the landing screen with three action tiles (Archive, Picture, Video) over a video backdrop. |
 | **Shell** | `VaultHomeView` (`/vault-home`) — the authenticated `IndexedStack` container hosting all four tabs. |
 
 Both surfaces render the same underlying archive data (`List<ArchiveItem>` from `DashboardController`) but differ in navigation pattern, visual treatment, and action depth.
@@ -100,12 +100,12 @@ class ProfessionalNavBar extends StatelessWidget {
 
 Each `_TabItem` renders a monospaced uppercase label (`AppTextStyles.monoSm`), an icon, and a 2px `verifiedNeon` top-border accent on the selected tab. Inactive tabs use `starkWhite` at 48% opacity. The **More** tab shows a "Settings panel coming soon" `SnackBar`.
 
-### 2.2 Home Tab: `HapticHubPanel` (Entrance to Vault)
+### 2.2 Home Tab: `HapticHubPanel` (Entrance to Archive)
 
 ```19:165:/Users/paulensor/Projects/ProofLockCleanup/factlockcam_app/lib/ui/mobile/vault/haptic_hub_panel.dart
 class HapticHubPanel extends ConsumerStatefulWidget {
   // The three action tiles:
-  //   1. Vault   → context.push(ArchiveView.routePath)  → /archive (GridView)
+  //   1. Archive   → context.push(ArchiveView.routePath)  → /archive (GridView)
   //   2. Picture → widget.onCaptureRequested?.call(1)   → IndexedStack tab 1 (CameraView photo)
   //   3. Video   → widget.onCaptureRequested?.call(2)   → IndexedStack tab 2 (CameraView video)
 ```
@@ -124,14 +124,14 @@ The panel subscribes to `dashboardControllerProvider` to surface a pending-sync 
 
 ---
 
-## 3. Flow 1: Vault (`ArchiveView` via "Vault" Button)
+## 3. Flow 1: Archive (`ArchiveView` via "Archive" Button)
 
 ### 3.1 Entry and Route
 
 | Aspect | Detail |
 |--------|--------|
-| **Trigger** | User taps the **Vault** tile in `HapticHubPanel` (Home tab) |
-| **Tile label** | "Vault" — "Browse photos and videos on this device" |
+| **Trigger** | User taps the **Archive** tile in `HapticHubPanel` (Home tab) |
+| **Tile label** | "Archive" — "Browse photos and videos on this device" |
 | **Icon** | `Icons.folder_open_outlined` |
 | **Navigation** | `context.push(ArchiveView.routePath)` via GoRouter |
 | **Route path** | `/archive` |
@@ -470,7 +470,7 @@ ChronologyViewport
         └── Expanded
             └── archive.when(
                 ├── data → _buildContent →
-                │   ├── [if empty] _EmptyState(Picture, Video, Vault quick-action tiles)
+                │   ├── [if empty] _EmptyState(Picture, Video, Archive quick-action tiles)
                 │   └── [if items] ListView.builder
                 │       └── SwipeActionLayer
                 │           └── ChronologyCard (RepaintBoundary-wrapped)
@@ -647,7 +647,7 @@ The `DashboardController.updateArchiveMetadata()` performs an optimistic in-memo
     // 1. Read existing row from SQLite
     // 2. Normalize title/description (null vs empty vs trimmed)
     // 3. No-op if unchanged
-    // 4. Persist via VaultService.updateArchiveMetadata (SQLite only, no proof_ledger mutation)
+    // 4. Persist vian ArchiveService.updateArchiveMetadata (SQLite only, no proof_ledger mutation)
     // 5. Optimistically update in-memory state (map over current list)
   }
 ```
@@ -693,7 +693,7 @@ When no assets exist, `_EmptyState` renders:
   // Three _QuickActionTile widgets:
   //   Picture  → onCaptureRequested(1) [switches to CameraView photo]
   //   Video    → onCaptureRequested(2) [switches to CameraView video]
-  //   Vault    → context.push(ArchiveView.routePath) [/archive]
+  //   Archive    → context.push(ArchiveView.routePath) [/archive]
 ```
 
 The quick-action tiles use the same titanium gradient styling as the hub tiles but in a compact horizontal layout (icon + uppercase label, no subtitle, no chevron).
@@ -810,7 +810,7 @@ flowchart TB
     ArchTab["Archive Tab (3)\nChronologyViewport\ncard stack"]
   end
 
-  subgraph vault ["Vault (/archive) — Standalone Page"]
+  subgraph vault ["Archive (/archive) — Standalone Page"]
     GridView["ArchiveView\nGridView[Photos|Videos]"]
     Actions["ArchiveItemActions\nshowBottomSheet"]
     Toolbar["UniversalAssetToolbar\nCupertinoActionSheet"]
@@ -846,7 +846,7 @@ flowchart TB
     Supabase["SealLedgerRepository\n(RPCs, Storage)"]
   end
 
-  Home -- "Vault tile" --> GridView
+  Home -- "Archive tile" --> GridView
   ArchTab -- "tap card" --> Inspector
   GridView -- "tap item" --> Actions
   Actions --> Toolbar
@@ -937,14 +937,14 @@ Both flows have web-aware fallbacks:
 
 | File | Role |
 |------|------|
-| `lib/ui/mobile/vault_home_view.dart` | Vault shell: IndexedStack + ProfessionalNavBar |
+| `lib/ui/mobile/vault_home_view.dart` | Archive shell: IndexedStack + ProfessionalNavBar |
 | `lib/ui/mobile/vault/professional_nav_bar.dart` | Bottom navigation bar (5 tabs) |
-| `lib/ui/mobile/vault/haptic_hub_panel.dart` | Home tab: 3 action tiles (Vault, Picture, Video) + video backdrop |
+| `lib/ui/mobile/vault/haptic_hub_panel.dart` | Home tab: 3 action tiles (Archive, Picture, Video) + video backdrop |
 | `lib/ui/mobile/vault/chronology_viewport.dart` | Archive tab: scrolling card stack + swipe actions + empty state |
 | `lib/ui/mobile/vault/chronology_card.dart` | Individual card: RepaintBoundary, scroll-driven Transform, Hero, haptics |
 | `lib/ui/mobile/vault/swipe_action_layer.dart` | Horizontal drag layer: Share (right) / Verify (left) |
 | `lib/ui/mobile/vault/asset_inspector_screen.dart` | Full-screen detail: Hero, metadata form, info strip, action matrix, fullscreen viewers |
-| `lib/ui/mobile/archive_view.dart` | Standalone Vault: GridView with Photos/Videos tabs |
+| `lib/ui/mobile/archive_view.dart` | Standalone Archive: GridView with Photos/Videos tabs |
 | `lib/ui/mobile/archive_item_actions.dart` | Shared bottom sheet, send-proof dialog, metadata dialog, certificate draft, delete confirmation |
 | `lib/ui/mobile/archive_photo_view.dart` | Full-size photo viewer (InteractiveViewer, cached extraction) |
 | `lib/ui/mobile/archive_video_view.dart` | Full-size video player (temp file, VideoPlayerController) |

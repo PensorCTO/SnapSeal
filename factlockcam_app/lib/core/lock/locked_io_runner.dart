@@ -35,7 +35,7 @@ void lockedWriteBytesEntry(LockedWritePayload payload) {
     final writtenLength = File(payload.path).lengthSync();
     if (writtenLength != payload.bytes.length) {
       throw StateError(
-        'Vault write length mismatch for ${payload.path}: '
+        'Archive write length mismatch for ${payload.path}: '
         'expected ${payload.bytes.length}, got $writtenLength',
       );
     }
@@ -91,7 +91,7 @@ void lockedRenameEntry(LockedRenamePayload payload) {
     final finalLength = File(payload.finalPath).lengthSync();
     if (finalLength != stagingLength) {
       throw StateError(
-        'Promoted vault file length mismatch for ${payload.finalPath}: '
+        'Promoted archive file length mismatch for ${payload.finalPath}: '
         'expected $stagingLength, got $finalLength',
       );
     }

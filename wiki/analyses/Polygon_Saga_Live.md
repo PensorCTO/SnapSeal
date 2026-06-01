@@ -10,14 +10,14 @@ summary: "May 2026 Polygon Try 2: synchronous capture-time relay, local chain_tx
 **Try 2 is complete and QA-verified** on physical iPhone against hosted project `jqvnwtslmoxjwzusmtxs`.
 
 - **Eighth QA 2026-05-22:** **Live Polygon mainnet** — real on-chain `notarize()` tx, Polygonscan-confirmed, sync clears; sim-hash fallback removed ([[Polygon_Mainnet_Wiring_2026-05]]).
-- **Third QA 2026-05-21:** capture + Polygon ledger insert re-verified after Sprint 2 local persist ([[Vault_Transactional_Journal]]) and SQLite open race fix.
+- **Third QA 2026-05-21:** capture + Polygon ledger insert re-verified after Sprint 2 local persist ([[Archive_Transactional_Journal]]) and SQLite open race fix.
 - **Second QA 2026-05-20:** post-capture proof progress regression and certificate tx-hash omission fixed.
 
 When `USE_POLYGON_NOTARIZER=true` (default after `scripts/sync_flutter_dart_defines.sh`), capture runs:
 
 1. Isolate SHA-256 hash
 2. Device sign + **EIP-191 EVM sign** (`PolygonWalletService`)
-3. Local AES-GCM vault + SQLite (`pending_sync=true`)
+3. Local AES-GCM archive + SQLite (`pending_sync=true`)
 4. `proof_ledger` INSERT with `notarization_status=pending_notarization`
 5. **Await** `anchor-relay` Edge Function (camera overlay shows **"Generating Proof…"** until return)
 6. Relay calls `finalize_polygon_notarization`; client persists **`chain_tx_hash`** locally (SQLite v5) and clears `pending_sync`
@@ -31,7 +31,7 @@ Simulated chain remains available when `USE_POLYGON_NOTARIZER=false`.
 
 ```mermaid
 sequenceDiagram
-    participant UI as Camera + Vault UI
+    participant UI as Camera + Archive UI
     participant VS as VaultService
     participant WS as PolygonWalletService
     participant ER as anchor-relay
@@ -40,7 +40,7 @@ sequenceDiagram
 
     UI->>VS: proofLockFile (overlay: Generating Proof…)
     VS->>WS: signMessageHash (EIP-191, isolate)
-    VS->>VS: transactional journal + local vault encrypt
+    VS->>VS: transactional journal + local archive encrypt
     VS->>DB: INSERT pending_notarization
     VS->>ER: invoke anchor-relay (await)
     ER->>DB: finalize_polygon_notarization (tx_hash)
@@ -75,7 +75,7 @@ sequenceDiagram
 | Issue | Fix |
 |-------|-----|
 | Post-capture proof progress disappeared | Fire-and-forget relay returned before UI could show state; **await relay** during `proofLockFile` |
-| Vault badge skipped "Generating Proof…" | Relay finished before dashboard refresh; monitor now **seeds** initial status; chronology shows badge while `pendingNotarization` |
+| Archive badge skipped "Generating Proof…" | Relay finished before dashboard refresh; monitor now **seeds** initial status; chronology shows badge while `pendingNotarization` |
 | Certificate missing tx hash | `CertificateExportService` adds ledger hash; local SQLite + remote fetch |
 | Legacy rows without local hash | Certificate falls back to `fetchProofChainTxHash` from `proof_ledger` |
 | Pending sync stuck after capture (2026-05-22) | Seventh QA: client swallowed relay 500; brief sim fallback. **Eighth QA:** sim removed, errors propagate — [[Polygon_Mainnet_Wiring_2026-05]] |

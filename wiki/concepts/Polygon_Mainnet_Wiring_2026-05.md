@@ -18,7 +18,7 @@ summary: "Eighth QA (2026-05-22): live Polygon mainnet on physical iPhone — se
 | Ops | `ALCHEMY_API_URL` + `RELAYER_PRIVATE_KEY` set on hosted Supabase via `supabase secrets set` |
 | Edge Function | `anchor-relay` **live-only** — no `polygon-sim:` fallback; missing secrets → **HTTP 500** with `missing` list |
 | Client relay | `PolygonBlockchainHandler` rejects legacy sim hashes; surfaces structured relay error bodies |
-| Vault | `_dispatchPolygonRelay` **propagates** relay failures (no silent `catch` → pending-sync loop) |
+| Archive | `_dispatchPolygonRelay` **propagates** relay failures (no silent `catch` → pending-sync loop) |
 | Config | `POLYGON_RPC_URL` in dart-defines sync + `GeneratedDartDefines` fallback for receipt polling |
 | Device QA | **iOS primary** — `flutter run -d <deviceName> --dart-define-from-file dart_defines.json` (not `-d ios`) |
 

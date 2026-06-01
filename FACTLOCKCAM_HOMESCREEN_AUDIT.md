@@ -1,11 +1,11 @@
 # FactLockCam Home Screen Audit — 18 May 2026
 
-**Purpose:** Comprehensive audit of the authenticated **home screen** and its **vault shell** (`VaultHomeView`), with implementation blueprints, rule compliance, performance risks, test status, and prioritized remediation.
+**Purpose:** Comprehensive audit of the authenticated **home screen** and its **archive shell** (`VaultHomeView`), with implementation blueprints, rule compliance, performance risks, test status, and prioritized remediation.
 
 **Scope definition:** In current code, “home screen” means two related layers:
 
-1. **Home tab (index 0)** — `HapticHubPanel`: branded logo banner, pending-sync banner, video backdrop, and three action tiles (Vault / Picture / Video).
-2. **Vault shell** — `VaultHomeView`: post-login authenticated container using `IndexedStack` + `ProfessionalNavBar` that hosts Home, embedded Picture/Video cameras, and the Unified Archive Omni-Surface.
+1. **Home tab (index 0)** — `HapticHubPanel`: branded logo banner, pending-sync banner, video backdrop, and three action tiles (Archive / Picture / Video).
+2. **Archive shell** — `VaultHomeView`: post-login authenticated container using `IndexedStack` + `ProfessionalNavBar` that hosts Home, embedded Picture/Video cameras, and the Unified Archive Omni-Surface.
 
 This audit covers both because user-visible “home” behavior (navigation, sync, capture return path) is owned by the shell, not the hub panel alone.
 
@@ -74,7 +74,7 @@ VaultHomeView (ConsumerStatefulWidget)
 | 0 | Home | `HapticHubPanel` | — |
 | 1 | Picture | `CameraView(photo)` | Hub “Picture” → `_onCaptureRequested(1)` |
 | 2 | Video | `CameraView(video)` | Hub “Video” → `_onCaptureRequested(2)` |
-| 3 | Archive | `UnifiedArchiveViewport` | Hub “Vault” → `_onCaptureRequested(3)` |
+| 3 | Archive | `UnifiedArchiveViewport` | Hub “Archive” → `_onCaptureRequested(3)` |
 | — | More | *(not indexed)* | SnackBar: “Settings panel coming soon.” |
 
 ### 2.4 Post-capture navigation contract
@@ -254,7 +254,7 @@ Home tile “Picture” or “Video”
 ### 7.3 Hub → Archive
 
 ```
-Home tile “Vault” → tab index 3 (UnifiedArchiveViewport)
+Home tile “Archive” → tab index 3 (UnifiedArchiveViewport)
   OR bottom nav “Archive”
   → grid/chronology per archivePrefsProvider
   → tap card → AssetInspectorScreen (MaterialPageRoute push)
@@ -279,7 +279,7 @@ Seal with remote failure → SQLite pending_sync row
 1. Burns local wallet via `VaultService.burnLocalWallet()`
 2. Calls `AuthRepository.signOut()`
 
-**No UI in the vault shell invokes `signOut()`.** Wiki log (May 2026) notes burn/sign-out were removed from `ChronologyViewport` header with no replacement on `HeavyMetalLogoBanner.actions`.
+**No UI in the archive shell invokes `signOut()`.** Wiki log (May 2026) notes burn/sign-out were removed from `ChronologyViewport` header with no replacement on `HeavyMetalLogoBanner.actions`.
 
 **Impact:** Users cannot end session or wipe local wallet from the authenticated shell. The “More” tab is a stub SnackBar only.
 
@@ -314,7 +314,7 @@ Per `vault-omni-surface.mdc`:
 | Rule | Status |
 |------|--------|
 | Remove `/archive` GoRouter path | ✅ Removed from `app_router.dart` |
-| “Vault” hub tile → index 3 | ✅ `_onCaptureRequested(3)` |
+| “Archive” hub tile → index 3 | ✅ `_onCaptureRequested(3)` |
 | `UnifiedArchivePreferences` + `filteredArchiveProvider` | ✅ `archive_prefs_provider.dart` |
 | `AnimatedSwitcher` grid/chronology | ✅ |
 | Grid: date-grouped slivers | ✅ `OmniGridView` with month headers |

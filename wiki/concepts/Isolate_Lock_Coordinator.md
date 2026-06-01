@@ -7,7 +7,7 @@ summary: "Sprint 4: UI lock stream and advisory file locks keep archive tiles co
 
 ## Core Synthesis
 
-While `TransactionalVaultPersister` stages `*.part` files and atomically renames to vault finals ([[Vault_Transactional_Journal]]), the archive must not read half-written bytes or show broken thumbnails. Sprint 4 adds a **main-isolate lock coordinator** and **Riverpod overlays** without violating the no-`bloc` / no-direct-Supabase-in-UI rules.
+While `TransactionalArchivePersister` stages `*.part` files and atomically renames to archive finals ([[Archive_Transactional_Journal]]), the archive must not read half-written bytes or show broken thumbnails. Sprint 4 adds a **main-isolate lock coordinator** and **Riverpod overlays** without violating the no-`bloc` / no-direct-Supabase-in-UI rules.
 
 | Layer | Responsibility |
 |-------|----------------|
@@ -45,6 +45,6 @@ Web: coordinator registers globally; transactional storage/locks are mobile-only
 ## Related Notes
 
 * [[App_Store_Prep_Capture_Seal_2026-05]]
-* [[Vault_Transactional_Journal]]
+* [[Archive_Transactional_Journal]]
 * [[FactLockCam_Product_Baseline_2026-05]]
 * [[ProofLock_Refactor_Scope]]

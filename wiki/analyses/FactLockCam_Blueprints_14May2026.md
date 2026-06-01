@@ -13,8 +13,8 @@ This page is an **engineering-oriented** blueprint of the **current** FactLockCa
 
 ### Positioning and trust model
 
-- **Product:** FactLockCam is a Flutter application for authenticated capture, **local-first** sealing, and **Supabase-backed** proof surfaces. It is framed as a **tamper-evident** media vault—authenticity heuristics and risk reduction—not a claim of absolute proof-of-truth, mathematical certainty, or guaranteed sensor-origin (see project rules and [[FactLockCam_Product_Baseline_2026-05]]).
-- **Current remote “proof” path:** **ProofLock-shaped:** `check_proof_status` → `NativeEnclaveChannel.signHash` (still **simulated** on device) → `ChainNotarizer` (default `SimulatedChainNotarizer` → RPC `simulate_chain_notarize`) → local AES-GCM vault + SQLite → `proof_ledger` insert when remote steps succeed; otherwise `pending_sync` with backoff.
+- **Product:** FactLockCam is a Flutter application for authenticated capture, **local-first** sealing, and **Supabase-backed** proof surfaces. It is framed as a **tamper-evident** media archive—authenticity heuristics and risk reduction—not a claim of absolute proof-of-truth, mathematical certainty, or guaranteed sensor-origin (see project rules and [[FactLockCam_Product_Baseline_2026-05]]).
+- **Current remote “proof” path:** **ProofLock-shaped:** `check_proof_status` → `NativeEnclaveChannel.signHash` (still **simulated** on device) → `ChainNotarizer` (default `SimulatedChainNotarizer` → RPC `simulate_chain_notarize`) → local AES-GCM archive + SQLite → `proof_ledger` insert when remote steps succeed; otherwise `pending_sync` with backoff.
 - **Target bar:** Hardware-backed signing, durable chain anchoring, C2PA, RPC-only courier surfaces, outsider verification—[[ProofLock_Refactor_Scope]] and [[ProofLock_Architectural_Manifest]].
 
 ### Repository topology
@@ -58,7 +58,7 @@ Unauthenticated users → `/logon`; authenticated users on `/logon` → hub. Cam
 
 - **Mechanism:** Supabase **email OTP** (`signInWithOtp`, 6-digit `OtpType.email` verify)—`data/supabase/auth_repository.dart`, `ui/controllers/auth_controller.dart`, `ui/views/logon_view.dart`.
 - **Session coupling:** `authStateProvider` drives GoRouter redirects; without Supabase config the shell runs with an in-app notice.
-- **Sign-out:** Burns **local wallet** (SQLite, vault files, secure key) **before** remote sign-out—[[FactLockCam_Product_Baseline_2026-05]].
+- **Sign-out:** Burns **local wallet** (SQLite, archive files, secure key) **before** remote sign-out—[[FactLockCam_Product_Baseline_2026-05]].
 
 ### Capture subsystem (dual mode)
 
@@ -66,7 +66,7 @@ Unauthenticated users → `/logon`; authenticated users on `/logon` → hub. Cam
 - **`CameraView`** (`ui/views/camera/camera_view.dart`): rear-camera preference; **`enableAudio`** when `mode.isVideo`; photo `takePicture()`; video `startVideoRecording` / `stopVideoRecording` with REC UX.
 - **Forensic UI:** `CustomPaint` / painters under `core/ui/painters/`; **`RepaintBoundary`** on high-frequency overlays; **`_teardownCamera`** so `stopVideoRecording` completes before controller disposal.
 
-### Vault domain: `VaultService` and `proofLockFile`
+### Archive domain: `VaultService` and `proofLockFile`
 
 **Responsibilities** (`factlockcam_app/lib/domain/services/vault_service.dart`): isolate read + SHA-256; optional preflight/notarization via `SealLedgerRepository` + `ChainNotarizer`; AES-GCM (`VaultEncryptionHandler` / `CipherEngine`); thumbnails (images + `video_thumbnail`); `LocalVaultStorage`; SQLite via `VaultDatabase`; **`extractForCourier`** + `CourierCrypto.decryptAndVerifyFingerprint`.
 
@@ -139,7 +139,7 @@ flowchart TB
   end
 
   subgraph domain [Domain]
-    Vault[VaultService]
+    Archive[VaultService]
     Chain[ChainNotarizer]
     Cert[CertificateExportService]
     Enclave[NativeEnclaveChannel]
@@ -158,14 +158,14 @@ flowchart TB
     AuthUI --> AuthRepo
     Hub --> Router
     Archive --> Riverpod
-    Camera --> Vault
-    Riverpod --> Vault
-    Vault --> DB
-    Vault --> Files
-    Vault --> Secure
-    Vault --> Crypto
-    Vault --> Enclave
-    Vault --> Chain
+    Camera --> Archive
+    Riverpod --> Archive
+    Archive --> DB
+    Archive --> Files
+    Archive --> Secure
+    Archive --> Crypto
+    Archive --> Enclave
+    Archive --> Chain
     Chain --> SealRepo
     SealRepo --> SB
     AuthRepo --> SB

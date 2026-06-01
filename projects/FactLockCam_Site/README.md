@@ -81,6 +81,6 @@ After deploying this site, set:
 
 Rebuild the iOS app with `--dart-define-from-file=dart_defines.json`.
 
-## Vault unlock (follow-up)
+## Archive unlock (follow-up)
 
-`VaultCourier.tsx` wires `check_courier_attempts` and `courier-unlock` today. Browser-side AES-GCM decrypt + SHA-256 verify (parity with Flutter `CourierCrypto`) is the next implementation step.
+`VaultCourier.tsx` (internal component name) wires `check_courier_attempts` and `courier-unlock` today. Browser-side AES-GCM decrypt + SHA-256 verify (parity with Flutter `CourierCrypto`) is the next implementation step.

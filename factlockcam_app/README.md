@@ -1,6 +1,6 @@
 # FactLockCam App
 
-FactLockCam is a Flutter foundation for a tamper-evident local media vault.
+FactLockCam is a Flutter foundation for a tamper-evident local media archive.
 Captured media is hashed, encrypted into a local vault, indexed in SQLite, and
 shown via thumbnails. Supabase provides OTP authentication, profile-to-wallet
 mapping, and an active-wallet replica of Polygon proof rows.

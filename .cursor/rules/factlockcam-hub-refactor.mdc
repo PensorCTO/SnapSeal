@@ -12,12 +12,12 @@ alwaysApply: true
 ## HapticHubPanel
 
 - Remove instructional copy ("Choose an action" and similar).
-- Center the tile grid (`MainAxisAlignment.center` or 2×2 grid); exactly four equal-weight tiles: Vault, Picture, Video, Account & Settings.
+- Center the tile grid (`MainAxisAlignment.center` or 2×2 grid); exactly four equal-weight tiles: Archive, Picture, Video, Account & Settings.
 - Preserve haptic + backdrop replay on tile tap.
 
 ## Routing and navigation
 
-- Every child panel (Vault/archive, Picture, Video, Account & Settings) MUST expose an explicit back control returning hub index 0 in `VaultHomeView`.
+- Every child panel (Archive, Picture, Video, Account & Settings) MUST expose an explicit back control returning hub index 0 in `VaultHomeView`.
 - Prefer `CupertinoNavigationBar` or shared `VaultPanelNavigationBar` for consistency.
 
 ## App Store compliance

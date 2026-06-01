@@ -82,7 +82,7 @@ globs: lib/core/ghost*\_key/**\*\*/\*.dart, ios/Runner/\*\*/\*.swift, android/ap
 ***\# Cryptography & Platform Channels***  
 ***\- \*\*Hardware Enclave\*\*: Do not use purely software-based key generation for signing proofs. Keys MUST be generated and stored in the iOS Secure Enclave (via CryptoKit) or Android hardware-backed Keystore.***  
 ***\- \*\*Platform Channels\*\*: Use Flutter \`MethodChannel\` to request the native layer to sign the \`asset\_hash\` with the device-bound key.***  
-***\- \*\*Local Vault\*\*: File encryption MUST use XOR \+ SHA256 derivation via \`VaultEncryptionHandler\`. Media must be deleted from temporary unencrypted storage immediately after successful vault insertion.***
+***\- \*\*Local Archive\*\*: File encryption MUST use XOR \+ SHA256 derivation via \`VaultEncryptionHandler\`. Media must be deleted from temporary unencrypted storage immediately after successful vault insertion.***
 
 ### ---
 
@@ -173,7 +173,7 @@ Future\<ProofResult\> proofLockFile(File sourceFile, String userId) async {
     deviceSignature: deviceSignature,  
   );
 
-  // 5\. Local Vault Encryption & DB Sync  
+  // 5\. Local Archive Encryption & DB Sync  
   await \_encryptionHandler.encryptToFile(sourceFile, userId, fileHash);  
   await \_supabase.from('proof\_ledger').insert({  
     'asset\_hash': fileHash,  

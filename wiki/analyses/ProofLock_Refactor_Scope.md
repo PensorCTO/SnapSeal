@@ -9,17 +9,17 @@ summary: "Maps the ProofLock architectural manifest to current FactLockCam code 
 
 The **ProofLock manifest** ([[ProofLock_Architectural_Manifest]]) describes a **target architecture** that remains **ahead** of the current **FactLockCam** codebase ([[FactLockCam_Master_Blueprint]]) on several tracks, though **device signing MVP** landed in fifteenth QA ([[App_Store_Hardening_2026-05]]). Today’s app delivers a credible **local-first wallet** with a **ProofLock-shaped online path**: capture → isolate read/hash → **`check_proof_status`** preflight (conflict → `ProofLockConflictException`) → **`NativeEnclaveChannel` `signHash`** (Secure Enclave / Keystore on iOS/Android) → Polygon saga or **`SimulatedChainNotarizer` / `simulate_chain_notarize`** → **AES-GCM** vault encryption → SQLite + thumbnails → **`proof_ledger` insert** when remote steps succeed, with **`pending_sync` + backoff retries** (`PendingSyncScheduler`, hub/archive **`syncPendingInBackground`**) when they do not. Best-effort **`seal_ledger`** sync remains in **`retryPendingRemoteSync`**. Owner-side archive interactions use a media-type-driven Domain Interaction Contract. Remaining manifest gaps: **server-side device-signature verify**, **C2PA**, and **`courier_packages` / RPC-only courier** depth.
 
-Refactor effort is therefore **large and multi-track**, not a single feature. A practical sequencing is: (1) **docs and contracts** frozen in wiki + ADR-style notes, (2) **Supabase evolution** (new tables/RPC, RLS, indexes) without breaking existing wallets, (3) **vault pipeline hardening** (atomicity, pending-sync worker), (4) **native enclave channel MVP** (sign hash or bind attestation), (5) **Polygon write path** + persistence of `polygon_tx_hash`, (6) **C2PA** as a parallel track, (7) **verification / public read** UX and tests.
+Refactor effort is therefore **large and multi-track**, not a single feature. A practical sequencing is: (1) **docs and contracts** frozen in wiki + ADR-style notes, (2) **Supabase evolution** (new tables/RPC, RLS, indexes) without breaking existing wallets, (3) **archive pipeline hardening** (atomicity, pending-sync worker), (4) **native enclave channel MVP** (sign hash or bind attestation), (5) **Polygon write path** + persistence of `polygon_tx_hash`, (6) **C2PA** as a parallel track, (7) **verification / public read** UX and tests.
 
 ```mermaid
 flowchart LR
   subgraph today [FactLockCam_Today]
     Cam[Camera_Capture]
     Iso[Isolate_IO_Hash]
-    Vault[VaultService_AESGCM]
+    Archive[VaultService_AESGCM]
     Sql[SQLite_Metadata]
     Led[seal_ledger_Insert]
-    Cam --> Iso --> Vault --> Sql --> Led
+    Cam --> Iso --> Archive --> Sql --> Led
   end
   subgraph target [ProofLock_Target]
     Pre[RPC_check_proof_status]
@@ -59,7 +59,7 @@ Rough calendar estimates for a **small team**; actuals depend on chain UX, attes
 | :--- | :--- | :--- |
 | 1 | Wiki + API contracts + migration naming (`proof_ledger`, RPC signatures) | 0.5–1 day |
 | 2 | Supabase: indexes, RLS, `check_proof_status`, courier RPC sketch | 2–4 days + security review |
-| 3 | Vault: transactional local writes; deepen `pending_sync` reconciliation UX/diagnostics | 2–4 days (partially satisfied 2026-05) |
+| 3 | Archive: transactional local writes; deepen `pending_sync` reconciliation UX/diagnostics | 2–4 days (partially satisfied 2026-05) |
 | 4 | Native TEE signing MVP (iOS + Android) | 1–2 weeks MVP; more for hardening |
 | 5 | Polygon submission + persist hash + failure modes | 1–2 weeks |
 | 6 | C2PA / FFI | 1–2+ weeks |

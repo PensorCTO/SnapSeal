@@ -28,7 +28,7 @@ However, against the **2026 framework’s architectural-integrity bar**, submiss
 | IAP / StoreKit | Required + restore flow | None | Pass (simpler) |
 | Social auth / Sign in with Apple | Not used | Not used | Pass |
 | Deep link URL scheme | `io.prooflock://` (magic link) | Not required (email OTP) | Pass |
-| Send Proof / courier E2E | N/A | Blocked on live web vault | **Blocker** |
+| Send Proof / courier E2E | N/A | Blocked on live web archive | **Blocker** |
 | Support URL live | `prooflock.io` | `factlockcam.com/support` unreachable | **Blocker** |
 | Export compliance (`ITSAppUsesNonExemptEncryption`) | `NO` | Missing | **Gap** |
 | Automated test suite | Not audited here | 26 pass / 9 fail | Warning |
@@ -71,7 +71,7 @@ FactLockCam uses `path_provider`, `sqflite`, and `supabase_flutter` (which trans
 |-------------------------|----------|--------------------------|
 | **Email address** | `signInWithOtp` / `verifyOTP` in `auth_controller.dart`; Privacy Policy §2 | ❌ Not in manifest (only `UserID`) |
 | **Precise location** | `geolocator` stream in `camera_geolocation_stream.dart`; `NSLocationWhenInUseUsageDescription` in Info.plist; Privacy Policy §8 | ❌ Not in manifest |
-| Photos / videos | Camera capture + local vault | ✅ Declared |
+| Photos / videos | Camera capture + local archive | ✅ Declared |
 | User ID | Supabase `auth.uid()` | ✅ Declared |
 
 **Action:** Add `NSPrivacyCollectedDataTypeEmailAddress` and `NSPrivacyCollectedDataTypePreciseLocation` (or `CoarseLocation` if you downgrade collection) with purpose `AppFunctionality`, linked=true, tracking=false. Mirror the same categories in **App Store Connect → App Privacy**.
@@ -101,7 +101,7 @@ Since Feb 2025, commonly used SDKs must ship their own manifests. FactLockCam bu
 
 ### 2.2 ProofLock comparison
 
-ProofLock used gallery-based import (`NSPhotoLibraryUsageDescription`) and Face ID for vault unlock. FactLockCam’s permission set reflects a **different product surface** (live camera + GPS HUD). Omissions are intentional and compliant.
+ProofLock used gallery-based import (`NSPhotoLibraryUsageDescription`) and Face ID for archive unlock. FactLockCam’s permission set reflects a **different product surface** (live camera + GPS HUD). Omissions are intentional and compliant.
 
 ### 2.3 Missing keys vs ProofLock
 
@@ -196,7 +196,7 @@ The 2026 framework’s ProofLock blueprint defines the expected secure-media wor
 
 | Blueprint step | Expected | FactLockCam status |
 |----------------|----------|-------------------|
-| Local encryption | `CourierCrypto` + AES-GCM vault | ✅ Implemented |
+| Local encryption | `CourierCrypto` + AES-GCM archive | ✅ Implemented |
 | Immutable anchoring | `chain_tx_hash` → Polygonscan link on certificate | ✅ Live mainnet path ([[Polygon_Mainnet_Wiring_2026-05]]) |
 | Download gates | `download_count < max_downloads`, `is_bricked`, `expires_at` | ✅ In `attempt_courier_unlock` (`20260524120000_courier_download_limits.sql`) |
 | Separate `authorize_courier_download` RPC | Framework names explicit RPC | ⚠️ Logic inlined in `attempt_courier_unlock` — functionally OK |
@@ -222,10 +222,10 @@ WEB_VAULT_BASE_URL = https://credibly-mayday-overjoyed.ngrok-free.dev
 
 **Impact:** Send Proof generates courier URLs pointing at Ngrok. When the tunnel stops, reviewers and users get broken links → **Guideline 2.1** functional failure if Send Proof is advertised in metadata or demonstrated in review notes.
 
-Per [[Send_Proof_Courier_2026-05]]: recipient E2E is **intentionally parked** until a public web vault exists. For App Store submission you must either:
+Per [[Send_Proof_Courier_2026-05]]: recipient E2E is **intentionally parked** until a public web archive exists. For App Store submission you must either:
 
 1. **Deploy** the Flutter Web courier unlock app to a stable HTTPS host and rebuild with that `WEB_VAULT_BASE_URL`, **or**
-2. **Scope the v1 submission** to capture/archive/certificate export only and ensure App Store metadata/screenshots do not promise working recipient unlock until the web vault ships (still risky if Send Proof is reachable in-app).
+2. **Scope the v1 submission** to capture/archive/certificate export only and ensure App Store metadata/screenshots do not promise working recipient unlock until the web archive ships (still risky if Send Proof is reachable in-app).
 
 **Verdict:** ❌ **BLOCKER** for any submission that exposes Send Proof to review.
 
@@ -255,9 +255,9 @@ Code audit cannot verify App Store Connect fields. Pre-submission checklist:
 | Field | Limit | FactLockCam guidance |
 |-------|-------|---------------------|
 | App Name | 30 chars | `FactLockCam` or `FactLockCam: Secure Archive` |
-| Subtitle | 30 chars | Legal-approved: `Private Vault · Proof` or `Undeniable Truth Vault` |
-| Keywords | 100 chars | Singular, comma-separated, no spaces — e.g. `vault,proof,privacy,certificate,ledger` |
-| Description | Not indexed on iOS | Use full **Engineered Strategic Pitch** (private vault, Digital DNA, zero-knowledge keys, tamper-proof certificate, global ledger). Consumer conversion copy — **omit FRE 902** from description; procedural detail stays in Terms only. |
+| Subtitle | 30 chars | Legal-approved: `Private Archive · Proof` or `Verifiable Proof Archive` |
+| Keywords | 100 chars | Singular, comma-separated, no spaces — e.g. `archive,proof,privacy,certificate,ledger` |
+| Description | Not indexed on iOS | Use full **Engineered Strategic Pitch** (private archive, Digital DNA, zero-knowledge keys, tamper-proof certificate, global ledger). Consumer conversion copy — **omit FRE 902** from description; procedural detail stays in Terms only. |
 | Promotional text | 170 chars | `Absolute privacy. Undeniable proof.` |
 | Screenshots | Caption text indexed since mid-2025 | Digital DNA, only you hold the keys, tamper-proof certificate — avoid generic "Fast App" |
 
@@ -344,7 +344,7 @@ FactLockCam **matches or exceeds** ProofLock on items 2–5 and account deletion
 
 | # | Item | Owner | Effort |
 |---|------|-------|--------|
-| 1 | Deploy **permanent HTTPS web vault**; set `WEB_VAULT_BASE_URL` in release build | Infra | 1–2 days |
+| 1 | Deploy **permanent HTTPS web archive**; set `WEB_VAULT_BASE_URL` in release build | Infra | 1–2 days |
 | 2 | Publish live **support URL** (`factlockcam.com/support` or working alternative) | Web | Hours |
 | 3 | Update `PrivacyInfo.xcprivacy`: **DiskSpace**, **Email**, **Precise Location** | iOS | 1 hour |
 | 4 | Align **App Store Connect App Privacy** labels with manifest | Connect | 30 min |
@@ -356,7 +356,7 @@ FactLockCam **matches or exceeds** ProofLock on items 2–5 and account deletion
 | # | Item | Notes |
 |---|------|-------|
 | 7 | Run Xcode **Privacy Report** on release archive | Catches SDK manifest gaps |
-| 8 | E2E Send Proof test on TestFlight build against production vault URL | Reviewer path |
+| 8 | E2E Send Proof test on TestFlight build against production archive URL | Reviewer path |
 | 9 | Strengthen camera permission copy (encryption + archive context) | Match ProofLock specificity |
 | 10 | Fix or quarantine failing `widget_test.dart` DI smoke test | CI hygiene |
 | 11 | Prepare demo account + review notes (below) | Reviewer experience |
@@ -407,7 +407,7 @@ Core flows to test:
   1. Login → Hub → Picture → capture photo → wait for "Generating Proof…" → Archive shows sealed item.
   2. Open item → View Full → decrypts locally.
   3. Send Proof → set password → share sheet delivers PDF + https://YOUR-VAULT-HOST/courier?pkg=…
-  4. Open courier link in Safari → enter password → media unlocks (requires live web vault).
+  4. Open courier link in Safari → enter password → media unlocks (requires live web archive).
   5. Account → Burn account → double confirm → account deleted.
 
 Notes:
@@ -432,7 +432,7 @@ Notes:
 | §2 Privacy manifest | ⚠️ | Missing DiskSpace + email/location collected types |
 | §3 SDK / AI governance | ✅ | No AI providers; policy documented |
 | §4 Age rating | ⚠️ | Connect questionnaire pending |
-| §5 Secure media SAGA | ⚠️ | Code OK; **web vault host blocker** |
+| §5 Secure media SAGA | ⚠️ | Code OK; **web archive host blocker** |
 | §6 Metadata / ASO | ⚠️ | Connect-side — not verified |
 | §7 Release orchestration | ⚠️ | Tests partially failing; manual QA required |
 | Guideline 5.1.1 Privacy | ⚠️ | Support URL dead; manifest drift |
@@ -448,7 +448,7 @@ Notes:
 
 FactLockCam is **architecturally aligned** with the compliance patterns that cleared ProofLock for the App Store: privacy manifest present, honest permission scope, no social auth, no external payments, bundled legal docs, and robust account deletion. The product also meets 2026 **AI transparency** expectations by construction.
 
-Submission should wait until **production web vault hosting**, a **live support page**, and **privacy manifest / Connect label alignment** (email, location, disk space) are complete. With those P0 items resolved and a TestFlight Send Proof smoke test against the permanent vault URL, FactLockCam should reach parity with ProofLock’s Feb 2025 **zero critical blocker** audit posture.
+Submission should wait until **production web archive hosting**, a **live support page**, and **privacy manifest / Connect label alignment** (email, location, disk space) are complete. With those P0 items resolved and a TestFlight Send Proof smoke test against the permanent archive URL, FactLockCam should reach parity with ProofLock’s Feb 2025 **zero critical blocker** audit posture.
 
 ---
 

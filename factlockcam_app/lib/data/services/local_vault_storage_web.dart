@@ -19,7 +19,7 @@ class LocalVaultStorage {
   Future<VaultTransactionalPaths> resolveTransactionalPaths(
     String assetFingerprint,
   ) async {
-    throw UnsupportedError('Transactional vault paths are mobile-only.');
+    throw UnsupportedError('Transactional archive paths are mobile-only.');
   }
 
   Future<void> writeBytesToPath(
@@ -27,7 +27,7 @@ class LocalVaultStorage {
     Uint8List bytes, {
     required String assetFingerprint,
   }) async {
-    throw UnsupportedError('Transactional vault writes are mobile-only.');
+    throw UnsupportedError('Transactional archive writes are mobile-only.');
   }
 
   Future<void> commitStagedFile({
@@ -35,7 +35,7 @@ class LocalVaultStorage {
     required String finalPath,
     required String assetFingerprint,
   }) async {
-    throw UnsupportedError('Transactional vault commit is mobile-only.');
+    throw UnsupportedError('Transactional archive commit is mobile-only.');
   }
 
   Future<void> purgePaths(List<String> paths) async {}
@@ -44,21 +44,21 @@ class LocalVaultStorage {
     required String assetFingerprint,
     required Uint8List bytes,
   }) async {
-    throw UnsupportedError('Local vault storage is mobile-only.');
+    throw UnsupportedError('Local archive storage is mobile-only.');
   }
 
   Future<String> writeThumbnail({
     required String assetFingerprint,
     required Uint8List bytes,
   }) async {
-    throw UnsupportedError('Local vault storage is mobile-only.');
+    throw UnsupportedError('Local archive storage is mobile-only.');
   }
 
   Future<Uint8List> readEncryptedOriginal(
     String path, {
     String? assetFingerprint,
   }) async {
-    throw UnsupportedError('Local vault storage is mobile-only.');
+    throw UnsupportedError('Local archive storage is mobile-only.');
   }
 
   Future<void> deleteAssetFiles({

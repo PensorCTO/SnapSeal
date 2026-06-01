@@ -40,7 +40,7 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; r
 
 **Debug QA:** `AppConfig.enableProofLinks` is true when `WEB_ARCHIVE_BASE_URL` is set, even if `dart_defines.json` has `ENABLE_PROOF_LINKS=false`. Release/profile builds still require explicit `true` after `verify_web_archive_deploy.sh` ([[Archive_Owner_UX_2026-05]], [[App_Store_Hardening_2026-05]]).
 
-### Recipient flow (when web vault is live)
+### Recipient flow (when web archive is live)
 
 1. Tap link: `{WEB_ARCHIVE_BASE_URL}/courier?pkg={uuid}`.
 2. Web `CourierUnlockView` → `courier-unlock` edge function (signed blob URL) + local decrypt (`CourierCrypto`).

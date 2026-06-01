@@ -1,9 +1,9 @@
 ---
 tags: [analysis, factlockcam, cloud_vault, supabase, capture, 2026-05]
-summary: "Twelfth QA: post-notarization cloud vault sync — factlock_vault bucket, VaultSyncCoordinator, isolate encrypt + iOS background upload wired into proofLockFile."
+summary: "Twelfth QA: post-notarization cloud archive sync — factlock_vault bucket, VaultSyncCoordinator, isolate encrypt + iOS background upload wired into proofLockFile."
 ---
 
-# Cloud Vault Wiring (May 2026)
+# Cloud Archive Wiring (May 2026)
 
 ## Core Synthesis
 
@@ -14,7 +14,7 @@ summary: "Twelfth QA: post-notarization cloud vault sync — factlock_vault buck
 | Step | Component | Operation |
 |------|-----------|-----------|
 | 1 | `VaultService.proofLockFile` | SHA-256 preflight, device sign, chain notarization |
-| 2 | `_persistSealedBytes` | Local AES-GCM vault + journal-backed SQLite row |
+| 2 | `_persistSealedBytes` | Local AES-GCM archive + journal-backed SQLite row |
 | 3 | `SealLedgerRepository` | `proof_ledger` insert / Polygon relay |
 | 4 | **`VaultSyncCoordinator`** | Provision `courier_packages` → `Isolate.run` encrypt → background upload |
 | 5 | `_deleteSourceAfterSeal` | Unlink temporary capture file |
@@ -85,5 +85,5 @@ Camera UI → VaultService → VaultSyncCoordinator
 * [[Send_Proof_Courier_2026-05]]
 * [[Production_Transition_2026-05]]
 * [[Identity_Lifecycle_And_Data_Lineage]]
-* [[Vault_Transactional_Journal]]
+* [[Archive_Transactional_Journal]]
 * [[FactLockCam_Product_Baseline_2026-05]]

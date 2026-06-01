@@ -10,8 +10,8 @@
 
 ## 1. Positioning and trust model
 
-- **Product:** FactLockCam is a Flutter application for authenticated capture, **local-first** sealing, and **Supabase-backed** proof surfaces. It is framed as a **tamper-evident** media vault—authenticity heuristics and risk reduction—not a claim of absolute proof-of-truth, mathematical certainty, or guaranteed sensor-origin (see project rules and `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md`).
-- **Current remote “proof” path:** A **ProofLock-shaped** sequence: `check_proof_status` → `NativeEnclaveChannel.signHash` (still **simulated** on device) → `ChainNotarizer` (default `SimulatedChainNotarizer` → RPC `simulate_chain_notarize`) → local AES-GCM vault + SQLite → `proof_ledger` insert when remote steps succeed; otherwise `pending_sync` with backoff.
+- **Product:** FactLockCam is a Flutter application for authenticated capture, **local-first** sealing, and **Supabase-backed** proof surfaces. It is framed as a **tamper-evident** media archive—authenticity heuristics and risk reduction—not a claim of absolute proof-of-truth, mathematical certainty, or guaranteed sensor-origin (see project rules and `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md`).
+- **Current remote “proof” path:** A **ProofLock-shaped** sequence: `check_proof_status` → `NativeEnclaveChannel.signHash` (still **simulated** on device) → `ChainNotarizer` (default `SimulatedChainNotarizer` → RPC `simulate_chain_notarize`) → local AES-GCM archive + SQLite → `proof_ledger` insert when remote steps succeed; otherwise `pending_sync` with backoff.
 - **Target bar (out of scope for “present” detail but important context):** Hardware-backed signing, durable chain anchoring, C2PA, RPC-only courier surfaces, and outsider verification—as described in `wiki/analyses/ProofLock_Refactor_Scope.md` and `wiki/sources/ProofLock_Architectural_Manifest.md`.
 
 ---
@@ -64,7 +64,7 @@ Unauthenticated users are redirected to `/logon`; authenticated users on `/logon
 
 - **Mechanism:** Supabase **email OTP** (`signInWithOtp`, 6-digit `OtpType.email` verify). Implementation spans `data/supabase/auth_repository.dart`, `ui/controllers/auth_controller.dart`, `ui/views/logon_view.dart`.
 - **Session coupling:** `authStateProvider` drives GoRouter redirects; without Supabase config the shell still runs with an in-app notice that Magic Number auth needs configuration.
-- **Sign-out:** Burns **local wallet** (SQLite, vault files, secure key) **before** remote sign-out—see baseline in `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md`.
+- **Sign-out:** Burns **local wallet** (SQLite, archive files, secure key) **before** remote sign-out—see baseline in `wiki/concepts/FactLockCam_Product_Baseline_2026-05.md`.
 
 ---
 
@@ -87,7 +87,7 @@ Unauthenticated users are redirected to `/logon`; authenticated users on `/logon
 
 ---
 
-## 6. Vault domain: sealing pipeline (`VaultService`)
+## 6. Archive domain: sealing pipeline (`VaultService`)
 
 ### 6.1 Responsibilities
 
@@ -223,7 +223,7 @@ flowchart TB
   end
 
   subgraph domain [Domain]
-    Vault[VaultService]
+    Archive[VaultService]
     Chain[ChainNotarizer]
     Cert[CertificateExportService]
     Enclave[NativeEnclaveChannel]
@@ -242,14 +242,14 @@ flowchart TB
     AuthUI --> AuthRepo
     Hub --> Router
     Archive --> Riverpod
-    Camera --> Vault
-    Riverpod --> Vault
-    Vault --> DB
-    Vault --> Files
-    Vault --> Secure
-    Vault --> Crypto
-    Vault --> Enclave
-    Vault --> Chain
+    Camera --> Archive
+    Riverpod --> Archive
+    Archive --> DB
+    Archive --> Files
+    Archive --> Secure
+    Archive --> Crypto
+    Archive --> Enclave
+    Archive --> Chain
     Chain --> SealRepo
     SealRepo --> SB
     AuthRepo --> SB

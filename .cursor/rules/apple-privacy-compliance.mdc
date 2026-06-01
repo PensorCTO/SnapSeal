@@ -28,7 +28,7 @@ Apple enforces Guideline 5.1.1 (privacy) and Required Reason API manifests (Guid
 | Encrypted `.seal` blobs | `factlockcam_vault/originals/*.seal` | `NSPrivacyCollectedDataTypeOtherUserContent` | `Linked=false`, AppFunctionality |
 | Hardware signing (planned) | `NativeEnclaveChannel`, `AppDelegate` enclave channel | N/A until Secure Enclave ships | Do not claim device-bound proof in copy yet |
 
-**Vault directory names:** `factlockcam_vault` (modern), `snapseal_vault` (legacy migration). Do not reference obsolete `prooflock_vault` paths in new docs.
+**Archive directory names:** `factlockcam_vault` (modern), `snapseal_vault` (legacy migration). Do not reference obsolete `prooflock_vault` paths in new docs.
 
 ## Baseline manifest (do not regress)
 

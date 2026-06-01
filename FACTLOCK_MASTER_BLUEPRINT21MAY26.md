@@ -14,9 +14,9 @@
 1. **FactLockCam** — a Flutter multi-platform application (`factlockcam_app/`) for authenticated capture, **local-first** AES-GCM sealing, and Supabase-backed proof replication with an optional **Polygon async saga**.
 2. **LLM Wiki** — a Karpathy-style knowledge graph (`wiki/`, governed by `AGENTS.md`) that compiles durable architecture truth from immutable `raw/` sources and ongoing reconciliation.
 
-As of the **sixth QA pass (2026-05-21)**, the primary product workflow is **verified end-to-end** on hosted Supabase: **Magic Number logon** → **hub-first vault shell** → **capture or browse archive** → sealed assets with remote proof when online. Recent work adds **identity lifecycle** (EVM wallet lineage, historical archive placeholders, JIT courier upload, cascade account burn) on top of Sprint 2–4 integrity (transactional journal, isolate lock coordinator) and Sprint 5 App Store prep (legal bundle, multi-shot capture hardening).
+As of the **sixth QA pass (2026-05-21)**, the primary product workflow is **verified end-to-end** on hosted Supabase: **Magic Number logon** → **hub-first archive shell** → **capture or browse archive** → sealed assets with remote proof when online. Recent work adds **identity lifecycle** (EVM wallet lineage, historical archive placeholders, JIT courier upload, cascade account burn) on top of Sprint 2–4 integrity (transactional journal, isolate lock coordinator) and Sprint 5 App Store prep (legal bundle, multi-shot capture hardening).
 
-**Trust framing (non-negotiable):** FactLockCam delivers **tamper-evident** media vaulting and **authenticity heuristics**—risk reduction—not mathematical certainty of truth, absolute anti-deepfake claims, or guaranteed FRE 902 admissibility.
+**Trust framing (non-negotiable):** FactLockCam delivers **tamper-evident** media archiveing and **authenticity heuristics**—risk reduction—not mathematical certainty of truth, absolute anti-deepfake claims, or guaranteed FRE 902 admissibility.
 
 ---
 
@@ -29,7 +29,7 @@ As of the **sixth QA pass (2026-05-21)**, the primary product workflow is **veri
 5. [Navigation & Hub Shell](#5-navigation--hub-shell)
 6. [Authentication & Identity Lifecycle](#6-authentication--identity-lifecycle)
 7. [Capture Pipeline](#7-capture-pipeline)
-8. [Vault Domain: Seal, Persist, Sync](#8-vault-domain-seal-persist-sync)
+8. [Archive Domain: Seal, Persist, Sync](#8-vault-domain-seal-persist-sync)
 9. [Local Persistence & Integrity](#9-local-persistence--integrity)
 10. [Polygon Saga (Try 2 — Live)](#10-polygon-saga-try-2--live)
 11. [Archive UX & Domain Interaction Contract](#11-archive-ux--domain-interaction-contract)
@@ -113,7 +113,7 @@ Source: [[FactLockCam_Product_Baseline_2026-05]]
 | **Sixth** | 2026-05-21 | Identity lifecycle: `wallet_history`, `proof_ledger.evm_address`, SQLite v6 lineage, JIT courier, restore placeholders | [[Identity_Lifecycle_And_Data_Lineage]] |
 | **Fifth** | 2026-05-21 | App Store prep: bundled ToS/Privacy, multi-shot seal queue, vault I/O sidecar-lock fix, proof bundle zip | [[App_Store_Prep_Capture_Seal_2026-05]] |
 | **Fourth** | 2026-05-21 | Sprint 4 isolate lock coordinator + **SECURING FILE…** overlays; `PrivacyInfo.xcprivacy` | [[Isolate_Lock_Coordinator]] |
-| **Third** | 2026-05-21 | Sprint 2 transactional journal + SQLite single-flight; physical iPhone capture + Polygon insert | [[Vault_Transactional_Journal]] |
+| **Third** | 2026-05-21 | Sprint 2 transactional journal + SQLite single-flight; physical iPhone capture + Polygon insert | [[Archive_Transactional_Journal]] |
 | **Second** | 2026-05-20 | Proof progress UX, certificate tx hash, Polygon saga overlay, app icon, 33/33 tests (wiki baseline) | [[Polygon_Saga_Live]] |
 | **PR0** | 2026-05-20 | Lazy camera mount — prerequisite for physical iOS QA | [[Polygon_Try1_Postmortem]] |
 
@@ -213,7 +213,7 @@ Unauthenticated users → `/logon` (except `/courier`). Authenticated on `/logon
 | 4 | `AccountSettingsPanel` | Lazy |
 
 **Hub tiles (user-facing labels):** Archive · Picture · Video · Account & Settings  
-Internal class names retain `Vault*` prefix per refactor convention.
+Internal class names retain `Archive*` prefix per refactor convention.
 
 **Navigation:** Hub tile tap → panel; explicit back control → hub index 0. Post-capture → hub index 0.  
 **Deprecated:** `professional_nav_bar.dart` bottom tabs — hub layout fully centralized.
@@ -303,7 +303,7 @@ CameraView → VaultService.sealAndStoreCapture()
 
 ---
 
-## 8. Vault Domain: Seal, Persist, Sync
+## 8. Archive Domain: Seal, Persist, Sync
 
 Source: [[FactLockCam_Blueprints_14May2026]], `vault_service_io.dart`
 
@@ -363,7 +363,7 @@ sequenceDiagram
 
 ## 9. Local Persistence & Integrity
 
-Source: [[Vault_Transactional_Journal]], [[Isolate_Lock_Coordinator]]
+Source: [[Archive_Transactional_Journal]], [[Isolate_Lock_Coordinator]]
 
 ### Dual-Database Saga (Mobile Only)
 
@@ -377,11 +377,11 @@ Source: [[Vault_Transactional_Journal]], [[Isolate_Lock_Coordinator]]
 1. **Prepare** journal row
 2. Write ciphertext/thumbnail to staging `*.part`
 3. **Sidecar lock** `*.part.lock` — never `FileMode.write` on staging payload (truncation bug fixed fifth QA)
-4. Atomic rename to vault finals on caller isolate
+4. Atomic rename to archive finals on caller isolate
 5. **Commit** journal + `upsertArchiveItem`
 6. On failure: purge staging/final/sidecar; mark rolled back
 
-**Vault I/O rule:** Multi-MB ciphertext read/write on **caller isolate**; crypto in `Isolate.run` only.
+**Archive I/O rule:** Multi-MB ciphertext read/write on **caller isolate**; crypto in `Isolate.run` only.
 
 ### Boot Recovery
 
@@ -717,7 +717,7 @@ Source: [[FactLockCam_Master_Blueprint]], [[ProofLock_Refactor_Scope]]
 - Hub-first shell, lazy panels, four-tile navigation
 - Email OTP auth + session-driven routing
 - Dual-mode photo/video capture with forensic HUD + iris shutter
-- Local AES-GCM vault + SQLite v6 + secure key storage
+- Local AES-GCM archive + SQLite v6 + secure key storage
 - Transactional journal + boot recovery + sidecar locks
 - Isolate lock coordinator + securing overlays
 - Polygon async saga (simulated tx hash) + certificate tx line
@@ -774,9 +774,9 @@ flowchart LR
     Pre[check_proof_status]
     SimSign[Simulated Sign]
     PolySaga[Polygon Saga DB]
-    Vault[AES-GCM Vault]
+    Archive[AES-GCM Archive]
     Sql[SQLite v6]
-    Cam --> Iso --> Pre --> SimSign --> PolySaga --> Vault --> Sql
+    Cam --> Iso --> Pre --> SimSign --> PolySaga --> Archive --> Sql
   end
 
   subgraph target [ProofLock Target]
@@ -847,7 +847,7 @@ Test files present (14):
 2. [[FactLockCam_Product_Baseline_2026-05]] — canonical status
 3. [[Identity_Lifecycle_And_Data_Lineage]] — sixth QA (latest)
 4. [[Polygon_Saga_Live]] — async chain saga
-5. [[Vault_Transactional_Journal]] + [[Isolate_Lock_Coordinator]] — local integrity
+5. [[Archive_Transactional_Journal]] + [[Isolate_Lock_Coordinator]] — local integrity
 6. [[App_Store_Prep_Capture_Seal_2026-05]] — fifth QA hardening
 7. [[ProofLock_Refactor_Scope]] — target gap
 8. Code spine:
@@ -871,7 +871,7 @@ This document synthesizes:
 | [[FactLockCam_Blueprints_14May2026]] | Layered technical breakdown |
 | [[Identity_Lifecycle_And_Data_Lineage]] | Wallet lineage, JIT courier, placeholders |
 | [[App_Store_Prep_Capture_Seal_2026-05]] | Legal bundle, multi-shot, I/O fixes |
-| [[Vault_Transactional_Journal]] | Sprint 2 WAL journal |
+| [[Archive_Transactional_Journal]] | Sprint 2 WAL journal |
 | [[Isolate_Lock_Coordinator]] | Sprint 4 UI locks |
 | [[Polygon_Saga_Live]] | Try 2 saga sequence |
 | [[Polygon_Try1_Postmortem]] | PR0 lazy mount context |

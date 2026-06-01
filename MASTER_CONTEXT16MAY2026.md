@@ -76,9 +76,9 @@ That page supersedes `wiki/analyses/MASTER_CONTEXT13MAY2026.md` for timeline cur
 
 ### Architecture Pivot (2026-05-13) — Status Update
 
-The **Cloud E2EE Vault & Web Verification** paradigm shift announced on May 13 remains **announced but not implemented** in terms of:
+The **Cloud E2EE Archive & Web Verification** paradigm shift announced on May 13 remains **announced but not implemented** in terms of:
 
-- **Cloud E2EE Vault**: The web platform variants (`*_web.dart` files) lay groundwork but the full encrypted-blob upload/download flow, zero-knowledge Supabase Storage integration, and quota telemetry UI are not yet built.
+- **Cloud E2EE Archive**: The web platform variants (`*_web.dart` files) lay groundwork but the full encrypted-blob upload/download flow, zero-knowledge Supabase Storage integration, and quota telemetry UI are not yet built.
 - **Web Courier Portal**: `courier_unlock_view.dart` exists as a Flutter web UI, and the Supabase courier RPC schema is complete, but the end-to-end flow (encrypted blob upload from mobile, recipient unlock via web portal, Polygonscan verification link) is not wired.
 - **Subscription Tiers**: Free ($0/50 MB), Picture ($1/5 GB), Video ($10/50 GB) tiers are defined but have no pricing enforcement, no quota metering, no payment integration, and no egress limits in the app or backend.
 

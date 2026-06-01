@@ -17,7 +17,7 @@ summary: "Sixteenth QA pass (2026-05-30): Download Media, certificate metadata f
 | Asset inspector | **DOWNLOAD MEDIA** tile (mobile only) |
 | Web | Hidden — `extractForCourier` is mobile-only |
 
-Flow: `VaultService.extractForCourier` → temp file with MIME extension (`archive_media_extension.dart`) → iOS share sheet (`shareDecryptedArchiveMedia` in `archive_media_download_io.dart`). No `proof_ledger` mutation; no permanent unencrypted vault copy.
+Flow: `VaultService.extractForCourier` → temp file with MIME extension (`archive_media_extension.dart`) → iOS share sheet (`shareDecryptedArchiveMedia` in `archive_media_download_io.dart`). No `proof_ledger` mutation; no permanent unencrypted archive copy.
 
 ### Send Proof certificate metadata
 

@@ -57,7 +57,7 @@ Run Xcode **Generate Privacy Report** on the release archive before Connect uplo
 - Verify live **`archive.factlockcam.com`** and **`factlockcam.com/support`** (or use Ngrok + temp support page for **TestFlight only** — [[App_Store_Remediation_2026-05]]).
 - Release archive with production dart-defines file.
 - App Store Connect metadata + age-rating questionnaire.
-- Recipient Send Proof E2E once web vault host serves `/courier?pkg=…` ([[Send_Proof_Courier_2026-05]]).
+- Recipient Send Proof E2E once web archive host serves `/courier?pkg=…` ([[Send_Proof_Courier_2026-05]]).
 
 ## Provenance Tracking
 

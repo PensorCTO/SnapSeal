@@ -2,13 +2,13 @@
 
 ## 1. Architectural Manifest
 
-This phase transitions the application from a "Camera-First" utility to a "Vault-First" evidence ledger, prioritizing tamper-evident integrity signals (risk reduction), zero-latency rendering, and strict hardware provenance for media capture.
+This phase transitions the application from a "Camera-First" utility to a "Archive-First" evidence ledger, prioritizing tamper-evident integrity signals (risk reduction), zero-latency rendering, and strict hardware provenance for media capture.
 
 ```mermaid
 graph TD
-    A[Supabase Auth Session] -->|Route: /vault-dashboard| B(Vault Dashboard)
+    A[Supabase Auth Session] -->|Route: /vault-dashboard| B(Archive Dashboard)
     
-    subgraph Presentation Layer: Vault-First
+    subgraph Presentation Layer: Archive-First
     B -->|Fetch via Riverpod| C[(Local SQLite Metadata)]
     B -.->|Background Sync| D[(Supabase media tables)]
     end

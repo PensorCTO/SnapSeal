@@ -17,18 +17,24 @@ export const marketingBanList = [
   'Undeniable truth',
 ] as const;
 
-export const pageTitle = 'FactLockCam — Sovereign Zero-Knowledge Local Lock';
+export const pageTitle = 'FactLockCam — Tamper-Evident Media Archive & Verifiable Proof';
 
 export const metaDescription =
-  'FactLockCam seals captures on-device with verified Digital DNA, a transactional journal, and sovereign zero-knowledge keys. Tamper-proof certificates on a global public ledger.';
+  'Turn your phone into a private, tamper-evident media archive. Verified Digital DNA at capture, tamper-proof certificates on an independent global public ledger—local-first keys only you hold.';
 
-export const heroLabel = 'Sovereign zero-knowledge local lock';
+/** Pillar section labels */
+export const pillarWhatLabel = 'What it does';
+export const pillarWhyLabel = 'Why you need it';
+export const pillarTrustLabel = 'Can you trust it';
 
-export const heroHeadline = 'Your private vault —';
-export const heroHeadlineAccent = 'sovereign zero-knowledge local lock';
+/** Hero — What at a glance */
+export const heroLabel = pillarWhatLabel;
+
+export const heroHeadline = 'Transform your phone into a';
+export const heroHeadlineAccent = 'private, tamper-evident media archive';
 
 export const heroLead =
-  'The moment you capture, FactLockCam seals media on-device with verified Digital DNA: SHA-256 fingerprint, AES-GCM encryption, and a transactional journal that records prepare/commit integrity on your device.';
+  'FactLockCam turns your phone into a private, tamper-evident media archive. The moment you capture a photo or video, the app seals it with verified Digital DNA—then lets you generate a tamper-proof certificate backed by an independent global public ledger, so you can prove authenticity when it matters.';
 
 export const heroPrivacyLine =
   'Only you hold the keys—we cannot access your unencrypted files.';
@@ -44,39 +50,59 @@ export const heroBackgroundSrc = '/images/hero-background.svg';
 
 export const heroImageAlt = 'Decorative FactLockCam homepage background';
 
-export const panel1Title = 'Digital DNA on capture';
-export const panel1Label = 'Verified seal on device';
+/** What — detail panels */
+export const panel1Title = 'Seal at capture';
+export const panel1Label = 'Verified Digital DNA on device';
 export const panel1Body =
-  'Every photo and video is sealed at capture—hardware-backed signing, local-first encrypted vault, and a journal-backed prepare/commit path. Native iOS capture only; no browser clone of the app.';
+  'Every photo and video is sealed the instant you capture—local-first encrypted archive, hardware-backed signing, and a transactional journal that records prepare/commit integrity on your device.';
 export const panel1Bullets = [
-  'LOCATION + timestamp at seal',
+  'Location + timestamp at seal',
   'Secure Enclave · device-held keys',
   'Transactional journal integrity',
 ] as const;
 
-export const panel2Title = 'Tamper-proof certificate';
-export const panel2Label = 'When you need to show what was captured';
+export const panel2Title = 'Proof on demand';
+export const panel2Label = 'Tamper-proof certificate';
 export const panel2Body =
-  'Generate a tamper-proof certificate anchored to an independent global public ledger. Send Proof delivers the certificate PDF plus a password-protected courier link—recipients unlock and verify in the browser without installing the app.';
+  'When you need to show what was captured, generate a tamper-proof certificate anchored to an independent global public ledger. Send Proof delivers the certificate PDF plus a password-protected courier link—recipients unlock and verify at archive.factlockcam.com without installing the app.';
 export const panel2Bullets = [
-  'Only you hold the keys',
+  'Independent global public ledger',
   'Courier unlock at archive.factlockcam.com',
   'Share via Messages, Mail, or AirDrop',
 ] as const;
 
-export const trustLabel = 'Verified mechanisms';
-export const trustHeadline = 'Sovereign keys. Verifiable seal.';
+/** Why — use cases */
+export const whyHeadline = 'When a normal photo is not enough';
+
+export const whyBody =
+  'AI deepfakes and digital manipulation make it harder than ever to prove what really happened. For insurance claims, accident documentation, journalistic evidence, or protecting intellectual property, a standard smartphone photo is no longer enough. You need proof that a specific file existed in a specific form at a specific point in time—without any technical expertise.';
+
+export const whyUseCases = [
+  'Insurance claims',
+  'Accident documentation',
+  'Journalistic evidence',
+  'Intellectual property',
+] as const;
+
+/** Trust */
+export const trustLabel = pillarTrustLabel;
+
+export const trustHeadline = 'Built so you do not have to trust us';
+
 export const trustBody =
-  'Local-first encrypted vault, transactional journal, and tamper-proof certificates—without promising flawless or indefinite security. Evidentiary and procedural details for professionals are in our Terms of Service.';
+  'FactLockCam is built so you do not have to trust us. Sovereign, local-first architecture means we do not hold your keys and cannot access your unencrypted files. Your proof is not locked in a proprietary corporate database; it is anchored on an independent public record that others can verify independently.';
+
+export const trustDisclaimer =
+  'Local-first encrypted archive, transactional journal, and tamper-proof certificates—without promising flawless or indefinite security. Evidentiary and procedural details for professionals are in our Terms of Service.';
 
 export const footerTagline = 'Sovereign keys. Verifiable seal.';
 export const footerBlurb =
-  'Your private vault with sovereign zero-knowledge local lock, verified Digital DNA on capture, and tamper-proof certificates on a global public ledger.';
+  'Private, tamper-evident media archive with verified Digital DNA at capture and tamper-proof certificates on an independent global public ledger.';
 
 export const layoutDefaultDescription = metaDescription;
 
 export const mechanismHeadline =
-  'Your private vault — sovereign zero-knowledge local lock';
+  'Private, tamper-evident media archive — sovereign zero-knowledge local lock';
 
 export const guideIntro =
-  'FactLockCam is built as a sovereign zero-knowledge local lock for your private vault—not a messaging app.';
+  'FactLockCam is a private, tamper-evident media archive with verified Digital DNA at capture—not a messaging app.';

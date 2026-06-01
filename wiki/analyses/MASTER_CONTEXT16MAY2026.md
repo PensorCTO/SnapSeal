@@ -108,9 +108,9 @@ The following changes have landed since the [[MASTER_CONTEXT13MAY2026]] snapshot
 
 ### Architecture Pivot (2026-05-13) — Implementation Status
 
-The **Cloud E2EE Vault & Web Verification** paradigm shift remains **announced but not fully implemented**:
+The **Cloud E2EE Archive & Web Verification** paradigm shift remains **announced but not fully implemented**:
 
-- **Cloud E2EE Vault**: Web platform variants (`*_web.dart` files) lay conditional-import groundwork. The encrypted-blob upload/download to Supabase Storage, zero-knowledge key management, and quota telemetry UI are not built.
+- **Cloud E2EE Archive**: Web platform variants (`*_web.dart` files) lay conditional-import groundwork. The encrypted-blob upload/download to Supabase Storage, zero-knowledge key management, and quota telemetry UI are not built.
 - **Web Courier Portal**: `courier_unlock_view.dart` exists as a Flutter web UI; the Supabase courier RPC schema (`courier_packages`, `attempt_courier_unlock`, `check_courier_attempts`, storage bucket) is complete. The end-to-end flow (mobile upload → recipient link → web decrypt → Polygonscan verification) is not wired.
 - **Subscription Tiers**: Free ($0/50 MB), Picture ($1/5 GB), Video ($10/50 GB) tiers are defined in the 13MAY pivot document. No pricing enforcement, quota metering, payment integration, or egress limits exist in app or backend.
 
@@ -124,7 +124,7 @@ The web courier migration stack is the necessary prerequisite — now in place.
 4. **Pending-sync UX**: Basic scheduler + retry banner exist; diagnostics are thin.
 5. **Verification surfaces**: No outsider-facing proof lookup or courier `.plock` UX beyond nascent web UI.
 6. **Test depth**: 36 tests is improved but remains thin on crypto/capture/sync failure modes.
-7. **Cloud E2EE vault**: Full pivot (blob upload, quota, tiers) unimplemented.
+7. **Cloud E2EE archive**: Full pivot (blob upload, quota, tiers) unimplemented.
 
 ### Suggested Sequencing (Architecture-Forward)
 
@@ -132,7 +132,7 @@ The web courier migration stack is the necessary prerequisite — now in place.
 2. Implement `PolygonChainNotarizer` (or equivalent durable chain adapter); persist real `chain_tx_hash`.
 3. Wire end-to-end web courier flow: mobile upload → encrypted blob → courier link → web unlock → Polygonscan verification.
 4. Expand pending-sync UX with richer diagnostics and offline awareness.
-5. Implement Cloud E2EE vault: encrypted blob upload/download, quota telemetry, subscription enforcement.
+5. Implement Cloud E2EE archive: encrypted blob upload/download, quota telemetry, subscription enforcement.
 6. Track C2PA as parallel advanced provenance track.
 7. Expand deterministic tests for `proofLockFile` conflict paths, web courier flow, and crypto edge cases.
 

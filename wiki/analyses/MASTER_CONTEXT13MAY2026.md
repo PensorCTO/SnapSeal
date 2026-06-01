@@ -1,6 +1,6 @@
 ---
 tags: [analysis, architecture, factlockcam, prooflock, system_context, phase_2]
-summary: "Comprehensive architecture snapshot for 2026-05-13: four-panel vault UX, dual-mode capture, ProofLock-shaped seal pipeline, Domain Interaction Contract, pending-sync reconciliation, and remaining ProofLock-class gaps."
+summary: "Comprehensive architecture snapshot for 2026-05-13: four-panel archive UX, dual-mode capture, ProofLock-shaped seal pipeline, Domain Interaction Contract, pending-sync reconciliation, and remaining ProofLock-class gaps."
 ---
 
 # Master Context (13 MAY 2026)
@@ -9,7 +9,7 @@ summary: "Comprehensive architecture snapshot for 2026-05-13: four-panel vault U
 
 This page is the **current** comprehensive architecture snapshot for FactLockCam as of **2026-05-13**. It supersedes [[Master_Context_11MAY2026]] for timeline currency; substantive product behavior matches the 2026-05-11/12 wiki consolidation (dual-mode capture, four-panel UX, archive action contract, capture/archive hardening). **Canonical verified workflow and hosted-Supabase repair narrative** remain in [[FactLockCam_Product_Baseline_2026-05]]; **finish-line vs ProofLock manifest** remains in [[ProofLock_Refactor_Scope]]; **repo-vs-wiki audit table** remains in [[Project_Audit_2026-05-11]]. **Repository check (2026-05-13):** `flutter test` reports **31 passing tests** across **nine** files under `factlockcam_app/test/` (hub/archive, forensic viewfinder, shutter behavior, retry path, native channel shim, asset actions, photo-view caching, video-thumbnail MIME temp extensions, widget shell).
 
-FactLockCam is a Flutter **tamper-evident** local media vault—authenticity heuristics and risk reduction, **not** a claim of absolute proof-of-truth or sensor-origin certainty. Against a configured Supabase project it runs a **ProofLock-shaped** online path: preflight **`check_proof_status`**, **`NativeEnclaveChannel.signHash`** (still **simulated** on device), **`SimulatedChainNotarizer`** / **`simulate_chain_notarize`**, local **AES-GCM** sealing, SQLite metadata, and **`proof_ledger`** insertion when remote steps succeed, with **`pending_sync`** plus backoff otherwise.
+FactLockCam is a Flutter **tamper-evident** local media archive—authenticity heuristics and risk reduction, **not** a claim of absolute proof-of-truth or sensor-origin certainty. Against a configured Supabase project it runs a **ProofLock-shaped** online path: preflight **`check_proof_status`**, **`NativeEnclaveChannel.signHash`** (still **simulated** on device), **`SimulatedChainNotarizer`** / **`simulate_chain_notarize`**, local **AES-GCM** sealing, SQLite metadata, and **`proof_ledger`** insertion when remote steps succeed, with **`pending_sync`** plus backoff otherwise.
 
 ### Product surface (authenticated shell)
 
@@ -35,7 +35,7 @@ FactLockCam is a Flutter **tamper-evident** local media vault—authenticity heu
 
 ### Data and security posture
 
-- **Local source of truth for UX:** encrypted originals, thumbnails, SQLite rows (including backoff fields), secure vault key. Temp capture files removed after sealing on success paths.
+- **Local source of truth for UX:** encrypted originals, thumbnails, SQLite rows (including backoff fields), secure archive key. Temp capture files removed after sealing on success paths.
 - **Remote:** **`profiles`**, **`seal_ledger`**, **`proof_ledger`**, **`simulated_chain_ledger`**; RPCs **`check_proof_status`**, **`simulate_chain_notarize`**. Ledger **`SELECT`** is **wallet-scoped** for authenticated sessions per **`supabase/migrations/20260510120000_tighten_ledger_select_rls.sql`**.
 - **`REQUIRE_HARDWARE_ATTESTATION`** exists on **`AppConfig`** but is **not wired** into capture/sync gating yet.
 

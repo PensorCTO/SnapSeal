@@ -30,7 +30,7 @@ class SupabaseVaultService {
     final client = _requiredClient();
     final userId = client.auth.currentUser?.id;
     if (userId == null || userId.isEmpty) {
-      throw StateError('Authenticated user required for cloud vault upload.');
+      throw StateError('Authenticated user required for cloud archive upload.');
     }
 
     if (encryptedBytes.length > maxUploadBytes) {

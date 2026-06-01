@@ -31,7 +31,7 @@ Flutter app with project-aware paths, constraints, and delivery expectations.
 - Keep high-frequency camera/seal animations in repaint boundaries.
 - Offload heavy file I/O and cryptography from UI thread (`Isolate.run` or equivalent).
 - Treat seal completion as local record + Supabase ledger success, otherwise mark pending sync.
-- Preserve local-first behavior: local vault and metadata remain source of truth for UI rendering.
+- Preserve local-first behavior: local archive and metadata remain source of truth for UI rendering.
 - Prefer targeted, testable changes over broad architecture rewrites.
 
 ## Standard workflow

@@ -1,5 +1,5 @@
 ---
-description: Constraints for the Camera-to-Vault pipeline, ensuring media integrity and UI performance.
+description: Constraints for the Camera-to-Archive pipeline, ensuring media integrity and UI performance.
 globs: factlockcam_app/lib/ui/mobile/camera/**, factlockcam_app/lib/domain/services/vault_service.dart, factlockcam_app/lib/domain/services/vault_service_io.dart, factlockcam_app/lib/domain/services/vault_service_web.dart
 alwaysApply: true
 ---

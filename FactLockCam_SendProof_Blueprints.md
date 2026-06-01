@@ -283,7 +283,7 @@ final encryptedBytes = await _storage.readEncryptedOriginal(
 );
 ```
 
-#### Step 8: Load and Encode Vault Key
+#### Step 8: Load and Encode Archive Key
 
 ```dart
 final keyBytes = await _loadOrCreateKeyBytes();
@@ -466,7 +466,7 @@ create table if not exists public.courier_packages (
 | `storage_bucket` | text | Always `'courier-blobs'` |
 | `storage_path` | text UNIQUE | `{uid}/{hash}{ext}.seal` format |
 | `file_extension` | text | e.g. `.jpg`, `.mp4` |
-| `vault_key` | text | Encoded AES-GCM vault key (in-band sharing — see trust note) |
+| `vault_key` | text | Encoded AES-GCM archive key (in-band sharing — see trust note) |
 | `verifier_secret_hash` | text | SHA-256(`verifierPassword`) |
 | `requestor_email` | text? | Email of the person attempting unlock |
 | `failed_attempts` | int (≥0) | Count of wrong guesses |
@@ -755,7 +755,7 @@ set search_path = public, extensions
 
 | Column | Dart Type | Purpose |
 |--------|-----------|---------|
-| `key` | String (encoded) | AES-GCM vault key for decryption |
+| `key` | String (encoded) | AES-GCM archive key for decryption |
 | `file_extension` | String | e.g. `.jpg` |
 | `storage_bucket` | String | Always `'courier-blobs'` |
 | `storage_path` | String | Path to download encrypted blob |
@@ -1161,7 +1161,7 @@ flowchart TB
     UI_Swipe["ChronologyViewport\n_onSwipeShare\n(TODO stub)"]
 
     Provider["CourierLink\nRiverpod AsyncNotifier"]
-    Vault["VaultService\ncreateCourierPackage()"]
+    Archive["VaultService\ncreateCourierPackage()"]
     Crypto["CourierCrypto\ndecryptAndVerifyFingerprint"]
   end
 
@@ -1194,14 +1194,14 @@ flowchart TB
   UI_Action -->|password dialog| Provider
   UI_Inspector -.->|todo| Provider
   UI_Swipe -.->|todo| Provider
-  Provider -->|"generateAndShareLink\n(assetHash, password)"| Vault
-  Vault -->|"1. findArchiveItem"| SQLite
-  Vault -->|"2. readEncryptedOriginal"| FS
-  Vault -->|"3. loadOrCreateKeyBytes"| Secure
-  Vault -->|"4. uploadCourierEncryptedBlob"| Bucket
-  Vault -->|"5. getOrCreateCourierPackage"| RPC_GetOrCreate
+  Provider -->|"generateAndShareLink\n(assetHash, password)"| Archive
+  Archive -->|"1. findArchiveItem"| SQLite
+  Archive -->|"2. readEncryptedOriginal"| FS
+  Archive -->|"3. loadOrCreateKeyBytes"| Secure
+  Archive -->|"4. uploadCourierEncryptedBlob"| Bucket
+  Archive -->|"5. getOrCreateCourierPackage"| RPC_GetOrCreate
   RPC_GetOrCreate -->|"insert/update"| DB
-  Vault -->|"6. return courier URL"| Provider
+  Archive -->|"6. return courier URL"| Provider
   Provider -->|"URL"| SharePlus
 
   %% Web unlock flow

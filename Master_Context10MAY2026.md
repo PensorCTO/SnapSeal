@@ -2,7 +2,7 @@
 
 ## 1) Project identity and intent
 
-`ProofLockCleanup` currently hosts a Flutter product named **FactLockCam**, positioned as a **tamper-evident** local media vault (authenticity heuristics and risk reduction—not claims of absolute proof-of-truth) for authenticated media capture, local sealing, and ledger replication. The repository also contains an LLM wiki used as the canonical synthesis layer for architecture, constraints, and ongoing alignment with a stricter future-state target called **ProofLock**.
+`ProofLockCleanup` currently hosts a Flutter product named **FactLockCam**, positioned as a **tamper-evident** local media archive (authenticity heuristics and risk reduction—not claims of absolute proof-of-truth) for authenticated media capture, local sealing, and ledger replication. The repository also contains an LLM wiki used as the canonical synthesis layer for architecture, constraints, and ongoing alignment with a stricter future-state target called **ProofLock**.
 
 At a high level:
 

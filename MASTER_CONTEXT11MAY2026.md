@@ -6,7 +6,7 @@ This is the comprehensive architecture snapshot of `ProofLockCleanup` as of 11 M
 
 ## 1) Project identity and intent
 
-`ProofLockCleanup` hosts a Flutter product named **FactLockCam**, positioned as a **tamper-evident** local media vault (authenticity heuristics and risk reduction — not claims of absolute proof-of-truth) for authenticated capture, local sealing, and Supabase-backed ledger replication. The repository also operates an LLM Wiki used as the canonical synthesis layer for architecture, constraints, and ongoing alignment with a stricter future-state target called **ProofLock**.
+`ProofLockCleanup` hosts a Flutter product named **FactLockCam**, positioned as a **tamper-evident** local media archive (authenticity heuristics and risk reduction — not claims of absolute proof-of-truth) for authenticated capture, local sealing, and Supabase-backed ledger replication. The repository also operates an LLM Wiki used as the canonical synthesis layer for architecture, constraints, and ongoing alignment with a stricter future-state target called **ProofLock**.
 
 - **FactLockCam (current reality):** local-first secure media handling (photos *and now videos*) + Supabase-backed proof surfaces (`check_proof_status`, `simulate_chain_notarize`, `proof_ledger`).
 - **ProofLock (target architecture):** hardware-backed signing, pre-flight proof-status RPC, Polygon anchoring, C2PA, and stronger courier/verification guarantees.
@@ -95,7 +95,7 @@ Conceptually a **product + architecture-knowledge dual system**: build/operate t
 - Email OTP send via `signInWithOtp`.
 - OTP verify (6-digit `OtpType.email`) establishes session.
 - Auth state changes drive GoRouter route access.
-- Sign-out path burns the local wallet (vault files, SQLite rows, secure key) before ending the remote session.
+- Sign-out path burns the local wallet (archive files, SQLite rows, secure key) before ending the remote session.
 
 ### 4.4 Capture and sealing architecture (Phase 2 dual-mode)
 
@@ -309,7 +309,7 @@ Reading order for product state:
 
 ## 13) Executive summary
 
-As of 11 MAY 2026, FactLockCam is a functioning local-first sealed-media vault that now captures and seals **both photos and videos** through a single ProofLock-shaped pipeline, with Supabase-backed proof surfaces (`check_proof_status`, `simulate_chain_notarize`, `proof_ledger`), wallet-scoped ledger RLS, a pending-sync scheduler with UI "Retry now", and compensating local file cleanup. Native enclave signing is wired as a channel but still returns simulated payloads; Polygon and C2PA remain unimplemented. The architecture has matured along reliability, atomicity, and capture-mode axes, but remains pre-viability relative to the ProofLock bar. The next trajectory is unchanged: replace simulation with real hardware signing, land durable chain anchoring, and complete the verification/courier UX.
+As of 11 MAY 2026, FactLockCam is a functioning local-first sealed-media archive that now captures and seals **both photos and videos** through a single ProofLock-shaped pipeline, with Supabase-backed proof surfaces (`check_proof_status`, `simulate_chain_notarize`, `proof_ledger`), wallet-scoped ledger RLS, a pending-sync scheduler with UI "Retry now", and compensating local file cleanup. Native enclave signing is wired as a channel but still returns simulated payloads; Polygon and C2PA remain unimplemented. The architecture has matured along reliability, atomicity, and capture-mode axes, but remains pre-viability relative to the ProofLock bar. The next trajectory is unchanged: replace simulation with real hardware signing, land durable chain anchoring, and complete the verification/courier UX.
 
 ---
 

@@ -5,7 +5,7 @@
     "display": "standalone",
     "background_color": "#0D1B3A",
     "theme_color": "#0D1B3A",
-    "description": "Sovereign zero-knowledge vault — unlock and verify tamper-proof Send Proof packages.",
+    "description": "Sovereign zero-knowledge archive — unlock and verify tamper-proof Send Proof packages.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

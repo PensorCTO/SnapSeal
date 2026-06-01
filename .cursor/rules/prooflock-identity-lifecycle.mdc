@@ -7,7 +7,7 @@ globs: ["factlockcam_app/lib/core/ghost_key/**/*.dart", "factlockcam_app/lib/fea
 
 ## 1. Terminology Compliance (Hard Constraint)
 - ALL user-facing strings, logs, configurations, and comments MUST use "Archive" or "Digital Archive".
-- EXCLUSION ZONE: The term "Vault" is forbidden in standard domain code to eliminate regulatory exposures.
+- EXCLUSION ZONE: The term "Archive" is forbidden in standard domain code to eliminate regulatory exposures.
 - Exception: Lower-level system file-paths may retain structural `prooflock_vault` directories for legacy OS compatibility.
 
 ## 2. Multi-Wallet State Mapping

@@ -1,6 +1,6 @@
 ---
 tags: [analysis, architecture, factlockcam, prooflock, system_context, phase_2]
-summary: "Comprehensive architecture snapshot for 2026-05-11 covering four-panel vault UX, dual-mode capture, ProofLock-shaped seal pipeline, pending-sync reconciliation, and remaining ProofLock gaps."
+summary: "Comprehensive architecture snapshot for 2026-05-11 covering four-panel archive UX, dual-mode capture, ProofLock-shaped seal pipeline, pending-sync reconciliation, and remaining ProofLock gaps."
 ---
 
 # Master Context (11 MAY 2026)
@@ -9,7 +9,7 @@ summary: "Comprehensive architecture snapshot for 2026-05-11 covering four-panel
 
 This page is the first-class wiki twin of `MASTER_CONTEXT11MAY2026.md`; for the **latest dated roll-forward**, see [[MASTER_CONTEXT13MAY2026]]. It superseded [[Master_Context_10MAY2026]] until 2026-05-13 and remains authoritative for granular 2026-05-11 provenance citations. The 2026-05-09 baseline ([[FactLockCam_Product_Baseline_2026-05]]) remains the canonical product status anchor, the 2026-05-11 reconciliation ([[Project_Audit_2026-05-11]]) records the repo-vs-wiki delta, and this page consolidates the resulting architecture picture for that date.
 
-FactLockCam is a Flutter **tamper-evident** local media vault (risk reduction / authenticity heuristics — not absolute proof-of-truth) running a **ProofLock-shaped** online seal pipeline against Supabase. The product reality is a local-first sealed-media wallet with verified logon → `/vault-home` hub → Archive / Picture / Video happy path on a correctly migrated hosted project, now extended to **dual-mode capture (photo + video)** through a single sealing pipeline and a split archive for Photos and Videos.
+FactLockCam is a Flutter **tamper-evident** local media archive (risk reduction / authenticity heuristics — not absolute proof-of-truth) running a **ProofLock-shaped** online seal pipeline against Supabase. The product reality is a local-first sealed-media wallet with verified logon → `/vault-home` hub → Archive / Picture / Video happy path on a correctly migrated hosted project, now extended to **dual-mode capture (photo + video)** through a single sealing pipeline and a split archive for Photos and Videos.
 
 ### Phase 2 dual-mode capture and four-panel UX (current in this snapshot)
 
@@ -34,7 +34,7 @@ FactLockCam is a Flutter **tamper-evident** local media vault (risk reduction / 
 
 ### Data planes
 
-- **Local plane (source of truth for immediate UX):** encrypted originals (image and video bytes), image/video thumbnails, SQLite archive rows with `pending_sync` + backoff, secure vault key, and local-only per-item delete behavior.
+- **Local plane (source of truth for immediate UX):** encrypted originals (image and video bytes), image/video thumbnails, SQLite archive rows with `pending_sync` + backoff, secure archive key, and local-only per-item delete behavior.
 - **Remote plane:** `profiles`, `seal_ledger` (best-effort replica path in `retryPendingRemoteSync`), `proof_ledger` + `simulated_chain_ledger` (primary proof surface), repair-aligned RPCs `check_proof_status` and `simulate_chain_notarize` (`SECURITY DEFINER` with `NOTIFY pgrst`). Ledger `SELECT` is **wallet-scoped** for authenticated sessions per `supabase/migrations/20260510120000_tighten_ledger_select_rls.sql`.
 
 ### Operations and developer ergonomics

@@ -22,7 +22,7 @@ Upload the IPA from `build/ios/ipa/` via Transporter or Xcode Organizer.
 1. Start a large photo or video seal from the camera hub.
 2. While the sealing overlay is visible, background the app (Home gesture).
 3. Optional: stop the process from Xcode debug bar to simulate SIGKILL.
-4. Relaunch — vault chronology and grid must show no broken thumbnails or zero-byte placeholders.
+4. Relaunch — archive chronology and grid must show no broken thumbnails or zero-byte placeholders.
 5. Repeat with aggressive scroll/tap on the in-flight asset card during seal.
 
 ## Automated torture (optional CI)

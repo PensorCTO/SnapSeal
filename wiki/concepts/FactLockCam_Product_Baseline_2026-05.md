@@ -7,7 +7,7 @@ summary: "Authoritative May 2026 baseline: verified hub/archive/capture workflow
 
 ## Core Synthesis
 
-As of this baseline, the **primary product workflow is verified end-to-end** on hosted Supabase: **logon** → **vault hub** → **capture or browse** → sealed assets with remote proof when online.
+As of this baseline, the **primary product workflow is verified end-to-end** on hosted Supabase: **logon** → **archive hub** → **capture or browse** → sealed assets with remote proof when online.
 
 - **Sixteenth QA pass 2026-05-30**: **Archive owner UX** — Download Media (decrypt + share sheet), Send Proof password-only with certificate title/description from asset metadata, **View/Play media** labels, chronology **⋯** action sheet; debug `enableProofLinks` when archive URL set; **55/55** tests ([[Archive_Owner_UX_2026-05]]).
 - **Fifteenth QA pass 2026-05-30**: **App Store hardening** — Secure Enclave / Keystore device signing, `ENABLE_PROOF_LINKS` compile-time gate, `MissingPluginException` terminal in sync classifier, DB-first `deleteArchiveItem`, DI cleanup, `run_device.sh`; user-confirmed device login + seal path; `flutter test` **55/55** ([[App_Store_Hardening_2026-05]]).
@@ -23,7 +23,7 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 - **Fourth QA pass 2026-05-21**: Sprint 4 **isolate lock coordinator** + securing overlays on archive tiles; sidecar advisory locks on staging promote (not payload truncate); `PrivacyInfo.xcprivacy` + App Store checklist doc ([[Isolate_Lock_Coordinator]]).
 - **Third QA pass 2026-05-21**: Sprint 2 **transactional journal** + SQLite single-flight fix; physical iPhone capture + **Polygon `proof_ledger` insert** verified; hub shell fixes (lazy archive/account panels, unique Cupertino nav `heroTag`, 2×2 hub grid + scroll in landscape).
 - **Second QA pass 2026-05-20**: proof-progress + certificate tx-hash fixes; `flutter test` **33/33** core suite (expanded to **40/40** by ninth QA); Polygon saga live (overlay **Generating Proof…**, ~2s relay), **ledger tx hash on certificate**, branded app icon ([[Polygon_Saga_Live]]).
-- PR0 lazy camera mount remains prerequisite ([[Polygon_Try1_Postmortem]]). Journal details: [[Vault_Transactional_Journal]].
+- PR0 lazy camera mount remains prerequisite ([[Polygon_Try1_Postmortem]]). Journal details: [[Archive_Transactional_Journal]].
 
 ### Verified workflow (happy path)
 
@@ -69,7 +69,7 @@ Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
 * [[App_Store_Prep_Capture_Seal_2026-05]]
 * [[Identity_Lifecycle_And_Data_Lineage]]
 * [[FactLockCam_Master_Blueprint]]
-* [[Vault_Transactional_Journal]]
+* [[Archive_Transactional_Journal]]
 * [[Isolate_Lock_Coordinator]]
 * [[Polygon_Mainnet_Wiring_2026-05]]
 * [[Polygon_Saga_Live]]

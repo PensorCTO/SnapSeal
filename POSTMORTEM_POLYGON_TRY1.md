@@ -192,7 +192,7 @@ After the postmortem audit, the app appeared broken on device because the audit 
 |-------|--------|
 | `flutter test` (main repo + PR0) | **33/33 pass** (10 test files) |
 | iOS device build + install + manual QA | **Pass** (iPhoneTanto, iOS 26.4) |
-| Hub → Picture → back → Vault flow | **Pass** (user-confirmed) |
+| Hub → Picture → back → Archive flow | **Pass** (user-confirmed) |
 
 **Try 2 entry point:** PR0 complete → start at **PR1** (Polygon contracts + DI, flag off). Stash `stash@{0}` unchanged.
 

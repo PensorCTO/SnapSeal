@@ -1,5 +1,5 @@
 ---
-description: Architectural constraints for the ProofLock Haptic Chronology Vault UI.
+description: Architectural constraints for the ProofLock Haptic Chronology Archive UI.
 globs: factlockcam_app/lib/ui/mobile/vault/**/*.dart
 alwaysApply: true
 ---

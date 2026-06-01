@@ -42,7 +42,7 @@ The major architecture gap remains unchanged: **FactLockCam current-state != Pro
 ### Data Planes
 
 - **Local plane (source of truth for immediate UX):**
-  - Encrypted originals, thumbnails, SQLite archive rows, secure vault key.
+  - Encrypted originals, thumbnails, SQLite archive rows, secure archive key.
 - **Remote plane (active-wallet ledger + proof scaffolding):**
   - Foundation: `profiles`, `seal_ledger`.
   - Repair-aligned proof surfaces: `simulated_chain_ledger`, `proof_ledger`.

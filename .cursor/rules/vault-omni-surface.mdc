@@ -5,7 +5,7 @@ globs: lib/ui/mobile/vault/archive_omni/**/*.dart
 # Omni-Surface Architectural Constraints
 
 1.  **Single Source of Truth:** * The `/archive` GoRouter path MUST be removed. 
-    * Tapping "Vault" on the `HapticHubPanel` MUST switch `VaultHomeView`'s `_selectedIndex` to 3.
+    * Tapping "Archive" on the `HapticHubPanel` MUST switch `VaultHomeView`'s `_selectedIndex` to 3.
 2.  **State Segregation:** * Do NOT mutate `DashboardController` for UI concerns (sorting/filtering). 
     * Create `UnifiedArchivePreferences` (Riverpod `Notifier`) to hold `ArchiveViewMode` (grid/chronology) and `ArchiveFilterType` (all/photos/videos/pending).
     * Create a computed provider (`filteredArchiveProvider`) that reads both `DashboardController` and `UnifiedArchivePreferences` to yield the final `List<ArchiveItem>`.

@@ -36,7 +36,7 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
   - **Wiki:** Added [[Web_Deployment_Architecture_2026-05]]; refreshed [[index]], [[overview]], [[glossary]], [[FactLockCam_Product_Baseline_2026-05]], [[Send_Proof_Courier_2026-05]].
 
 - **Sovereign multi-key lifecycle + thirteenth QA pass**:
-  - **Key custody:** `KeyCustodyService`, `FactlockKeystore`, `WalletBackupService`, `AppLockCoordinator` under `lib/core/ghost_key/`; composite `.factlock` (EVM + vault AES).
+  - **Key custody:** `KeyCustodyService`, `FactlockKeystore`, `WalletBackupService`, `AppLockCoordinator` under `lib/core/ghost_key/`; composite `.factlock` (EVM + archive AES).
   - **UX:** Export/Lock/Burn in Account panel; `BurnAccountView` (typed OBLITERATE); `/restore` bricked shell; stable `GoRouter` refreshListenable.
   - **Compliance:** Decoupled legal URLs via `ComplianceNavigation`; removed bundled legal markdown assets.
   - **Tests:** **52/52** (`factlock_keystore_test`, `key_custody_service_test`, `app_lock_coordinator_test`, `burn_account_view_test`).
@@ -117,19 +117,19 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 - **App Store prep + fifth QA pass** (committed to `main`):
   - **Code:** Bundled legal docs + `LegalDocumentView`; multi-shot capture (`sealAndStoreCapture` buffered bytes, `_enqueueCaptureSeal`); GPS/UTC HUD; archive delete/view/thumbnail fixes; sidecar-lock staging promote (fixes 0-byte `.seal`); caller-isolate vault I/O; proof bundle zip share; `cipher_engine_roundtrip_test`, `locked_rename_test`.
   - **QA:** User-confirmed pass on physical device (rapid photos, thumbnails, view/decrypt, delete).
-  - **Wiki:** Added [[App_Store_Prep_Capture_Seal_2026-05]]; refreshed [[FactLockCam_Product_Baseline_2026-05]], [[Vault_Transactional_Journal]], [[Isolate_Lock_Coordinator]], [[index]], [[overview]], [[glossary]].
+  - **Wiki:** Added [[App_Store_Prep_Capture_Seal_2026-05]]; refreshed [[FactLockCam_Product_Baseline_2026-05]], [[Archive_Transactional_Journal]], [[Isolate_Lock_Coordinator]], [[index]], [[overview]], [[glossary]].
   - Validation: `python3 scripts/wiki_ingest.py --validate`.
 
 - **Sprint 4 reactive UI locks + fourth QA pass** (committed to `main`):
   - **Code:** `IsolateLockCoordinator`, advisory file locks, `AssetSecuringOverlay` on chronology/grid, `PrivacyInfo.xcprivacy`, `docs/app_store_submission_checklist.md`, `integration_test` stub.
   - **QA:** User-confirmed pass on physical device.
-  - **Wiki:** Refined [[Isolate_Lock_Coordinator]]; cross-links in [[Vault_Transactional_Journal]], [[FactLockCam_Product_Baseline_2026-05]], [[overview]], [[glossary]], [[index]].
+  - **Wiki:** Refined [[Isolate_Lock_Coordinator]]; cross-links in [[Archive_Transactional_Journal]], [[FactLockCam_Product_Baseline_2026-05]], [[overview]], [[glossary]], [[index]].
   - Validation: `python3 scripts/wiki_ingest.py --validate`.
 
 - **Sprint 2 vault integrity + third device QA** on `cursor/wiki-supabase-local-reset-audit`:
   - **Code:** WAL journal (`factlockcam_journal.db`), `TransactionalVaultPersister`, boot recovery before `runApp`, sqflite single-flight + eager open, hub lazy archive/account panels, unique `VaultPanelNavigationBar` hero tags, landscape 2×2 hub grid, dart-defines sync → `GeneratedDartDefines` (gitignored generated file).
   - **QA:** User-confirmed physical iPhone capture + Polygon ledger insert after SQLite race fix; hub RenderFlex overflow fixed.
-  - **Wiki:** Added [[Vault_Transactional_Journal]]; refreshed [[FactLockCam_Product_Baseline_2026-05]], [[FactLockCam_Master_Blueprint]], [[Polygon_Saga_Live]], [[index]], [[overview]], [[glossary]].
+  - **Wiki:** Added [[Archive_Transactional_Journal]]; refreshed [[FactLockCam_Product_Baseline_2026-05]], [[FactLockCam_Master_Blueprint]], [[Polygon_Saga_Live]], [[index]], [[overview]], [[glossary]].
   - Validation: `python3 scripts/wiki_ingest.py --validate`.
 
 ## 2026-05-20

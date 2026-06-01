@@ -20,4 +20,4 @@ globs: ["factlockcam_app/lib/features/archive/**/*.dart", "factlockcam_app/lib/d
    - Storage RLS must deny reads when `download_count > max_downloads`, `is_bricked`, or `expires_at` has passed.
 4. **Certificate Generation**: Use the `pdf` package. The PDF must link `chain_tx_hash` to `https://polygonscan.com/tx/{hash}` when anchored.
 5. **State Management**: Use `AsyncNotifier` for Send Proof state (`SendProof`). Handle `PostgrestException` and edge-function failures gracefully in UI.
-6. **Cryptography**: Courier payloads remain AES-GCM vault ciphertext; recipients verify SHA-256 via `CourierCrypto.decryptAndVerifyFingerprint`. Passwords never leave the device in plaintext — only hashed verifier secrets are stored server-side.
+6. **Cryptography**: Courier payloads remain AES-GCM archive ciphertext; recipients verify SHA-256 via `CourierCrypto.decryptAndVerifyFingerprint`. Passwords never leave the device in plaintext — only hashed verifier secrets are stored server-side.

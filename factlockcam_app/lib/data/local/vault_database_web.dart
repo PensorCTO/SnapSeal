@@ -11,7 +11,7 @@ class VaultDatabase {
   Future<void> ensureOpen() async {}
 
   Future<void> upsertArchiveItem(ArchiveItem item) async {
-    throw UnsupportedError('Local vault database is mobile-only.');
+    throw UnsupportedError('Local archive database is mobile-only.');
   }
 
   Future<List<ArchiveItem>> listArchiveItems() async => const [];

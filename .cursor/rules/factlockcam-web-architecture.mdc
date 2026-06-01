@@ -6,7 +6,7 @@ globs: ["projects/FactLockCam_Site/src/**/*.{astro,ts,tsx,html}"]
 
 - **Framework**: Astro.build with Tailwind CSS.
 - **Rendering Strategy**: Strictly Static Site Generation (SSG) for Legal (`/privacy`, `/terms`) and Support (`/support`) pages to ensure 100% uptime for App Store Review.
-- **Vault / courier**: Production Send Proof unlock is on `archive.factlockcam.com` (Flutter web). Do not add SSR or `@astrojs/cloudflare` routes to this marketing site.
+- **Archive / courier**: Production Send Proof unlock is on `archive.factlockcam.com` (Flutter web). Do not add SSR or `@astrojs/cloudflare` routes to this marketing site.
 - **Styling**: Enforce Tailwind utility classes. Extract repeated UI elements (buttons, legal headers) into Astro components (`.astro`).
 - **Assets**: All legal PDFs or compliance assets must reside in `public/legal/` to guarantee absolute path resolution for Apple Reviewers.
 - **Hosting**: Cloudflare Pages **pure static** (`output: 'static'`, no Cloudflare adapter). Build output is `dist/` only (no `_worker.js`, no SESSION KV).

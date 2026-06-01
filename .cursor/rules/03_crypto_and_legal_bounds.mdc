@@ -12,7 +12,7 @@ Use mechanism-forward copy from:
 - Web: `projects/FactLockCam_Site/src/copy/marketing.ts`
 - App: `factlockcam_app/lib/core/marketing/approved_pitch.dart`
 
-**Use:** sovereign zero-knowledge local lock, verified Digital DNA, transactional journal, local-first encrypted vault, tamper-proof certificate, independent global public ledger, "Sovereign keys. Verifiable seal."
+**Use:** sovereign zero-knowledge local lock, verified Digital DNA, transactional journal, local-first encrypted archive, tamper-proof certificate, independent global public ledger, "Sovereign keys. Verifiable seal."
 
 **Ban on consumer sales pitch** (see `marketingBanList` in those files): personal history / completely safe from modification, Permanently authenticated, Lens-to-cloud, unbreakable, flawless, indefinite security, mathematical certainty, absolute anti-deepfake, Absolute privacy, Undeniable truth as perfection guarantees.
 

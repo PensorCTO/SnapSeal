@@ -23,16 +23,17 @@ const List<String> marketingBanList = [
 
 /// Short page / store headline fragment.
 const String mechanismHeadline =
-    'Your private vault — sovereign zero-knowledge local lock';
+    'Private, tamper-evident media archive — sovereign zero-knowledge local lock';
 
-/// Full consumer pitch (mechanism-forward, no perfection guarantees).
+/// Full consumer pitch (benefit-first, no perfection guarantees).
 const String consumerMechanismPitch =
-    'FactLockCam is your private vault with a sovereign zero-knowledge local lock. '
-    'The moment you capture, we seal media on-device with verified Digital DNA: '
-    'SHA-256 fingerprint, AES-GCM encryption, and a transactional journal that records '
-    'prepare/commit integrity on your device. Only you hold the keys—we cannot access '
-    'your unencrypted files. When you need to show what was captured, generate a '
-    'tamper-proof certificate anchored to an independent global public ledger. '
+    'FactLockCam turns your phone into a private, tamper-evident media archive. '
+    'The moment you capture, the app seals media with verified Digital DNA on your device. '
+    'Only you hold the keys—we cannot access your unencrypted files. '
+    'When you need to show what was captured, generate a tamper-proof certificate '
+    'anchored to an independent global public ledger. '
+    'Built so you do not have to trust us: sovereign, local-first architecture and '
+    'proof on an independent public record others can verify. '
     'Sovereign keys. Verifiable seal.';
 
 /// Closing tagline (consumer surfaces).
@@ -55,4 +56,4 @@ const String sendProofShareIntro =
 
 /// One-line package description (pubspec / manifest).
 const String packageDescription =
-    'Private vault with sovereign zero-knowledge local lock, verified Digital DNA on capture, and tamper-proof certificates.';
+    'Private, tamper-evident media archive with verified Digital DNA at capture and tamper-proof certificates on an independent global public ledger.';
