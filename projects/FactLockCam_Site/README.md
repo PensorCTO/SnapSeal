@@ -32,12 +32,33 @@ npm run dev
 
 ## Cloudflare Pages deploy
 
-1. Push this directory to a GitHub repository (or monorepo subpath).
-2. Cloudflare Pages → Connect to Git → Build command: `npm run build`
-3. Build output: `dist`
-4. Root directory: `projects/FactLockCam_Site` (if using monorepo)
-5. Environment variables: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`
-6. Bind the issued `*.pages.dev` URL to `WEB_ARCHIVE_BASE_URL` and `SUPPORT_URL` in Flutter `dart_defines.json`.
+### Option A — GitHub Actions (recommended)
+
+Workflow: [`.github/workflows/factlockcam-site.yml`](../../.github/workflows/factlockcam-site.yml)
+
+1. In GitHub → **Settings → Secrets and variables → Actions**, add:
+   - `CLOUDFLARE_API_TOKEN` — token with **Cloudflare Pages Edit** permission
+   - `CLOUDFLARE_ACCOUNT_ID` — from Cloudflare dashboard URL
+2. Push to `main` (or run the workflow manually under **Actions**).
+3. Verify `https://factlockcam.pages.dev/` shows `hero-background.svg` in page source.
+
+### Option B — Wrangler CLI (local)
+
+```bash
+npx wrangler login
+bash scripts/deploy_factlockcam_site_cf.sh
+```
+
+If you see `Authentication error [code: 10000]`, re-login or use Option A.
+
+### Option C — Cloudflare dashboard (Git-connected)
+
+1. Pages → project **factlockcam** → **Settings → Builds**
+2. Root directory: `projects/FactLockCam_Site`
+3. Build command: `npm run build` · Output: `dist`
+4. **Retry deployment** on the latest `main` commit after push.
+
+Environment variables (if courier pages need Supabase): `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`
 
 ## Flutter integration
 
