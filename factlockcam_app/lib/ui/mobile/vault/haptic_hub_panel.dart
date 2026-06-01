@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
+import '../../../core/marketing/approved_pitch.dart';
 import '../../../core/services/haptic_service.dart';
 import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
 import '../../../core/ui/widgets/heavy_metal_hub_tile.dart';
@@ -167,7 +168,7 @@ class _HubTileLauncher extends StatelessWidget {
       compact: compact,
       icon: Icons.archive_outlined,
       label: 'Archive',
-      subtitle: 'Chain-of-custody · sealed media on this device',
+      subtitle: archiveHubSubtitle,
       onTap: onArchive,
     );
     final picture = HeavyMetalHubTile(

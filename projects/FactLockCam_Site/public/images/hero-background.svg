@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" role="img" aria-label="">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0f1a"/>
+      <stop offset="45%" stop-color="#0d1b3a"/>
+      <stop offset="100%" stop-color="#1a2332"/>
+    </linearGradient>
+    <radialGradient id="glowGreen" cx="72%" cy="28%" r="55%">
+      <stop offset="0%" stop-color="#3dff6c" stop-opacity="0.14"/>
+      <stop offset="55%" stop-color="#3dff6c" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#3dff6c" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowNeon" cx="18%" cy="78%" r="48%">
+      <stop offset="0%" stop-color="#7af8c8" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#7af8c8" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M 64 0 L 0 0 0 64" fill="none" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+    </pattern>
+    <pattern id="fineGrid" width="16" height="16" patternUnits="userSpaceOnUse">
+      <path d="M 16 0 L 0 0 0 16" fill="none" stroke="#ffffff" stroke-opacity="0.02" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <rect width="1920" height="1080" fill="url(#fineGrid)"/>
+  <rect width="1920" height="1080" fill="url(#grid)"/>
+  <rect width="1920" height="1080" fill="url(#glowGreen)"/>
+  <rect width="1920" height="1080" fill="url(#glowNeon)"/>
+  <path d="M0 720 Q480 640 960 700 T1920 760 L1920 1080 L0 1080 Z" fill="#060a12" fill-opacity="0.55"/>
+  <path d="M0 820 C320 760 640 800 960 780 S1600 740 1920 800 L1920 1080 L0 1080 Z" fill="#05080f" fill-opacity="0.85"/>
+  <circle cx="1580" cy="220" r="3" fill="#3dff6c" fill-opacity="0.35"/>
+  <circle cx="1620" cy="260" r="2" fill="#7af8c8" fill-opacity="0.25"/>
+  <circle cx="280" cy="640" r="2" fill="#3dff6c" fill-opacity="0.2"/>
+</svg>

@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/archive/domain/models/media_action_type.dart';
+import '../../core/marketing/approved_pitch.dart';
 import '../../core/archive/presentation/widgets/universal_asset_toolbar.dart';
 import '../../core/di/service_providers.dart';
 import '../../data/models/archive_item.dart';
@@ -202,10 +203,9 @@ class ArchiveItemActions {
             ),
           ],
           text:
-              'FactLockCam proof package\n\n'
-              'Secure media link:\n${result.courierUrl}\n\n'
+              '${sendProofShareIntro}${result.courierUrl}\n\n'
               'Share the password separately.\n\n'
-              'Attached: certificate PDF with asset hash and blockchain details.',
+              'Attached: tamper-proof certificate with asset hash and ledger details.',
         ),
       );
     } catch (error) {
@@ -277,7 +277,7 @@ class ArchiveItemActions {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    'Creates a certificate PDF and a password-protected web link. '
+                    'Creates a tamper-proof certificate PDF and a password-protected web link. '
                     'You share both using Messages, Mail, or AirDrop — FactLockCam '
                     'does not send email.',
                     style: TextStyle(fontSize: 13),

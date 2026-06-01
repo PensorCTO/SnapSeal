@@ -9,6 +9,7 @@ import 'package:pdf/widgets.dart' as pw;
 
 import '../../core/di/locator.dart';
 import '../../core/legal/disclaimers.dart';
+import '../../core/marketing/approved_pitch.dart';
 import '../../data/models/archive_item.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
 import 'certificate_pdf_cache_file.dart';
@@ -208,7 +209,7 @@ Future<Uint8List> _buildCertificatePdf(_CertificatePdfInput input) async {
         pw.Text('FactLockCam Certificate', style: titleStyle),
         pw.SizedBox(height: 8),
         pw.Text(
-          'Tamper-evident archive record',
+          certificatePdfSubtitle,
           style: pw.TextStyle(fontSize: 11, color: PdfColors.grey700),
         ),
         pw.SizedBox(height: 20),

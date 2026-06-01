@@ -5,6 +5,23 @@ alwaysApply: true
 
 # Crypto Specs & Legal Framing
 
-- FORBID UI text claiming "mathematical certainty of truth" or "absolute anti-deepfake". Use terms like "tamper-evident", "authenticity heuristics", and "risk reduction".
-- REQUIRE legal disclaimers on PDF generation indicating the document "supports workflow and disclosure but does not guarantee admissibility under FRE 902."
+## Consumer marketing (defensive architectural matrix, 2026)
+
+Use mechanism-forward copy from:
+
+- Web: `projects/FactLockCam_Site/src/copy/marketing.ts`
+- App: `factlockcam_app/lib/core/marketing/approved_pitch.dart`
+
+**Use:** sovereign zero-knowledge local lock, verified Digital DNA, transactional journal, local-first encrypted vault, tamper-proof certificate, independent global public ledger, "Sovereign keys. Verifiable seal."
+
+**Ban on consumer sales pitch** (see `marketingBanList` in those files): personal history / completely safe from modification, Permanently authenticated, Lens-to-cloud, unbreakable, flawless, indefinite security, mathematical certainty, absolute anti-deepfake, Absolute privacy, Undeniable truth as perfection guarantees.
+
+**Do not** put FRE 902 on homepage, footer marketing, or consumer user guide. Reserve FRE 902 for Terms, certificate PDF footers, and evidence-bundle manifests.
+
+**Hero background:** Use text-free `public/images/hero-background.svg` (or a manual swap via `heroBackgroundSrc` in `marketing.ts`). Never link `factlockcam-hero-sales*.png` — baked legacy marketing copy.
+
+## Engineering guardrails
+
+- FORBID deprecated terms: "Ghost Key", absolute anti-deepfake claims.
+- REQUIRE legal disclaimers on **certificate PDFs** and **evidence bundles** (`lib/core/legal/disclaimers.dart`).
 - REQUIRE explicit interface documentation (Inputs, Outputs, Expected Failure Modes) for `VaultEncryptionHandler` and `CourierCrypto`.

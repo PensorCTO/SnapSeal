@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_typography.dart';
 import '../../core/config/app_config.dart';
+import '../../core/marketing/approved_pitch.dart';
 import '../../core/services/haptic_service.dart';
 import '../../core/ui/widgets/heavy_metal_backdrop.dart';
 import '../controllers/auth_controller.dart';
@@ -98,8 +99,7 @@ class _LogonViewState extends ConsumerState<LogonView>
   List<Widget> _buildFormChildren(AuthUiState auth) {
     return [
       Text(
-        'Authenticate with a 6-digit Magic Number. Untouchable media remains '
-        'local.',
+        logonPitchFragment,
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 15,

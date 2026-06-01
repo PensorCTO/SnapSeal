@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:factlockcam/app/factlockcam_app.dart';
+import 'package:factlockcam/core/marketing/approved_pitch.dart';
 import 'package:factlockcam/core/ui/widgets/heavy_metal_backdrop.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
 import 'package:factlockcam/ui/controllers/dashboard_controller.dart';
@@ -20,13 +21,7 @@ void main() {
 
     expect(find.byType(HeavyMetalLogoBanner), findsOneWidget);
     expect(find.text('SEND MAGIC NUMBER'), findsOneWidget);
-    expect(
-      find.text(
-        'Authenticate with a 6-digit Magic Number. Untouchable media remains '
-        'local.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.text(logonPitchFragment), findsOneWidget);
   });
 
   testWidgets('hub tiles switch between vault home and camera views', (

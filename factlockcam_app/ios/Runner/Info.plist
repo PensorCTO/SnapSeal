@@ -46,7 +46,7 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>FactLockCam requires camera access to capture tamper-evident media and generate immutable cryptographic fingerprints on the device.</string>
+	<string>FactLockCam requires camera access to capture photos and video and seal them with verified Digital DNA—cryptographic fingerprints generated on your device.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>FactLockCam records audio with video captures so the sealed clip preserves its original soundtrack.</string>
   <key>NSLocationWhenInUseUsageDescription</key>

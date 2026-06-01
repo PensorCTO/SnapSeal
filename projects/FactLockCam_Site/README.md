@@ -10,9 +10,15 @@ Compliance and courier web surface for FactLockCam, built with **Astro**, **Tail
 | `/support` | SSG | Guideline 5.1.1 support contact + FAQ |
 | `/privacy` | SSG | Privacy Policy |
 | `/terms` | SSG | Terms of Service (EULA) |
-| `/guide` | SSG | User guide + FRE 902 explainer |
+| `/guide` | SSG | Consumer user guide (legal detail in Terms) |
 | `/courier?pkg={uuid}` | SSG shell + client hydrate | **Flutter Send Proof links** (current app format) |
 | `/vault/{uuid}` | SSR shell + client hydrate | Blueprint dynamic courier route |
+
+## Hero background (marketing)
+
+The homepage uses **HTML copy** from [`src/copy/marketing.ts`](src/copy/marketing.ts) and a **text-free** background at `public/images/hero-background.svg`.
+
+To swap the graphic manually, see [`public/images/README.md`](public/images/README.md). Legacy assets with baked copy live in `public/images/_deprecated/` and are not linked from the site.
 
 ## Local development
 

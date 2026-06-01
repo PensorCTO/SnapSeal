@@ -2,25 +2,47 @@
 export const prerender = true;
 
 import Layout from '../layouts/Layout.astro';
+import {
+  pageTitle,
+  metaDescription,
+  heroLabel,
+  heroHeadline,
+  heroHeadlineAccent,
+  heroLead,
+  heroPrivacyLine,
+  heroTaglineLine1,
+  heroTaglineLine2,
+  heroBackgroundSrc,
+  heroImageAlt,
+  panel1Title,
+  panel1Label,
+  panel1Body,
+  panel1Bullets,
+  panel2Title,
+  panel2Label,
+  panel2Body,
+  panel2Bullets,
+  trustLabel,
+  trustHeadline,
+  trustBody,
+  footerTagline,
+} from '../copy/marketing';
 ---
 
-<Layout
-  title="FactLockCam — Lens-to-Cloud Authenticated Archive"
-  description="Permanently authenticated from the instant of capture. Your personal history, safe from modification. Native iOS capture with tamper-evident chain-of-custody."
-  hideNav={true}
->
-  <!-- Master sales pitch hero (template: factlockcam-hero-sales.png) -->
+<Layout title={pageTitle} description={metaDescription} hideNav={true}>
   <section class="sales-hero relative min-h-[100svh] overflow-hidden">
     <img
-      src="/images/factlockcam-hero-sales.png"
-      alt="FactLockCam secure capture and personal history archive"
+      src={heroBackgroundSrc}
+      alt={heroImageAlt}
       class="sales-hero__bg"
       width="1920"
       height="1080"
       loading="eager"
       fetchpriority="high"
+      decoding="async"
     />
     <div class="sales-hero__shade" aria-hidden="true"></div>
+    <div class="sales-hero__grid" aria-hidden="true"></div>
 
     <div class="relative z-10 flex min-h-[100svh] flex-col">
       <header class="flex items-center justify-between px-6 py-5 md:px-10">
@@ -38,16 +60,15 @@ import Layout from '../layouts/Layout.astro';
         <div class="mx-auto w-full max-w-6xl">
           <div class="grid gap-10 lg:grid-cols-2 lg:items-end">
             <div class="max-w-xl">
-              <p class="mono-label mb-3 text-white/80">Lens-to-cloud attestation</p>
+              <p class="mono-label mb-3 text-white/80">{heroLabel}</p>
               <h1 class="font-mono text-3xl font-bold leading-tight text-white md:text-4xl lg:text-[2.65rem]">
-                Permanently authenticated<br />
-                <span class="text-verified-neon">from the instant of capture.</span>
+                {heroHeadline}<br />
+                <span class="text-verified-neon">{heroHeadlineAccent}</span>
               </h1>
               <p class="mt-5 text-base text-white/75 md:text-lg">
-                FactLockCam seals photos and video on-device with hardware-backed integrity,
-                anchors hashes to a public ledger, and delivers tamper-evident proof through
-                Send Proof courier links — not a browser clone of the mobile app.
+                {heroLead}
               </p>
+              <p class="mt-3 text-base text-white/70 md:text-lg">{heroPrivacyLine}</p>
               <div class="mt-8 flex flex-wrap gap-4">
                 <a
                   href="https://apps.apple.com/app/factlockcam"
@@ -57,14 +78,14 @@ import Layout from '../layouts/Layout.astro';
                   Download on the App Store
                 </a>
                 <a href="/guide" class="btn-ghost border-white/30 text-white hover:border-kinetic-green">
-                  How chain-of-custody works
+                  See how it works
                 </a>
               </div>
             </div>
             <div class="lg:text-right">
               <p class="font-mono text-sm uppercase tracking-[0.2em] text-white/90 md:text-base">
-                Your personal history,<br />
-                <span class="text-kinetic-green">completely safe from modification.</span>
+                {heroTaglineLine1}<br />
+                <span class="text-kinetic-green">{heroTaglineLine2}</span>
               </p>
             </div>
           </div>
@@ -73,54 +94,36 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
-  <!-- Product story panels -->
   <section class="border-t border-titanium-edge bg-titanium-deep px-6 py-20 md:px-10">
     <div class="mx-auto grid max-w-6xl gap-8 md:grid-cols-2">
       <article class="sales-panel">
-        <p class="sales-panel__title">Real-Time Secure Capture</p>
+        <p class="sales-panel__title">{panel1Title}</p>
         <div class="sales-panel__body">
-          <p class="mono-label mb-2 text-kinetic-green">Native iOS · hardware attestation</p>
-          <p class="text-sm leading-relaxed text-white/70">
-            Capture originates exclusively in the native app — Secure Enclave signing, sensor-level
-            integrity, and encrypted local archive before any cloud sync. No browser capture path.
-          </p>
+          <p class="mono-label mb-2 text-kinetic-green">{panel1Label}</p>
+          <p class="text-sm leading-relaxed text-white/70">{panel1Body}</p>
           <ul class="mt-4 space-y-2 font-mono text-xs text-white/50">
-            <li>LOCATION + timestamp telemetry at seal</li>
-            <li>SHA-256 fingerprint + AES-GCM vault</li>
-            <li>Optional Polygon notarization saga</li>
+            {panel1Bullets.map((item) => <li>{item}</li>)}
           </ul>
         </div>
       </article>
       <article class="sales-panel">
-        <p class="sales-panel__title">Personal History Archive</p>
+        <p class="sales-panel__title">{panel2Title}</p>
         <div class="sales-panel__body">
-          <p class="mono-label mb-2 text-verified-neon">Verified · tamper-evident</p>
-          <p class="text-sm leading-relaxed text-white/70">
-            Every sealed item carries a cryptographic fingerprint. Send Proof shares a certificate
-            PDF plus a password-protected courier link — recipients unlock and verify in the browser
-            without installing the app.
-          </p>
+          <p class="mono-label mb-2 text-verified-neon">{panel2Label}</p>
+          <p class="text-sm leading-relaxed text-white/70">{panel2Body}</p>
           <ul class="mt-4 space-y-2 font-mono text-xs text-white/50">
-            <li>Chain-of-custody on this device</li>
-            <li>Courier unlock at archive.factlockcam.com</li>
-            <li>Utility share sheet — no in-app messaging</li>
+            {panel2Bullets.map((item) => <li>{item}</li>)}
           </ul>
         </div>
       </article>
     </div>
   </section>
 
-  <!-- Trust + compliance -->
   <section class="border-t border-titanium-edge bg-titanium-panel px-6 py-16 md:px-10">
     <div class="mx-auto max-w-6xl text-center">
-      <p class="mono-label mb-4">Risk reduction, not absolute certainty</p>
-      <h2 class="font-mono text-2xl font-bold text-white md:text-3xl">
-        Built for disclosure workflows
-      </h2>
-      <p class="mx-auto mt-4 max-w-2xl text-sm text-white/60 md:text-base">
-        FactLockCam supports workflow and disclosure with tamper-evident heuristics. It does not
-        guarantee admissibility under FRE 902 or claim mathematical certainty of truth.
-      </p>
+      <p class="mono-label mb-4">{trustLabel}</p>
+      <h2 class="font-mono text-2xl font-bold text-white md:text-3xl">{trustHeadline}</h2>
+      <p class="mx-auto mt-4 max-w-2xl text-sm text-white/60 md:text-base">{trustBody}</p>
       <div class="mt-10 flex flex-wrap justify-center gap-4">
         <a href="/privacy" class="btn-ghost">Privacy Policy</a>
         <a href="/terms" class="btn-ghost">Terms of Service</a>
@@ -130,7 +133,7 @@ import Layout from '../layouts/Layout.astro';
   </section>
 
   <footer class="border-t border-titanium-edge bg-titanium-deep px-6 py-8 text-center font-mono text-xs text-white/40">
-    <p>&copy; {new Date().getFullYear()} FactLockCam. Capture on native iOS. Courier unlock on the web.</p>
+    <p>&copy; {new Date().getFullYear()} FactLockCam. {footerTagline}</p>
     <p class="mt-2">
       <a href="mailto:support@factlockcam.com" class="hover:text-kinetic-green">support@factlockcam.com</a>
     </p>

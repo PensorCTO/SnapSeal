@@ -38,11 +38,23 @@
   }
 
   .sales-hero__bg {
-    @apply absolute inset-0 h-full w-full object-cover object-center;
+    @apply absolute inset-0 h-full w-full object-cover object-center scale-105;
   }
 
   .sales-hero__shade {
-    @apply pointer-events-none absolute inset-0 bg-gradient-to-t from-titanium-deep via-titanium-deep/40 to-transparent;
+    @apply pointer-events-none absolute inset-0 bg-gradient-to-t from-titanium-deep via-titanium-deep/85 to-titanium-deep/25;
+  }
+
+  .sales-hero__grid {
+    @apply pointer-events-none absolute inset-0 opacity-30;
+    background-image: linear-gradient(
+        90deg,
+        rgba(61, 255, 108, 0.06) 1px,
+        transparent 1px
+      ),
+      linear-gradient(rgba(122, 248, 200, 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(to top, black 30%, transparent 85%);
   }
 
   .sales-logo {

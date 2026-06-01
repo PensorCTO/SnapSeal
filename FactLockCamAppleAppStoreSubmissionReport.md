@@ -255,10 +255,11 @@ Code audit cannot verify App Store Connect fields. Pre-submission checklist:
 | Field | Limit | FactLockCam guidance |
 |-------|-------|---------------------|
 | App Name | 30 chars | `FactLockCam` or `FactLockCam: Secure Archive` |
-| Subtitle | 30 chars | Value prop distinct from name — e.g. `Tamper-Evident Capture` |
-| Keywords | 100 chars | Singular, comma-separated, no spaces |
-| Description | Not indexed on iOS | Use for conversion; include FRE 902 framing, not legal guarantees |
-| Screenshots | Caption text indexed since mid-2025 | Use intent phrases: "Seal Camera Captures", "Verify on Polygon" — avoid generic "Fast App" |
+| Subtitle | 30 chars | Legal-approved: `Private Vault · Proof` or `Undeniable Truth Vault` |
+| Keywords | 100 chars | Singular, comma-separated, no spaces — e.g. `vault,proof,privacy,certificate,ledger` |
+| Description | Not indexed on iOS | Use full **Engineered Strategic Pitch** (private vault, Digital DNA, zero-knowledge keys, tamper-proof certificate, global ledger). Consumer conversion copy — **omit FRE 902** from description; procedural detail stays in Terms only. |
+| Promotional text | 170 chars | `Absolute privacy. Undeniable proof.` |
+| Screenshots | Caption text indexed since mid-2025 | Digital DNA, only you hold the keys, tamper-proof certificate — avoid generic "Fast App" |
 
 **Banned terms (from ProofLock memory-bank):** avoid "Ghost Key" and absolute anti-deepfake claims in UI and metadata.
 

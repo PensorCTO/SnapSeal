@@ -20,7 +20,7 @@ FactLockCam public web is **two hosts**, not a browser clone of the iOS app:
 
 ### Marketing site (`factlockcam.com`)
 
-- **`src/pages/index.astro`** — full-bleed hero from `factlockcam-hero-sales.png`; copy aligned with lens-to-cloud attestation (“Permanently authenticated from the instant of capture”).
+- **`src/pages/index.astro`** — defensive mechanism copy from `src/copy/marketing.ts`; CSS hero backdrop by default (legacy `factlockcam-hero-sales.png` has baked copy—use text-free `factlockcam-hero-sales-v2.png` when ready).
 - **`astro.config.mjs`** — `site: https://factlockcam.com`
 - **Deploy:** `./scripts/deploy_factlockcam_site_cf.sh` → Cloudflare Pages project `factlockcam` (override via `CF_PAGES_PROJECT`).
 

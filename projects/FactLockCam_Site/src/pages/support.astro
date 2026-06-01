@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import Layout from '../layouts/Layout.astro';
+import { mechanismHeadline } from '../copy/marketing';
 
 const faqs = [
   {
@@ -10,11 +11,11 @@ const faqs = [
   },
   {
     q: 'Can FactLockCam recover my encrypted files?',
-    a: 'No. FactLockCam is non-custodial. Encryption keys live on your device. We cannot reset access or decrypt your archive.',
+    a: 'No. Only you hold the keys—we cannot access your unencrypted files. FactLockCam is non-custodial; encryption keys live on your device. We cannot reset access or decrypt your archive.',
   },
   {
     q: 'How does Send Proof work?',
-    a: 'From an archive item, tap Send Proof, set a one-time password, and share the certificate PDF plus courier URL through the iOS share sheet. Recipients unlock media in a browser at the link you send.',
+    a: 'From an archive item, tap Send Proof, set a one-time password, and share the tamper-proof certificate PDF plus courier URL through the iOS share sheet. Recipients unlock media in a browser at the link you send.',
   },
   {
     q: 'What data leaves my device?',
@@ -29,15 +30,15 @@ const faqs = [
 
 <Layout
   title="Support"
-  description="FactLockCam support contact and frequently asked questions for App Store Guideline 5.1.1."
+  description={`FactLockCam support — ${mechanismHeadline}. Help with capture, Digital DNA sealing, and Send Proof.`}
 >
   <section class="mx-auto max-w-3xl px-6 py-12 lg:py-16">
     <header class="mb-10">
-      <p class="mono-label mb-3">Guideline 5.1.1</p>
+      <p class="mono-label mb-3">We're here to help</p>
       <h1 class="font-mono text-3xl font-bold text-verified-neon md:text-4xl">Support</h1>
       <p class="mt-4 text-white/70">
-        Need help with capture, archive sync, or Send Proof? Reach us directly — we respond to
-        support requests for active App Store builds.
+        Need help with capture, your sovereign zero-knowledge vault, or Send Proof? Reach us
+        directly—we respond to support requests for active App Store builds.
       </p>
     </header>
 

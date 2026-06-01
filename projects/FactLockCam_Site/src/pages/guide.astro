@@ -2,19 +2,23 @@
 export const prerender = true;
 
 import Layout from '../layouts/Layout.astro';
+import { guideIntro } from '../copy/marketing';
 ---
 
 <Layout
   title="User Guide"
-  description="How FactLockCam capture, archive, and Send Proof workflows support tamper-evident chain-of-custody."
+  description="Seal captures with verified Digital DNA, browse your sovereign zero-knowledge vault, and send tamper-proof proof with FactLockCam."
 >
   <article class="mx-auto max-w-3xl px-6 py-12 lg:py-16">
     <header class="mb-10 border-b border-titanium-edge pb-8">
       <p class="mono-label mb-3">Documentation</p>
       <h1 class="font-mono text-3xl font-bold text-verified-neon md:text-4xl">User Guide</h1>
       <p class="mt-4 text-white/70">
-        FactLockCam is a capture-and-archive utility — not a messaging app. This guide explains how
-        to seal media, browse your archive, and deliver proof to recipients.
+        {guideIntro} This guide explains
+        how to seal media with verified Digital DNA, browse your local-first encrypted archive, and
+        deliver tamper-proof proof to recipients. Procedural and evidentiary details for
+        professionals are in our
+        <a href="/terms" class="text-kinetic-green hover:underline">Terms of Service</a>.
       </p>
     </header>
 
@@ -26,20 +30,20 @@ import Layout from '../layouts/Layout.astro';
         <li>Open Picture or Video from the hub.</li>
         <li>Frame your subject and tap the mechanical shutter control.</li>
         <li>
-          FactLockCam hashes the capture off the UI thread, encrypts with AES-GCM, and writes a
-          local SQLite record.
+          FactLockCam seals the capture on-device—SHA-256 fingerprint, AES-GCM encryption, and a
+          transactional journal that records prepare/commit integrity (your Digital DNA).
         </li>
         <li>
-          When online, integrity metadata syncs to Supabase; offline captures stay marked pending
-          sync until retried.
+          When online, integrity metadata can sync to the public ledger; offline captures stay
+          marked pending sync until retried.
         </li>
       </ol>
 
       <h2>Archive &amp; Inspect</h2>
       <p>
         The Archive tile lists sealed items in grid or chronology view. Tap an item to inspect
-        metadata, view a thumbnail, decrypt the full asset on demand, export a certificate, or Send
-        Proof.
+        metadata, view a thumbnail, decrypt the full asset on demand, export a tamper-proof
+        certificate, or Send Proof.
       </p>
 
       <h2>Send Proof (Courier)</h2>
@@ -54,14 +58,7 @@ import Layout from '../layouts/Layout.astro';
       </ol>
       <p>
         Recipients open the link in a browser, enter the password, and decrypt locally. Plaintext
-        never transits FactLockCam servers after unlock.
-      </p>
-
-      <h2>FRE 902 &amp; Legal Framing</h2>
-      <p>
-        Certificate PDFs include a disclaimer that exported evidence supports workflow and
-        disclosure but <strong>does not guarantee admissibility under FRE 902</strong>. FactLockCam
-        documents tamper-evident heuristics — not absolute proof of physical truth.
+        never transits FactLockCam servers after unlock—we cannot access your unencrypted files.
       </p>
 
       <h2>Account &amp; Burn</h2>

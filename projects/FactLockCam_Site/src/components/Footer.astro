@@ -1,4 +1,6 @@
 ---
+import { footerBlurb, footerTagline } from '../copy/marketing';
+
 const year = new Date().getFullYear();
 
 const complianceLinks = [
@@ -15,12 +17,11 @@ const complianceLinks = [
       <div>
         <p class="font-mono text-sm font-semibold text-verified-neon">FactLockCam</p>
         <p class="mt-2 max-w-md text-sm text-white/60">
-          Tamper-evident digital archive emphasizing chain-of-custody. Supports workflow and
-          disclosure; does not guarantee admissibility under FRE 902.
+          {footerBlurb} {footerTagline}
         </p>
       </div>
       <div>
-        <p class="mono-label mb-3">App Store Compliance</p>
+        <p class="mono-label mb-3">Legal &amp; support</p>
         <ul class="space-y-2">
           {
             complianceLinks.map((link) => (

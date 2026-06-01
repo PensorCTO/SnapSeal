@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
+import { layoutDefaultDescription } from '../copy/marketing';
 
 interface Props {
   title?: string;
@@ -11,7 +12,7 @@ interface Props {
 
 const {
   title = 'FactLockCam',
-  description = 'Tamper-evident digital archive for photos and video.',
+  description = layoutDefaultDescription,
   hideNav = false,
 } = Astro.props;
 
