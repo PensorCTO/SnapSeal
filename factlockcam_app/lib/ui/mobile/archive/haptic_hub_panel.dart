@@ -49,43 +49,6 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
       body: Column(
         children: [
           const HeavyMetalLogoBanner(),
-          archive.when(
-            data: (items) {
-              final pendingCount =
-                  items.where((item) => item.pendingSync).length;
-              if (pendingCount == 0) return const SizedBox.shrink();
-
-              return MaterialBanner(
-                backgroundColor:
-                    AppColors.titaniumPanel.withValues(alpha: 0.92),
-                content: Text(
-                  '$pendingCount item(s) pending sync. '
-                  'We will keep retrying in the background.',
-                  style: AppTextStyles.monoSm(
-                    color: AppColors.alertAmber,
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      ref
-                          .read(dashboardControllerProvider.notifier)
-                          .syncPendingInBackground();
-                    },
-                    child: Text(
-                      'RETRY NOW',
-                      style: AppTextStyles.monoSm(
-                        color: AppColors.kineticGreen,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-            error: (_, _) => const SizedBox.shrink(),
-            loading: () => const SizedBox.shrink(),
-          ),
           Expanded(
             child: Stack(
               fit: StackFit.expand,
@@ -99,6 +62,10 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
                   top: false,
                   child: LayoutBuilder(
                     builder: (context, constraints) {
+                      final compact = constraints.maxHeight < 440 ||
+                          constraints.maxWidth >
+                              constraints.maxHeight * 1.05;
+
                       return SingleChildScrollView(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -109,27 +76,112 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
                             minHeight: constraints.maxHeight,
                           ),
                           child: Center(
-                            child: _HubTileLauncher(
-                              compact: constraints.maxHeight < 420 ||
-                                  constraints.maxWidth >
-                                      constraints.maxHeight * 1.1,
-                              captureEnabled: !kIsWeb,
-                              onArchive: () => _handleHubTap(
-                                () =>
-                                    widget.onHubDestinationSelected?.call(3),
-                              ),
-                              onPicture: () => _handleHubTap(
-                                () =>
-                                    widget.onHubDestinationSelected?.call(1),
-                              ),
-                              onVideo: () => _handleHubTap(
-                                () =>
-                                    widget.onHubDestinationSelected?.call(2),
-                              ),
-                              onAccount: () => _handleHubTap(
-                                () =>
-                                    widget.onHubDestinationSelected?.call(4),
-                              ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                archive.when(
+                                  data: (items) {
+                                    final pendingCount = items
+                                        .where((item) => item.pendingSync)
+                                        .length;
+                                    if (pendingCount == 0) {
+                                      return const SizedBox.shrink();
+                                    }
+
+                                    if (compact) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 12,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                '$pendingCount PENDING SYNC',
+                                                style: AppTextStyles.monoSm(
+                                                  color: AppColors.alertAmber,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                ref
+                                                    .read(
+                                                      dashboardControllerProvider
+                                                          .notifier,
+                                                    )
+                                                    .syncPendingInBackground();
+                                              },
+                                              child: Text(
+                                                'RETRY',
+                                                style: AppTextStyles.monoSm(
+                                                  color: AppColors.kineticGreen,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+
+                                    return MaterialBanner(
+                                      backgroundColor: AppColors.titaniumPanel
+                                          .withValues(alpha: 0.92),
+                                      content: Text(
+                                        '$pendingCount item(s) pending sync. '
+                                        'We will keep retrying in the background.',
+                                        style: AppTextStyles.monoSm(
+                                          color: AppColors.alertAmber,
+                                        ),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            ref
+                                                .read(
+                                                  dashboardControllerProvider
+                                                      .notifier,
+                                                )
+                                                .syncPendingInBackground();
+                                          },
+                                          child: Text(
+                                            'RETRY NOW',
+                                            style: AppTextStyles.monoSm(
+                                              color: AppColors.kineticGreen,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                  error: (_, _) => const SizedBox.shrink(),
+                                  loading: () => const SizedBox.shrink(),
+                                ),
+                                _HubTileLauncher(
+                                  compact: compact,
+                                  captureEnabled: !kIsWeb,
+                                  onArchive: () => _handleHubTap(
+                                    () => widget.onHubDestinationSelected
+                                        ?.call(3),
+                                  ),
+                                  onPicture: () => _handleHubTap(
+                                    () => widget.onHubDestinationSelected
+                                        ?.call(1),
+                                  ),
+                                  onVideo: () => _handleHubTap(
+                                    () => widget.onHubDestinationSelected
+                                        ?.call(2),
+                                  ),
+                                  onAccount: () => _handleHubTap(
+                                    () => widget.onHubDestinationSelected
+                                        ?.call(4),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),

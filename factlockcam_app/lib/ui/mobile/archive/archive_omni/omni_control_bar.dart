@@ -11,14 +11,16 @@ import 'providers/archive_prefs_provider.dart';
 /// Displays horizontal-scrolling filter chips on the left and a
 /// Cupertino-style segmented control for grid/chronology toggle on the right.
 class OmniControlBar extends ConsumerWidget {
-  const OmniControlBar({super.key});
+  const OmniControlBar({super.key, this.compact = false});
+
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final prefs = ref.watch(archivePrefsProvider);
 
     return Container(
-      height: 60,
+      height: compact ? 48 : 60,
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(

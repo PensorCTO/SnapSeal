@@ -18,7 +18,7 @@ void main() {
     expect(ArchiveHomeView.legacyVaultHomePath, '/vault-home');
   });
 
-  testWidgets('vault hub shows four action tiles without instructional copy', (
+  testWidgets('archive hub shows four action tiles without instructional copy', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -40,7 +40,7 @@ void main() {
     expect(find.text('ACCOUNT & SETTINGS'), findsOneWidget);
   });
 
-  testWidgets('vault hub renders a Stack-based heavy-metal layout', (
+  testWidgets('archive hub renders a Stack-based heavy-metal layout', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -98,9 +98,12 @@ void main() {
     );
   });
 
-  testWidgets('shows pending sync banner and retry on vault hub', (
+  testWidgets('shows pending sync banner and retry on archive hub', (
     tester,
   ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [

@@ -23,7 +23,7 @@ import '../../../../features/archive_quota/presentation/widgets/egress_pass_badg
 import '../../../../features/archive_quota/presentation/providers/quota_state_provider.dart';
 
 /// Unified Archive Omni-Surface — the archive tab (Tab Index 3) within the
-/// vault shell.
+/// archive hub shell.
 ///
 /// Replaces the standalone ArchiveView and ChronologyViewport. Supports
 /// toggling between a date-grouped Grid View and the haptic Chronology View,
@@ -94,42 +94,43 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
     return Scaffold(
       backgroundColor: AppColors.titaniumDeep,
       body: SafeArea(
-        child: Column(
-          children: [
-            if (widget.onBackToHub != null)
-              ArchivePanelNavigationBar(
-                title: 'Archive',
-                onBack: widget.onBackToHub!,
-              ),
-            HeavyMetalLogoBanner(
-              includeTopSafeArea: widget.onBackToHub == null,
-            ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final denseHeader = constraints.maxHeight < 520;
 
-            const EgressPassBadge(),
-
-            // ── Pending sync banner ────────────────────────────
-            _PendingSyncBanner(),
-
-            // ── Archive quota telemetry ─────────────────────────
-            const QuotaTelemetryWidget(),
-
-            // ── Control bar (filter chips + view toggle) ───────
-            const OmniControlBar(),
-
-            // ── Main content ──────────────────────────────────
-            Expanded(
-              child: filteredItems.isEmpty
-                  ? _EmptyState(
-                      onCaptureRequested: widget.onCaptureRequested,
-                    )
-                  : AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: prefs.viewMode == ArchiveViewMode.grid
-                          ? OmniGridView(key: const ValueKey('grid'), items: filteredItems)
-                          : _buildChronologyView(filteredItems),
-                    ),
-            ),
-          ],
+            return Column(
+              children: [
+                if (widget.onBackToHub != null)
+                  ArchivePanelNavigationBar(
+                    title: 'Archive',
+                    onBack: widget.onBackToHub!,
+                  ),
+                HeavyMetalLogoBanner(
+                  includeTopSafeArea: widget.onBackToHub == null,
+                  contentHeight: denseHeader ? 72 : 104,
+                ),
+                EgressPassBadge(compact: denseHeader),
+                _PendingSyncBanner(compact: denseHeader),
+                if (!denseHeader) const QuotaTelemetryWidget(),
+                OmniControlBar(compact: denseHeader),
+                Expanded(
+                  child: filteredItems.isEmpty
+                      ? _EmptyState(
+                          onCaptureRequested: widget.onCaptureRequested,
+                        )
+                      : AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: prefs.viewMode == ArchiveViewMode.grid
+                              ? OmniGridView(
+                                  key: const ValueKey('grid'),
+                                  items: filteredItems,
+                                )
+                              : _buildChronologyView(filteredItems),
+                        ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -140,6 +141,7 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
       key: const ValueKey('chronology'),
       builder: (context, constraints) {
         final viewportHeight = constraints.maxHeight;
+        final layout = chronologyLayoutMetrics(viewportHeight: viewportHeight);
 
         return ListView.builder(
           controller: _scrollController,
@@ -149,7 +151,7 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
             bottom: MediaQuery.of(context).padding.bottom + 100,
           ),
           itemCount: items.length,
-          itemExtent: kChronologyItemExtent,
+          itemExtent: layout.itemExtent,
           itemBuilder: (context, index) {
             final item = items[index];
             final card = ChronologyCard(
@@ -158,6 +160,7 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
               index: index,
               scrollOffset: _scrollOffset,
               viewportHeight: viewportHeight,
+              cardHeight: layout.itemHeight,
               onTap: () => _onTapCard(item),
             );
 
@@ -208,7 +211,9 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
 
 /// Pending sync banner extracted from ChronologyViewport.
 class _PendingSyncBanner extends ConsumerWidget {
-  const _PendingSyncBanner();
+  const _PendingSyncBanner({this.compact = false});
+
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -217,6 +222,38 @@ class _PendingSyncBanner extends ConsumerWidget {
       data: (items) {
         final pendingCount = items.where((item) => item.pendingSync).length;
         if (pendingCount == 0) return const SizedBox.shrink();
+
+        if (compact) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '$pendingCount PENDING SYNC',
+                    style: AppTextStyles.monoSm(color: AppColors.alertAmber),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    ref
+                        .read(dashboardControllerProvider.notifier)
+                        .syncPendingInBackground();
+                  },
+                  child: Text(
+                    'RETRY',
+                    style: AppTextStyles.monoSm(
+                      color: AppColors.kineticGreen,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
 
         return MaterialBanner(
           backgroundColor: AppColors.titaniumPanel.withValues(alpha: 0.92),
@@ -251,7 +288,7 @@ class _PendingSyncBanner extends ConsumerWidget {
   }
 }
 
-/// Empty-state view when the vault contains no items matching the filter.
+/// Empty-state view when the archive contains no items matching the filter.
 class _EmptyState extends StatelessWidget {
   const _EmptyState({this.onCaptureRequested});
 
@@ -261,47 +298,59 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final captureEnabled = !kIsWeb && onCaptureRequested != null;
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          Icons.shield_outlined,
-          size: 64,
-          color: AppColors.starkWhite.withValues(alpha: 0.2),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'NO SEALED ASSETS',
-          style: AppTextStyles.monoMd(
-            color: AppColors.starkWhite.withValues(alpha: 0.42),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.shield_outlined,
+                    size: constraints.maxHeight < 280 ? 48 : 64,
+                    color: AppColors.starkWhite.withValues(alpha: 0.2),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'NO SEALED ASSETS',
+                    style: AppTextStyles.monoMd(
+                      color: AppColors.starkWhite.withValues(alpha: 0.42),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    captureEnabled
+                        ? 'Capture a photo or video to begin.'
+                        : 'Use the native iOS or Android app to capture securely '
+                            'authenticated media.',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.monoSm(
+                      color: AppColors.starkWhite.withValues(alpha: 0.32),
+                    ),
+                  ),
+                  if (captureEnabled) ...[
+                    const SizedBox(height: 32),
+                    _QuickActionTile(
+                      icon: Icons.photo_camera_outlined,
+                      label: 'Picture',
+                      onTap: () => onCaptureRequested!.call(1),
+                    ),
+                    const SizedBox(height: 12),
+                    _QuickActionTile(
+                      icon: Icons.videocam_outlined,
+                      label: 'Video',
+                      onTap: () => onCaptureRequested!.call(2),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          captureEnabled
-              ? 'Capture a photo or video to begin.'
-              : 'Use the native iOS or Android app to capture securely '
-                  'authenticated media.',
-          textAlign: TextAlign.center,
-          style: AppTextStyles.monoSm(
-            color: AppColors.starkWhite.withValues(alpha: 0.32),
-          ),
-        ),
-        if (captureEnabled) ...[
-          const SizedBox(height: 32),
-          _QuickActionTile(
-            icon: Icons.photo_camera_outlined,
-            label: 'Picture',
-            onTap: () => onCaptureRequested!.call(1),
-          ),
-          const SizedBox(height: 12),
-          _QuickActionTile(
-            icon: Icons.videocam_outlined,
-            label: 'Video',
-            onTap: () => onCaptureRequested!.call(2),
-          ),
-        ],
-      ],
+        );
+      },
     );
   }
 }

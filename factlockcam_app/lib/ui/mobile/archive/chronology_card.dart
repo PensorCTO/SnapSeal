@@ -25,6 +25,19 @@ const double kChronologyItemExtent =
     (kChronologyItemHeight * (1 - kChronologyOverlapFraction)) +
     kChronologyItemHeight;
 
+/// Scroll slot metrics scaled for short viewports (landscape archive tab).
+({double itemHeight, double itemExtent}) chronologyLayoutMetrics({
+  required double viewportHeight,
+}) {
+  final scale = viewportHeight < 400
+      ? (viewportHeight / 400).clamp(0.72, 1.0)
+      : 1.0;
+  final height = kChronologyItemHeight * scale;
+  final extent =
+      (height * (1 - kChronologyOverlapFraction)) + height;
+  return (itemHeight: height, itemExtent: extent);
+}
+
 /// Single asset plate in the chronology scroll view.
 ///
 /// Wrapped in a [RepaintBoundary] at the root so that the expensive paint
@@ -40,6 +53,7 @@ class ChronologyCard extends ConsumerStatefulWidget {
     required this.index,
     required this.scrollOffset,
     required this.viewportHeight,
+    this.cardHeight = kChronologyItemHeight,
     this.onTap,
   });
 
@@ -54,6 +68,9 @@ class ChronologyCard extends ConsumerStatefulWidget {
 
   /// Height of the viewport, used to compute center distance.
   final double viewportHeight;
+
+  /// Plate height; may be scaled down in dense layouts.
+  final double cardHeight;
 
   /// Called when the card is tapped to open the Asset Inspector.
   final VoidCallback? onTap;
@@ -78,10 +95,12 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
     // ── Scroll-driven calculations ──────────────────────────────────────
     // Scroll math uses the same slot stride as the ListView [itemExtent].
     const double itemSpacing = 20.0;
-    const double totalStep = kChronologyItemHeight + itemSpacing;
+    final totalStep = widget.cardHeight + itemSpacing;
 
     final cardCenter =
-        totalStep * widget.index - widget.scrollOffset + kChronologyItemHeight / 2;
+        totalStep * widget.index -
+        widget.scrollOffset +
+        widget.cardHeight / 2;
     final viewportCenter = widget.viewportHeight / 2;
     final distanceFromCenter = cardCenter - viewportCenter;
     _lastDistanceFromCenter = distanceFromCenter;
@@ -144,7 +163,7 @@ class _ChronologyCardState extends ConsumerState<ChronologyCard> {
           );
         },
         child: Container(
-          height: kChronologyItemHeight,
+          height: widget.cardHeight,
           margin: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),

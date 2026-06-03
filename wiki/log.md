@@ -7,6 +7,13 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 ## 2026-06-03
 
+- **Twenty-first pass — UI Layout Polish** (presentation-only) — **user QA passed (2026-06-03)**:
+  - **Wiki:** [[UI_Layout_Polish_2026-06]]; skill `docs/skills/SKILL_FORENSIC_UI_REFINEMENT.md`.
+  - **Hub / archive / inspector:** Responsive `LayoutBuilder` stacks; dense headers when height &lt; 520; chronology `chronologyLayoutMetrics()`; Archive-only user copy (`archive_presentation_copy.dart`).
+  - **Account:** `AccountSettingsPanel` — unified scroll (legal + actions); fixes landscape `RenderFlex` overflow (~119px) on iPhone.
+  - **Tests:** **90/90** `flutter test`; layout tests for hub, omni, inspector, account; `presentation_archive_copy_test`.
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 - **Twentieth pass — Key custody scenario matrix** (legal + wiki) — **user QA passed**:
   - **Model:** Keys-only `.factlock` backup; losing keys = total loss; Lock (keys purged, local `.seal` remain) vs uninstall (reimport keys for cloud) vs Burn (account + cloud destroyed, prior `.factlock` useless).
   - **Wiki:** [[Data_Custody_And_Backup_Model_2026]] — canonical scenario table, Lock vs Burn, re-export cadence, implementation anchors.

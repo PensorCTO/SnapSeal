@@ -7,7 +7,9 @@ import '../../presentation/providers/quota_state_provider.dart';
 
 /// Pill badge showing consumable Egress Pass verification credits.
 class EgressPassBadge extends ConsumerWidget {
-  const EgressPassBadge({super.key});
+  const EgressPassBadge({super.key, this.compact = false});
+
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,7 +23,7 @@ class EgressPassBadge extends ConsumerWidget {
         : AppColors.verifiedNeon;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+      padding: EdgeInsets.fromLTRB(16, compact ? 2 : 4, 16, 0),
       child: Align(
         alignment: Alignment.centerRight,
         child: DecoratedBox(

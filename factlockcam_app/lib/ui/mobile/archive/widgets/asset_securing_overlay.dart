@@ -5,7 +5,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../providers/asset_lock_provider.dart';
 
-/// Skeleton / spinner shown while a vault asset is under journal-backed lock.
+/// Skeleton / spinner shown while an archive asset is under journal-backed lock.
 class AssetSecuringOverlay extends ConsumerWidget {
   const AssetSecuringOverlay({
     super.key,

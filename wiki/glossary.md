@@ -24,6 +24,8 @@ summary: "Terminology reference for the LLM Wiki."
 | Pro proof (credit) | Monthly included remote seal/notarization allowance; default **50**/cycle in `subscription_cycles.base_allocation`; debited on successful seal; shown as `PROOFS: remaining/base` in camera HUD. | [[Archive_Quota_Telemetry_2026-06]] |
 | Verification Credit | Consumable egress credit debited on heavy `extractForCourier` paths (verify, export, Download Media); default **12** on new cycles; pre-flight modal in `UniversalAssetToolbar`. | [[Archive_Quota_Telemetry_2026-06]] |
 | Egress Pass | User-facing label for verification credit balance; `EgressPassBadge` pill in `UnifiedArchiveViewport` header. | [[Archive_Quota_Telemetry_2026-06]] |
+| Dense header (UI) | When viewport height &lt; 520, archive/account panels use 72px logo, hide byte quota telemetry, and compact pending-sync / control chrome. | [[UI_Layout_Polish_2026-06]] |
+| SKILL_FORENSIC_UI_REFINEMENT | Agent skill for presentation-only Heavy Metal layout polish without touching domain/crypto. | `docs/skills/SKILL_FORENSIC_UI_REFINEMENT.md`, [[UI_Layout_Polish_2026-06]] |
 | quotaStateProvider | Riverpod sync notifier for credit metering; optimistic debit + `record_metered_consumption` reconcile; polled on app resume and archive entry. | [[Archive_Quota_Telemetry_2026-06]] |
 | get_current_quota_status | Supabase RPC returning pro-proof and verification-credit counters for authenticated user. | [[Archive_Quota_Telemetry_2026-06]] |
 | Active-Wallet Ledger | Supabase replica of proof rows for assets still connected to active app wallets. | [[FactLockCam_Master_Blueprint]] |

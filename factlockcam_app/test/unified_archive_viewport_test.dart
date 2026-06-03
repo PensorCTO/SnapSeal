@@ -11,6 +11,7 @@ import 'package:factlockcam/ui/mobile/archive/archive_omni/unified_archive_viewp
 import 'package:factlockcam/ui/mobile/archive/chronology_card.dart';
 import 'package:factlockcam/ui/mobile/archive/providers/thumbnail_cache_provider.dart';
 
+import 'helpers/layout_test_helpers.dart';
 import 'test_dependencies.dart';
 
 void main() {
@@ -18,10 +19,11 @@ void main() {
     await setupTestDependencies();
   });
 
-  testWidgets('chronology view renders archive cards with visible titles', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(390, 844));
+  Future<void> pumpChronologyViewport(
+    WidgetTester tester, {
+    required Size surface,
+  }) async {
+    await tester.binding.setSurfaceSize(surface);
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
@@ -44,8 +46,13 @@ void main() {
         ),
       ),
     );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await expectNoLayoutOverflow(tester);
+  }
+
+  testWidgets('chronology view renders archive cards with visible titles', (
+    tester,
+  ) async {
+    await pumpChronologyViewport(tester, surface: const Size(390, 844));
 
     expect(find.text('NO SEALED ASSETS'), findsNothing);
     expect(find.byType(ChronologyCard), findsNWidgets(2));
@@ -59,6 +66,28 @@ void main() {
       expect(box.size.height, greaterThan(200));
       expect(box.hasSize, isTrue);
     }
+  });
+
+  testWidgets('chronology landscape avoids overflow with scaled cards', (
+    tester,
+  ) async {
+    await pumpChronologyViewport(tester, surface: const Size(844, 390));
+
+    expect(find.byType(ChronologyCard), findsAtLeastNWidgets(1));
+    for (final element in find.byType(ChronologyCard).evaluate()) {
+      final box = element.renderObject! as RenderBox;
+      expect(box.size.height, greaterThan(120));
+      expect(box.hasSize, isTrue);
+    }
+  });
+
+  testWidgets('chronology compact phone landscape avoids overflow', (
+    tester,
+  ) async {
+    await pumpChronologyViewport(tester, surface: const Size(932, 430));
+
+    expect(find.byType(ChronologyCard), findsAtLeastNWidgets(1));
+    expect(find.textContaining('Vault'), findsNothing);
   });
 }
 

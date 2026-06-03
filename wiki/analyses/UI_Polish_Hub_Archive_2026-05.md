@@ -45,6 +45,7 @@ summary: "Eleventh QA pass (2026-05-24): shared logo banner, Account & Settings 
 
 ## Related Notes
 
+* [[UI_Layout_Polish_2026-06]] — June 2026 follow-on: landscape-responsive layouts and Account scroll fix.
 * [[Heavy_Metal_Design_System]]
 * [[App_Store_Remediation_2026-05]]
 * [[FactLockCam_Product_Baseline_2026-05]]

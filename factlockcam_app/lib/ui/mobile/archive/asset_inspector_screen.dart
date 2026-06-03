@@ -217,7 +217,15 @@ class _AssetInspectorScreenState extends ConsumerState<AssetInspectorScreen>
                       ),
                     ),
                     const SizedBox(height: 12),
-                    _ActionMatrix(onAction: _handleAction),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        return _ActionMatrix(
+                          onAction: _handleAction,
+                          landscape: constraints.maxWidth >
+                              constraints.maxHeight,
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -273,7 +281,7 @@ class _AssetInspectorScreenState extends ConsumerState<AssetInspectorScreen>
   }
 
   Future<void> _onViewFull() async {
-    final vault = ref.read(vaultServiceProvider);
+    final archiveService = ref.read(vaultServiceProvider);
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -284,7 +292,7 @@ class _AssetInspectorScreenState extends ConsumerState<AssetInspectorScreen>
     );
 
     try {
-      final sealed = await vault.extractForCourier(
+      final sealed = await archiveService.extractForCourier(
         widget.item.assetFingerprint,
       );
 
@@ -615,6 +623,8 @@ class _InfoStrip extends StatelessWidget {
         Expanded(
           child: Text(
             value,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: AppTextStyles.monoSm(
               color: color ?? AppColors.starkWhite.withValues(alpha: 0.82),
             ),
@@ -636,60 +646,90 @@ enum InspectorAction {
 }
 
 class _ActionMatrix extends StatelessWidget {
-  const _ActionMatrix({required this.onAction});
+  const _ActionMatrix({
+    required this.onAction,
+    this.landscape = false,
+  });
 
   final void Function(InspectorAction action) onAction;
+  final bool landscape;
+
+  static const _gap = 10.0;
+
+  List<Widget> _tiles() {
+    return [
+      _ActionTile(
+        icon: Icons.send_outlined,
+        label: 'SEND PROOF',
+        subtitle: 'Generate a courier share link',
+        onTap: () => onAction(InspectorAction.sendProof),
+      ),
+      _ActionTile(
+        icon: Icons.visibility_outlined,
+        label: 'VIEW/PLAY MEDIA',
+        subtitle: 'Decrypt and view the original media',
+        onTap: () => onAction(InspectorAction.viewFull),
+      ),
+      if (!kIsWeb)
+        _ActionTile(
+          icon: Icons.download_outlined,
+          label: 'DOWNLOAD MEDIA',
+          subtitle: 'Save an unencrypted copy via the share sheet',
+          onTap: () => onAction(InspectorAction.downloadMedia),
+        ),
+      _ActionTile(
+        icon: Icons.shield_outlined,
+        label: 'VIEW CERTIFICATE',
+        subtitle: 'Tamper-evidence certificate draft',
+        onTap: () => onAction(InspectorAction.viewCertificate),
+      ),
+      _ActionTile(
+        icon: Icons.delete_outline,
+        label: 'DELETE FROM DEVICE',
+        subtitle: 'Remove this corrupted or unwanted archive item',
+        accentColor: AppColors.alertAmber,
+        onTap: () => onAction(InspectorAction.delete),
+      ),
+      _ActionTile(
+        icon: Icons.exit_to_app_outlined,
+        label: 'BACK TO ARCHIVE',
+        subtitle: 'Return to the archive overview',
+        onTap: () => onAction(InspectorAction.exit),
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _ActionTile(
-          icon: Icons.send_outlined,
-          label: 'SEND PROOF',
-          subtitle: 'Generate a courier share link',
-          onTap: () => onAction(InspectorAction.sendProof),
-        ),
-        const SizedBox(height: 10),
-        _ActionTile(
-          icon: Icons.visibility_outlined,
-          label: 'VIEW/PLAY MEDIA',
-          subtitle: 'Decrypt and view the original media',
-          onTap: () => onAction(InspectorAction.viewFull),
-        ),
-        if (!kIsWeb) ...[
-          const SizedBox(height: 10),
-          _ActionTile(
-            icon: Icons.download_outlined,
-            label: 'DOWNLOAD MEDIA',
-            subtitle: 'Save an unencrypted copy via the share sheet',
-            onTap: () => onAction(InspectorAction.downloadMedia),
-          ),
+    final tiles = _tiles();
+
+    if (!landscape) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var i = 0; i < tiles.length; i++) ...[
+            if (i > 0) const SizedBox(height: _gap),
+            tiles[i],
+          ],
         ],
-        const SizedBox(height: 10),
-        _ActionTile(
-          icon: Icons.shield_outlined,
-          label: 'VIEW CERTIFICATE',
-          subtitle: 'Tamper-evidence certificate draft',
-          onTap: () => onAction(InspectorAction.viewCertificate),
-        ),
-        const SizedBox(height: 10),
-        _ActionTile(
-          icon: Icons.delete_outline,
-          label: 'DELETE FROM DEVICE',
-          subtitle: 'Remove this corrupted or unwanted archive item',
-          accentColor: AppColors.alertAmber,
-          onTap: () => onAction(InspectorAction.delete),
-        ),
-        const SizedBox(height: 10),
-        _ActionTile(
-          icon: Icons.exit_to_app_outlined,
-          label: 'BACK TO DASHBOARD',
-          subtitle: 'Return to the archive overview',
-          onTap: () => onAction(InspectorAction.exit),
-        ),
-      ],
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columnWidth = (constraints.maxWidth - _gap) / 2;
+        return Wrap(
+          spacing: _gap,
+          runSpacing: _gap,
+          children: [
+            for (final tile in tiles)
+              SizedBox(
+                width: columnWidth,
+                child: tile,
+              ),
+          ],
+        );
+      },
     );
   }
 }

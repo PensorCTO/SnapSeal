@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:factlockcam/core/legal/disclaimers.dart';
 import 'package:factlockcam/core/marketing/approved_pitch.dart';
+import 'package:factlockcam/ui/mobile/archive/archive_presentation_copy.dart';
 
 void main() {
   final curated = <String>[
@@ -15,6 +16,7 @@ void main() {
     packageDescription,
     consumerEpistemicLine,
     ...userVisibleComplianceStrings,
+    ...ArchivePresentationCopy.curatedUserVisible,
   ];
 
   test('curated user-visible strings avoid marketing ban list', () {

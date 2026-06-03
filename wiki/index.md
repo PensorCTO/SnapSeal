@@ -11,6 +11,7 @@ Read this page first when answering questions about the wiki.
 
 | Page | When to read |
 |------|----------------|
+| [[UI_Layout_Polish_2026-06]] | **Twenty-first pass QA passed (2026-06-03)** — responsive hub/archive/inspector/account layouts; landscape overflow fix; **90/90** tests |
 | [[Data_Custody_And_Backup_Model_2026]] | **Twentieth pass QA passed (2026-06-03)** — Keys-only `.factlock`; scenario matrix; hosted Terms deployed; **82/82** tests |
 | [[Archive_Subscription_Tiers_2026]] | **Nineteenth pass (2026-06-03)** — local SQLite quota pre-flight, free-tier 50 MB video stop, subscription onboarding + paywall disclaimer, compliant tier labels |
 | [[Compliance_Refactor_2026-06]] | **Eighteenth pass (2026-06-03)** — `/archive` route, `disclaimers.dart`, Archive UI rename, marketing compliance test, Account key-custody dialog UX |
@@ -45,6 +46,7 @@ Read this page first when answering questions about the wiki.
 - [[Web_Deployment_Architecture_2026-05]] - Fourteenth QA: decoupled web (Astro sales + archive courier-only Flutter gate).
 - [[Sovereign_Key_Lifecycle_2026-05]] - Thirteenth QA: multi-key `.factlock`, brick/restore, burn UX, compliance URL routing.
 - [[Cloud_Vault_Wiring_2026-05]] - Twelfth QA: factlock_vault cloud sync wired into capture seal pipeline.
+- [[UI_Layout_Polish_2026-06]] - Twenty-first QA: responsive archive shell layouts, Account landscape scroll fix, Archive copy audit (June 2026).
 - [[UI_Polish_Hub_Archive_2026-05]] - Eleventh QA: logo banner, Account heavy-metal tiles, chronology scroll fix.
 - [[App_Store_Remediation_2026-05]] - Tenth QA: App Store remediation, WEB_ARCHIVE_BASE_URL, courier archive indices, TestFlight-first.
 - [[Production_Transition_2026-05]] - Ninth QA: production config, courier lookup migrations, iOS compliance, test suite.
@@ -63,6 +65,7 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses (active)
 
+- [[UI_Layout_Polish_2026-06]] — Twenty-first pass: Heavy Metal responsive layouts, device QA on iPhone landscape (June 2026).
 - [[Compliance_Refactor_2026-06]] — Eighteenth pass: legal/compliance copy, `/archive` routing, presentation-layer Archive rename, QA Account panel fix (June 2026).
 - [[Archive_Owner_UX_2026-05]] - Sixteenth QA: Download Media, Send Proof metadata from asset, View/Play labels, chronology actions icon (May 2026).
 - [[App_Store_Hardening_2026-05]] - Fifteenth QA: architectural manifest remediation, Secure Enclave / Keystore signing, compile-time gates (May 2026).

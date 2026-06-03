@@ -9,6 +9,7 @@ summary: "Authoritative May 2026 baseline: verified hub/archive/capture workflow
 
 As of this baseline, the **primary product workflow is verified end-to-end** on hosted Supabase: **logon** → **archive hub** → **capture or browse** → sealed assets with remote proof when online.
 
+- **Twenty-first structural pass 2026-06-03**: **UI layout polish** — responsive hub (`HapticHubPanel`), archive omni (`UnifiedArchiveViewport`), inspector, account settings; device QA passed; **90/90** tests ([[UI_Layout_Polish_2026-06]]).
 - **Twentieth structural pass 2026-06-03**: **Key custody scenario matrix** — keys-only `.factlock` backup; Lock vs uninstall vs Burn; hosted Terms/Privacy/Support deployed; in-app `disclaimers.dart` + Account/Burn/Restore/onboarding UX; user **QA passed**; **82/82** tests ([[Data_Custody_And_Backup_Model_2026]]).
 - **Nineteenth structural pass 2026-06-03**: **Archive subscription foundation** — local SQLite quota pre-flight (`LocalArchiveQuotaGate`), free-tier 50 MB video stop, subscription onboarding + paywall disclaimer, compliant tier display names ([[Archive_Subscription_Tiers_2026]]).
 - **Eighteenth structural pass 2026-06-03**: **Compliance refactor** — `/archive` hub route, `disclaimers.dart`, UI `ArchiveHomeView` / `lib/ui/mobile/archive/`, marketing ban test, Account key-custody dialog UX; **74/74** tests ([[Compliance_Refactor_2026-06]]).
@@ -71,6 +72,7 @@ Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
 
 ## Related Notes
 
+* [[UI_Layout_Polish_2026-06]]
 * [[Compliance_Refactor_2026-06]]
 * [[Archive_Quota_Telemetry_2026-06]]
 * [[Production_Transition_2026-05]]

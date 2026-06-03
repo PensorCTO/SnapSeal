@@ -261,162 +261,177 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
 
     return Scaffold(
       backgroundColor: AppColors.titaniumDeep,
-      body: Column(
-        children: [
-          if (widget.onBackToHub != null)
-            ArchivePanelNavigationBar(
-              title: 'Account',
-              onBack: widget.onBackToHub!,
-            ),
-          HeavyMetalLogoBanner(
-            includeTopSafeArea: widget.onBackToHub == null,
-          ),
-          const QuotaTelemetryWidget(),
-          Expanded(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                BackgroundVideoLayer(
-                  controller: backdropController,
-                  ready: backdropReady,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final denseHeader = constraints.maxHeight < 520;
+
+          return Column(
+            children: [
+              if (widget.onBackToHub != null)
+                ArchivePanelNavigationBar(
+                  title: 'Account',
+                  onBack: widget.onBackToHub!,
                 ),
-                const TitaniumOverlay(),
-                SafeArea(
-                  top: false,
-                  child: busy
-                      ? const Center(child: CupertinoActivityIndicator())
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              child: SingleChildScrollView(
-                                padding: const EdgeInsets.fromLTRB(
-                                  20,
-                                  16,
-                                  20,
-                                  16,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Text(
-                                      'ACCOUNT & SETTINGS',
-                                      textAlign: TextAlign.center,
-                                      style: AppTextStyles.monoMd(
-                                        color: AppColors.starkWhite,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 24),
-                                    _SectionLabel('LEGAL & SUPPORT'),
-                                    const SizedBox(height: 12),
-                                    HeavyMetalHubTile(
-                                      icon: Icons.description_outlined,
-                                      label: 'Terms of Service',
-                                      subtitle:
-                                          'End-user license and usage terms',
-                                      onTap: () => _openCompliancePage(
-                                        AppConfig.termsUrl,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    HeavyMetalHubTile(
-                                      icon: Icons.shield_outlined,
-                                      label: 'Privacy Policy',
-                                      subtitle:
-                                          'How we handle your data on this device',
-                                      onTap: () => _openCompliancePage(
-                                        AppConfig.privacyUrl,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    HeavyMetalHubTile(
-                                      icon: Icons.help_outline,
-                                      label: 'Help & Support',
-                                      subtitle:
-                                          'Contact support and troubleshooting',
-                                      onTap: _openSupportWebsite,
-                                    ),
-                                    const SizedBox(height: 12),
-                                    HeavyMetalHubTile(
-                                      icon: Icons.language_outlined,
-                                      label: 'App Web Page',
-                                      subtitle: 'Visit the FactLockCam website',
-                                      onTap: () => _openCompliancePage(
-                                        AppConfig.webBaseUrl,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    HeavyMetalHubTile(
-                                      icon: Icons.menu_book_outlined,
-                                      label: 'User Guide',
-                                      subtitle:
-                                          'Documentation and how-to guides',
-                                      onTap: () => _openCompliancePage(
-                                        AppConfig.guideUrl,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    HeavyMetalHubTile(
-                                      icon: Icons.vpn_key_outlined,
-                                      label: 'Key custody & limits',
-                                      subtitle:
-                                          'Zero-knowledge keys, file integrity, Polygon',
-                                      onTap: _showKeyCustodyLimits,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                20,
-                                8,
-                                20,
-                                24,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  _ActionButton(
-                                    label: 'Log out',
-                                    color: AppColors.kineticGreen,
-                                    onPressed: busy ? null : _signOut,
+              HeavyMetalLogoBanner(
+                includeTopSafeArea: widget.onBackToHub == null,
+                contentHeight: denseHeader ? 72 : 104,
+              ),
+              if (!denseHeader) const QuotaTelemetryWidget(),
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    BackgroundVideoLayer(
+                      controller: backdropController,
+                      ready: backdropReady,
+                    ),
+                    const TitaniumOverlay(),
+                    SafeArea(
+                      top: false,
+                      child: busy
+                          ? const Center(child: CupertinoActivityIndicator())
+                          : LayoutBuilder(
+                              builder: (context, bodyConstraints) {
+                                final compactTiles =
+                                    bodyConstraints.maxWidth >
+                                        bodyConstraints.maxHeight;
+
+                                return SingleChildScrollView(
+                                  padding: EdgeInsets.fromLTRB(
+                                    20,
+                                    denseHeader ? 8 : 16,
+                                    20,
+                                    MediaQuery.paddingOf(context).bottom + 24,
                                   ),
-                                  if (_keyCustodyEnabled) ...[
-                                    const SizedBox(height: 12),
-                                    _ActionButton(
-                                      label: 'Export archive keys',
-                                      color: AppColors.kineticGreen,
-                                      onPressed:
-                                          busy ? null : _exportArchiveKeys,
-                                    ),
-                                    const SizedBox(height: 12),
-                                    _ActionButton(
-                                      label: 'Lock archive',
-                                      color: CupertinoColors.systemOrange,
-                                      onPressed: busy ? null : _lockArchive,
-                                    ),
-                                  ],
-                                  const SizedBox(height: 12),
-                                  _ActionButton(
-                                    label: 'Burn account',
-                                    color: CupertinoColors.destructiveRed,
-                                    onPressed: busy ? null : _openBurnAccount,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Text(
+                                        'ACCOUNT & SETTINGS',
+                                        textAlign: TextAlign.center,
+                                        style: AppTextStyles.monoMd(
+                                          color: AppColors.starkWhite,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      SizedBox(height: denseHeader ? 12 : 24),
+                                      const _SectionLabel('LEGAL & SUPPORT'),
+                                      const SizedBox(height: 12),
+                                      ..._legalTiles(
+                                        compact: compactTiles,
+                                      ),
+                                      SizedBox(height: denseHeader ? 16 : 28),
+                                      const _SectionLabel('ACCOUNT ACTIONS'),
+                                      const SizedBox(height: 12),
+                                      ..._accountActionButtons(
+                                        busy: busy,
+                                        compact: compactTiles,
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                );
+                              },
                             ),
-                          ],
-                        ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
+  }
+
+  List<Widget> _legalTiles({required bool compact}) {
+    return [
+      HeavyMetalHubTile(
+        compact: compact,
+        icon: Icons.description_outlined,
+        label: 'Terms of Service',
+        subtitle: 'End-user license and usage terms',
+        onTap: () => _openCompliancePage(AppConfig.termsUrl),
+      ),
+      const SizedBox(height: 12),
+      HeavyMetalHubTile(
+        compact: compact,
+        icon: Icons.shield_outlined,
+        label: 'Privacy Policy',
+        subtitle: 'How we handle your data on this device',
+        onTap: () => _openCompliancePage(AppConfig.privacyUrl),
+      ),
+      const SizedBox(height: 12),
+      HeavyMetalHubTile(
+        compact: compact,
+        icon: Icons.help_outline,
+        label: 'Help & Support',
+        subtitle: 'Contact support and troubleshooting',
+        onTap: _openSupportWebsite,
+      ),
+      const SizedBox(height: 12),
+      HeavyMetalHubTile(
+        compact: compact,
+        icon: Icons.language_outlined,
+        label: 'App Web Page',
+        subtitle: 'Visit the FactLockCam website',
+        onTap: () => _openCompliancePage(AppConfig.webBaseUrl),
+      ),
+      const SizedBox(height: 12),
+      HeavyMetalHubTile(
+        compact: compact,
+        icon: Icons.menu_book_outlined,
+        label: 'User Guide',
+        subtitle: 'Documentation and how-to guides',
+        onTap: () => _openCompliancePage(AppConfig.guideUrl),
+      ),
+      const SizedBox(height: 12),
+      HeavyMetalHubTile(
+        compact: compact,
+        icon: Icons.vpn_key_outlined,
+        label: 'Key custody & limits',
+        subtitle: 'Zero-knowledge keys, file integrity, Polygon',
+        onTap: _showKeyCustodyLimits,
+      ),
+    ];
+  }
+
+  List<Widget> _accountActionButtons({
+    required bool busy,
+    required bool compact,
+  }) {
+    final buttons = <Widget>[
+      _ActionButton(
+        compact: compact,
+        label: 'Log out',
+        color: AppColors.kineticGreen,
+        onPressed: busy ? null : _signOut,
+      ),
+      if (_keyCustodyEnabled) ...[
+        const SizedBox(height: 12),
+        _ActionButton(
+          compact: compact,
+          label: 'Export archive keys',
+          color: AppColors.kineticGreen,
+          onPressed: busy ? null : _exportArchiveKeys,
+        ),
+        const SizedBox(height: 12),
+        _ActionButton(
+          compact: compact,
+          label: 'Lock archive',
+          color: CupertinoColors.systemOrange,
+          onPressed: busy ? null : _lockArchive,
+        ),
+      ],
+      const SizedBox(height: 12),
+      _ActionButton(
+        compact: compact,
+        label: 'Burn account',
+        color: CupertinoColors.destructiveRed,
+        onPressed: busy ? null : _openBurnAccount,
+      ),
+    ];
+    return buttons;
   }
 }
 
@@ -442,18 +457,20 @@ class _ActionButton extends StatelessWidget {
     required this.label,
     required this.color,
     required this.onPressed,
+    this.compact = false,
   });
 
   final String label;
   final Color color;
   final VoidCallback? onPressed;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: CupertinoButton(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: EdgeInsets.symmetric(vertical: compact ? 10 : 14),
         color: AppColors.titaniumPanel.withValues(alpha: 0.92),
         disabledColor: AppColors.titaniumPanel.withValues(alpha: 0.5),
         onPressed: onPressed,
