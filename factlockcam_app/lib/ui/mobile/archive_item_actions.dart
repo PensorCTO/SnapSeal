@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,6 +14,7 @@ import '../../core/di/service_providers.dart';
 import '../../data/models/archive_item.dart';
 import '../controllers/dashboard_controller.dart';
 import '../../features/archive/presentation/providers/send_proof_provider.dart';
+import '../../features/archive_quota/presentation/interceptors/metering_credit_interceptor.dart';
 import 'archive_media_download.dart';
 import 'vault/providers/thumbnail_cache_provider.dart';
 import 'archive_photo_view.dart';
@@ -203,7 +203,7 @@ class ArchiveItemActions {
             ),
           ],
           text:
-              '${sendProofShareIntro}${result.courierUrl}\n\n'
+              '$sendProofShareIntro${result.courierUrl}\n\n'
               'Share the password separately.\n\n'
               'Attached: tamper-proof certificate with asset hash and ledger details.',
         ),
@@ -222,20 +222,24 @@ class ArchiveItemActions {
     ArchiveItem item,
   ) async {
     if (!context.mounted) return;
+
+    final allowed = await ensureVerificationCreditForAction(context, ref);
+    if (!allowed || !context.mounted) return;
+
     unawaited(_showLoadingDialog(context));
 
-    try {
+    await runMeteredVerificationAction(ref, () async {
       final sealed = await ref
           .read(vaultServiceProvider)
           .extractForCourier(item.assetFingerprint);
       if (!context.mounted) return;
       Navigator.of(context, rootNavigator: true).pop();
       await shareDecryptedArchiveMedia(item: item, sealed: sealed);
-    } catch (error) {
+    }).catchError((Object error) async {
       if (!context.mounted) return;
       Navigator.of(context, rootNavigator: true).pop();
       await _showDownloadErrorDialog(context, error);
-    }
+    });
   }
 
   static Future<void> _showDownloadErrorDialog(

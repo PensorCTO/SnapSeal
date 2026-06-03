@@ -18,6 +18,9 @@ import '../swipe_action_layer.dart';
 import 'omni_control_bar.dart';
 import 'omni_grid_view.dart';
 import 'providers/archive_prefs_provider.dart';
+import '../../../../features/archive_quota/presentation/widgets/quota_telemetry_widget.dart';
+import '../../../../features/archive_quota/presentation/widgets/egress_pass_badge.dart';
+import '../../../../features/archive_quota/presentation/providers/quota_state_provider.dart';
 
 /// Unified Archive Omni-Surface — the archive tab (Tab Index 3) within the
 /// vault shell.
@@ -52,6 +55,10 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(quotaStateProvider.notifier).refresh();
+    });
   }
 
   @override
@@ -98,8 +105,13 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
               includeTopSafeArea: widget.onBackToHub == null,
             ),
 
+            const EgressPassBadge(),
+
             // ── Pending sync banner ────────────────────────────
             _PendingSyncBanner(),
+
+            // ── Archive quota telemetry ─────────────────────────
+            const QuotaTelemetryWidget(),
 
             // ── Control bar (filter chips + view toggle) ───────
             const OmniControlBar(),

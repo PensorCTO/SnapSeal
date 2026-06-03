@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
+import '../core/di/service_providers.dart';
 import '../ui/controllers/pending_sync_scheduler.dart';
 import '../ui/providers/asset_lock_provider.dart';
 import '../ui/providers/proof_notarization_provider.dart';
@@ -18,6 +19,7 @@ class FactLockCamApp extends ConsumerWidget {
       ref.watch(assetLockStateProvider);
       ref.watch(polygonNotarizationLifecycleProvider);
       ref.watch(polygonProofSyncRefreshProvider);
+      ref.watch(quotaLifecycleProvider);
     }
     final router = ref.watch(appRouterProvider);
 

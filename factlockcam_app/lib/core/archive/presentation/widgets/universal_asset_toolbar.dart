@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/media_action_type.dart';
 import '../../domain/services/asset_action_registry.dart';
 import '../../../../features/archive/presentation/providers/asset_action_provider.dart';
+import '../../../../features/archive_quota/presentation/interceptors/metering_credit_interceptor.dart';
 
 class UniversalAssetToolbar extends ConsumerWidget {
   const UniversalAssetToolbar({
@@ -66,10 +67,33 @@ class UniversalAssetToolbar extends ConsumerWidget {
     if (!confirmed) {
       return;
     }
-    await ref
-        .read(assetActionProvider.notifier)
-        .executeAction(action, assetHash);
+
+    if (_requiresVerificationCredit(action)) {
+      if (!context.mounted) {
+        return;
+      }
+      final allowed = await ensureVerificationCreditForAction(context, ref);
+      if (!allowed) {
+        return;
+      }
+      await runMeteredVerificationAction(
+        ref,
+        () => ref
+            .read(assetActionProvider.notifier)
+            .executeAction(action, assetHash),
+      );
+    } else {
+      await ref
+          .read(assetActionProvider.notifier)
+          .executeAction(action, assetHash);
+    }
+
     await onActionCompleted?.call(action);
+  }
+
+  static bool _requiresVerificationCredit(MediaActionType action) {
+    return action == MediaActionType.verify ||
+        action == MediaActionType.export;
   }
 
   static String _messageForMediaType(String mediaType) {

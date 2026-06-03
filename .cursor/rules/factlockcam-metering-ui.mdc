@@ -1,0 +1,27 @@
+---
+description: Enforces UI rendering patterns for the Metering Engine (Gas Gauge and Egress Pass).
+globs:
+  - "factlockcam_app/lib/ui/mobile/**/*.dart"
+  - "factlockcam_app/lib/core/archive/**/*.dart"
+  - "factlockcam_app/lib/features/archive_quota/**/*.dart"
+---
+
+# FactLockCam Metering UI
+
+## Core Constraints
+
+- **Zero-Latency Capture:** The `TelemetryOverlay` MUST listen to `quotaStateProvider` passively. Quota checks MUST NOT block the camera isolate initialization or the `ShutterButtonPainter` animation frames.
+- **Terminology Enforcement:** All new UI surface areas must strictly use the term "Archive" instead of "Vault".
+- **Optimistic UI Updates:** Following a successful `extractForCourier` or Polygon notarization, decrement the `quotaStateProvider` locally immediately before awaiting the Supabase RPC reconciliation.
+- **Typography:** Use `AppTextStyles.monoSm` (Space Mono) for HUD telemetry — not raw `GoogleFonts.robotoMono`.
+
+## Context Anchors
+
+- `TelemetryOverlay`: Target for the "Gas Gauge" ticker (`PROOFS: remaining/base`).
+- `UnifiedArchiveViewport`: Target for the "Egress Pass" balance badge (replaces legacy `ArchiveView` naming).
+- `UniversalAssetToolbar` / `AssetActionRegistry`: Pre-flight Verification Credit modal for verify/export actions.
+
+## Dual-Layer Quota
+
+- **Credits:** `quotaStateProvider` + `get_current_quota_status` (pro proofs + verification credits).
+- **Bytes:** `archiveQuotaNotifierProvider` + `get_my_archive_quota` (storage/egress progress bars). Do not remove byte-layer paywall interceptors when adding credit UI.

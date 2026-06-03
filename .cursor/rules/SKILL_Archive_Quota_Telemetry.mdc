@@ -1,0 +1,32 @@
+---# SKILL: Archive Quota & Paywall Architecture
+
+## Description
+This toolkit guides the implementation of the Archive Quota Telemetry system, enforcing storage and egress limits, and gracefully routing users to the enterprise subscription paywall.
+
+## Instructions
+
+1. **Database Governance (Supabase CLI)**
+   - Generate a new migration: `supabase migration new archive_quotas_and_tiers`.
+   - Architect an `archive_quotas` table linked 1:1 with `profiles`. It must track `storage_used_bytes`, `egress_used_bytes`, and `tier_id`.
+   - Enforce strict Row Level Security (RLS) ensuring users can only read their own quotas. 
+   - Ensure a database trigger or RPC function exists to increment egress upon Courier download actions.
+
+2. **Domain Abstraction (Flutter)**
+   - Architect an `ArchiveQuotaRepository` to fetch and cache quota data.
+   - Implement an `ArchiveQuotaService` to handle the business logic: checking limits against thresholds (80% warning, 95% critical) and blocking capture/courier actions if limits are breached.
+   - **Constraint:** NEVER use the term "Vault" in the codebase. Always use "Archive" (e.g., `ArchiveQuota`, not `VaultQuota`).
+
+3. **UI Telemetry (Archive Dashboard)**
+   - Design a `QuotaTelemetryWidget` to sit within the Archive tab. It should visually display storage and egress usage via dual progress bars.
+   - Apply the "Heavy Metal" / "VerifiedNeon" aesthetic defined in `app_colors.dart`.
+
+4. **Graceful Degradation & Paywall**
+   - Architect a `SubscriptionUpgradeView`. This is the enterprise paywall.
+   - Implement interception logic: If `ArchiveQuotaService.canSeal()` returns false, gracefully present the `SubscriptionUpgradeView` via a bottom sheet rather than throwing a hard error.
+
+5. **Credit Metering Layer (June 2026)**
+   - Migration `20260602140000_subscription_cycles_metering.sql`: `subscription_cycles`, `metered_consumption_ledger`, RPCs `get_current_quota_status` / `record_metered_consumption`.
+   - Flutter: `quotaStateProvider`, `MeteringQuotaService`, camera gas gauge (`TelemetryOverlay`), `EgressPassBadge`, Verification Credit pre-flight modal.
+   - See `.cursor/rules/factlockcam-metering-ui.mdc` and [[Archive_Quota_Telemetry_2026-06]].
+alwaysApply: true
+---

@@ -9,6 +9,14 @@ import '../../data/supabase/seal_ledger_repository.dart';
 import '../../application/vault/vault_sync_coordinator.dart';
 import '../../core/cloud/supabase_vault_service.dart';
 import '../../data/supabase/courier_repository.dart';
+import '../../features/archive_quota/data/archive_quota_repository.dart';
+import '../../features/archive_quota/data/metering_quota_repository.dart';
+import '../../features/archive_quota/data/mock_subscription_billing_gateway.dart';
+import '../../features/archive_quota/domain/repositories/i_archive_quota_repository.dart';
+import '../../features/archive_quota/domain/repositories/i_metering_quota_repository.dart';
+import '../../features/archive_quota/domain/services/archive_quota_service.dart';
+import '../../features/archive_quota/domain/services/metering_quota_service.dart';
+import '../../features/archive_quota/domain/services/subscription_billing_gateway.dart';
 import '../../data/supabase/supabase_client_handle.dart';
 import '../crypto/vault_encryption_handler.dart';
 import '../journal/journal_database_factory.dart';
@@ -137,6 +145,24 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<CourierRepository>(
     () => CourierRepository(getIt<SupabaseClientHandle>()),
+  );
+
+  getIt.registerLazySingleton<IArchiveQuotaRepository>(
+    () => ArchiveQuotaRepository(getIt<SupabaseClientHandle>()),
+  );
+  getIt.registerLazySingleton<SubscriptionBillingGateway>(
+    () => MockSubscriptionBillingGateway(
+      repository: getIt<IArchiveQuotaRepository>(),
+    ),
+  );
+  getIt.registerLazySingleton<ArchiveQuotaService>(
+    () => ArchiveQuotaService(repository: getIt<IArchiveQuotaRepository>()),
+  );
+  getIt.registerLazySingleton<IMeteringQuotaRepository>(
+    () => MeteringQuotaRepository(getIt<SupabaseClientHandle>()),
+  );
+  getIt.registerLazySingleton<MeteringQuotaService>(
+    () => MeteringQuotaService(repository: getIt<IMeteringQuotaRepository>()),
   );
 
   if (!kIsWeb) {

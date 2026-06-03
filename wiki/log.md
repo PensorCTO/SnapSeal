@@ -5,6 +5,17 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-06-02
+
+- **Seventeenth pass — dual-layer Archive quota & credit metering** — user-confirmed device QA:
+  - **Byte layer:** Migration `20260602120000_archive_quotas_and_tiers.sql` — `archive_tiers`, `archive_quotas`, RPCs, courier egress hook.
+  - **Credit layer:** Migration `20260602140000_subscription_cycles_metering.sql` — `subscription_cycles`, `metered_consumption_ledger`, `get_current_quota_status`, `record_metered_consumption`; pushed hosted (**23/23** migrations); fixed `(user_id, cycle_start)` unique index (rejected `now()` partial predicate).
+  - **Flutter:** `features/archive_quota/` — byte (`ArchiveQuotaService`, `QuotaTelemetryWidget`) + credit (`quotaStateProvider`, `MeteringQuotaService`, `EgressPassBadge`, camera gas gauge, Verification Credit pre-flight).
+  - **Rules:** `.cursor/rules/SKILL_Archive_Quota_Telemetry.mdc`, `.cursor/rules/factlockcam-metering-ui.mdc`.
+  - **Tests:** `archive_quota_*`, `metering_quota_service_test`, forensic gas-gauge test; full suite **72/72**.
+  - **Wiki:** [[Archive_Quota_Telemetry_2026-06]] refined; refreshed [[FactLockCam_Product_Baseline_2026-05]], [[index]], [[overview]], [[glossary]].
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 ## 2026-05-30
 
 - **Sixteenth QA pass — archive owner UX** — user-confirmed on device:

@@ -56,8 +56,8 @@ supabase functions deploy anchor-relay --no-verify-jwt
 
 # Live mainnet (required — no sim fallback after eighth QA):
 supabase secrets set \
-  ALCHEMY_API_URL='https://polygon-mainnet.g.alchemy.com/v2/YOUR_KEY' \
-  RELAYER_PRIVATE_KEY='0xYOUR_FUNDED_RELAYER_KEY' \
+  ALCHEMY_API_URL='' \
+  RELAYER_PRIVATE_KEY='FUNDED_RELAYER_KEY' \
   --project-ref jqvnwtslmoxjwzusmtxs
 ```
 

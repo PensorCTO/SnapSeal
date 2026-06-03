@@ -76,6 +76,8 @@ dev_dependencies:
   mocktail: ^1.0.4
   build_runner: 2.4.15
   sqflite_common_ffi: ^2.3.6
+  plugin_platform_interface: ^2.1.8
+  video_player_platform_interface: ^6.7.0
 
 flutter_launcher_icons:
   android: true

@@ -14,7 +14,13 @@ summary: "Terminology reference for the LLM Wiki."
 | Compiled Wiki | Durable synthesized knowledge stored under `wiki/`. | [[LLM_Wiki_Pattern]] |
 | Provenance | Explicit source tracking for important claims. | [[Sample_Source]] |
 | FactLockCam | Flutter tamper-evident media archive: seal and verify captures with local AES-GCM archiveing and Supabase ledger replication (risk reduction framing — see [[FactLockCam_Master_Blueprint]]). | [[FactLockCam_Master_Blueprint]] |
-| FactLockCam product baseline (2026-05) | Verified logon→hub→archive/capture workflow plus compressed Supabase repair/backfill pointers; canonical status entry. | [[FactLockCam_Product_Baseline_2026-05]] |
+| FactLockCam product baseline (2026-05) | Verified logon→hub→archive/capture workflow plus compressed Supabase repair/backfill pointers; canonical status entry. Seventeenth pass (2026-06-02): dual-layer Archive quota. | [[FactLockCam_Product_Baseline_2026-05]] |
+| Archive quota (byte layer) | Per-user `archive_quotas` row + `archive_tiers` catalog; meters storage/egress bytes via RPCs; `QuotaTelemetryWidget` progress bars; paywall via `ensureArchiveQuotaForSeal` / `ensureArchiveQuotaForSendProof`. | [[Archive_Quota_Telemetry_2026-06]] |
+| Pro proof (credit) | Monthly included remote seal/notarization allowance; default **50**/cycle in `subscription_cycles.base_allocation`; debited on successful seal; shown as `PROOFS: remaining/base` in camera HUD. | [[Archive_Quota_Telemetry_2026-06]] |
+| Verification Credit | Consumable egress credit debited on heavy `extractForCourier` paths (verify, export, Download Media); default **12** on new cycles; pre-flight modal in `UniversalAssetToolbar`. | [[Archive_Quota_Telemetry_2026-06]] |
+| Egress Pass | User-facing label for verification credit balance; `EgressPassBadge` pill in `UnifiedArchiveViewport` header. | [[Archive_Quota_Telemetry_2026-06]] |
+| quotaStateProvider | Riverpod sync notifier for credit metering; optimistic debit + `record_metered_consumption` reconcile; polled on app resume and archive entry. | [[Archive_Quota_Telemetry_2026-06]] |
+| get_current_quota_status | Supabase RPC returning pro-proof and verification-credit counters for authenticated user. | [[Archive_Quota_Telemetry_2026-06]] |
 | Active-Wallet Ledger | Supabase replica of proof rows for assets still connected to active app wallets. | [[FactLockCam_Master_Blueprint]] |
 | Pending Sync | Local SQLite state marking a sealed asset whose remote proof path (`proof_ledger` / RPC pipeline) has not completed; cleared by retry/sync or marked deferred with backoff. | [[FactLockCam_Master_Blueprint]] |
 | Courier Payload | Service-layer export of decrypted media after SHA-256 re-verification. | [[FactLockCam_Master_Blueprint]] |

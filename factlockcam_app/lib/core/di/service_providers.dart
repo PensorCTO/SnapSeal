@@ -17,6 +17,14 @@ export '../../domain/export/proof_bundle_export_service.dart'
     show proofBundleExportServiceProvider;
 export '../../features/archive/presentation/providers/send_proof_provider.dart'
     show sendProofProvider;
+export '../../features/archive_quota/presentation/providers/archive_quota_provider.dart'
+    show archiveQuotaNotifierProvider, archiveQuotaServiceProvider;
+export '../../features/archive_quota/presentation/providers/quota_lifecycle_provider.dart'
+    show quotaLifecycleProvider;
+export '../../features/archive_quota/presentation/providers/quota_state_provider.dart'
+    show meteringQuotaServiceProvider, quotaStateProvider;
+export '../../features/archive_quota/presentation/providers/subscription_upgrade_provider.dart'
+    show subscriptionUpgradeProvider;
 export '../../domain/services/vault_service.dart' show vaultServiceProvider;
 export '../../features/archive/application/proof_courier_service.dart'
     show proofCourierServiceProvider;

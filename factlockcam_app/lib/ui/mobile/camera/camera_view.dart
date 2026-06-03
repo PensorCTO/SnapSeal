@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
+import '../../../core/di/service_providers.dart';
 import '../../../core/services/haptic_service.dart';
 import '../../../core/ui/widgets/vault_panel_navigation_bar.dart';
 import '../../../core/ui/painters/reticle_painter.dart';
@@ -18,6 +19,7 @@ import '../../../domain/services/vault_service.dart';
 import '../../controllers/dashboard_controller.dart';
 import '../vault/providers/thumbnail_cache_provider.dart';
 import '../vault_home_view.dart';
+import '../../../features/archive_quota/presentation/interceptors/metering_credit_interceptor.dart';
 import 'acquisition_mode.dart';
 import 'camera_chrome_frame.dart';
 import 'camera_geolocation_stream.dart';
@@ -232,6 +234,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
           _verifiedFlashTrigger += 1;
         });
         await ref.read(hapticServiceProvider).lock();
+        unawaited(recordProProofConsumption(ref));
       }
       ref.invalidate(thumbnailCacheProvider(result.assetFingerprint));
       await ref.read(dashboardControllerProvider.notifier).refreshArchive();

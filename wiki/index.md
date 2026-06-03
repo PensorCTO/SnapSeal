@@ -11,6 +11,7 @@ Read this page first when answering questions about the wiki.
 
 | Page | When to read |
 |------|----------------|
+| [[Archive_Quota_Telemetry_2026-06]] | **Seventeenth pass (2026-06-02)** — dual-layer quota: byte telemetry + credit metering (gas gauge, Egress Pass, verification modal); **72/72** tests; migrations pushed |
 | [[Archive_Owner_UX_2026-05]] | **Sixteenth QA (2026-05-30)** — Download Media, Send Proof metadata, View/Play labels, debug proof-links gate |
 | [[App_Store_Hardening_2026-05]] | **Fifteenth QA (2026-05-30)** — manifest remediation: hardware signing, ENABLE_PROOF_LINKS gate, sync/delete/DI hardening, 55/55 tests |
 | [[Web_Deployment_Architecture_2026-05]] | **Fourteenth QA (2026-05-29)** — factlockcam.com sales pitch + archive courier-only gate; Cloudflare Pages deploy |
@@ -43,6 +44,7 @@ Read this page first when answering questions about the wiki.
 - [[UI_Polish_Hub_Archive_2026-05]] - Eleventh QA: logo banner, Account heavy-metal tiles, chronology scroll fix.
 - [[App_Store_Remediation_2026-05]] - Tenth QA: App Store remediation, WEB_ARCHIVE_BASE_URL, courier archive indices, TestFlight-first.
 - [[Production_Transition_2026-05]] - Ninth QA: production config, courier lookup migrations, iOS compliance, test suite.
+- [[Archive_Quota_Telemetry_2026-06]] - Dual-layer Archive metering: byte storage/egress + credit pro proofs/verification credits; gas gauge, Egress Pass badge, paywall (June 2026, device QA).
 - [[Archive_Owner_UX_2026-05]] - Sixteenth QA: Download Media, certificate metadata from asset, View/Play labels, chronology actions icon.
 - [[Send_Proof_Courier_2026-05]] - Send Proof: certificate PDF + courier link; utility positioning; production web archive URL.
 - [[FactLockCam_Product_Baseline_2026-05]] - Verified hub/archive/capture workflow and compressed Supabase baseline (start here for FactLockCam status).

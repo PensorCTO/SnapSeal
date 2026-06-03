@@ -1,15 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
+import '../../../core/di/service_providers.dart';
 import 'acquisition_mode.dart';
 
 /// Forensic HUD: sensor/resolution, UTC clock, live GPS, optional live hash.
 ///
 /// Typography uses [AppTextStyles.monoSm] per forensic UI standards.
-class TelemetryOverlay extends StatefulWidget {
+class TelemetryOverlay extends ConsumerStatefulWidget {
   const TelemetryOverlay({
     super.key,
     required this.acquisitionMode,
@@ -36,10 +38,10 @@ class TelemetryOverlay extends StatefulWidget {
   final String? liveHashHex;
 
   @override
-  State<TelemetryOverlay> createState() => _TelemetryOverlayState();
+  ConsumerState<TelemetryOverlay> createState() => _TelemetryOverlayState();
 }
 
-class _TelemetryOverlayState extends State<TelemetryOverlay>
+class _TelemetryOverlayState extends ConsumerState<TelemetryOverlay>
     with SingleTickerProviderStateMixin {
   Timer? _clockTimer;
   Timer? _sealedTimer;
@@ -154,6 +156,10 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
         : 'preview —×— · — Hz';
 
     final active = widget.isRecording || widget.archivingCount > 0;
+    final quota = ref.watch(quotaStateProvider);
+    final proofsLine = quota == null
+        ? null
+        : 'PROOFS: ${quota.proProofsRemaining}/${quota.proProofsBase}';
 
     return IgnorePointer(
       child: Padding(
@@ -219,6 +225,17 @@ class _TelemetryOverlayState extends State<TelemetryOverlay>
               ],
             ),
             const Spacer(),
+            if (proofsLine != null)
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: Text(
+                  proofsLine,
+                  style: mono.copyWith(
+                    color: AppColors.starkWhite.withValues(alpha: 0.72),
+                  ),
+                ),
+              ),
+            if (proofsLine != null) const SizedBox(height: 2),
             Align(
               alignment: Alignment.bottomLeft,
               child: Text(_hashLine(), style: mono),

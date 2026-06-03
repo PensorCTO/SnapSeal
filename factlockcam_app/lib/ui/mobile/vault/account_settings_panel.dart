@@ -13,6 +13,7 @@ import '../../../core/navigation/compliance_navigation.dart';
 import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
 import '../../../core/ui/widgets/heavy_metal_hub_tile.dart';
 import '../../../core/ui/widgets/vault_panel_navigation_bar.dart';
+import '../../../features/archive_quota/presentation/widgets/quota_telemetry_widget.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/dashboard_controller.dart';
 import '../settings/burn_account_view.dart';
@@ -258,6 +259,7 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
           HeavyMetalLogoBanner(
             includeTopSafeArea: widget.onBackToHub == null,
           ),
+          const QuotaTelemetryWidget(),
           Expanded(
             child: Stack(
               fit: StackFit.expand,
