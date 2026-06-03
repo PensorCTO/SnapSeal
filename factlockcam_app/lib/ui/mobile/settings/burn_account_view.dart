@@ -5,6 +5,7 @@ import 'package:postgrest/postgrest.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
+import '../../../core/legal/disclaimers.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/dashboard_controller.dart';
 import '../archive/providers/thumbnail_cache_provider.dart';
@@ -109,11 +110,10 @@ class _BurnAccountViewState extends ConsumerState<BurnAccountView> {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Burning your account deletes all cloud assets, EVM ledger '
-                      'references, and both local cryptographic keys on this device. '
-                      'This action cannot be undone by a key restore.',
+                      burnAccountDisclaimer,
                       style: AppTextStyles.monoSm(
                         color: AppColors.starkWhite.withValues(alpha: 0.85),
+                        height: 1.4,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -134,10 +134,9 @@ class _BurnAccountViewState extends ConsumerState<BurnAccountView> {
                               setState(() => _acknowledged = !_acknowledged);
                             },
                             child: Text(
-                              'I understand that my account and associated cloud '
-                              'data will be permanently destroyed. This does not '
-                              'grant FactLockCam the ability to recover archives '
-                              'without my keys.',
+                              'I understand Burn Account is irreversible. My account, '
+                              'cloud archive, local sealed files, and keys will be '
+                              'destroyed. A .factlock backup cannot restore this account.',
                               style: AppTextStyles.monoSm(
                                 color: AppColors.starkWhite,
                               ),

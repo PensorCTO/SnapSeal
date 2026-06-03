@@ -7,6 +7,7 @@ This manifest tracks immutable source files in `raw/` and their compiled wiki ta
 | `raw/sample_llm_wiki_source.md` | 2026-04-26 | `COMPILED` | [[Sample_Source]] |
 | `raw/prooflock_architectural_manifest.md` | 2026-05-03 | `COMPILED` | [[ProofLock_Architectural_Manifest]] |
 | `raw/project_audit_2026-05-11.md` | 2026-05-11 | `COMPILED` | [[Project_Audit_2026-05-11_Source]] |
+| `raw/compliant_subscription_architecture.md` | 2026-06-03 | `COMPILED` | [[Compliant_Subscription_Architecture_Source]] |
 
 ---
 

@@ -15,6 +15,7 @@ import '../../features/archive_quota/data/mock_subscription_billing_gateway.dart
 import '../../features/archive_quota/domain/repositories/i_archive_quota_repository.dart';
 import '../../features/archive_quota/domain/repositories/i_metering_quota_repository.dart';
 import '../../features/archive_quota/domain/services/archive_quota_service.dart';
+import '../../features/archive_quota/domain/services/local_archive_quota_gate.dart';
 import '../../features/archive_quota/domain/services/metering_quota_service.dart';
 import '../../features/archive_quota/domain/services/subscription_billing_gateway.dart';
 import '../../data/supabase/supabase_client_handle.dart';
@@ -158,6 +159,9 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<ArchiveQuotaService>(
     () => ArchiveQuotaService(repository: getIt<IArchiveQuotaRepository>()),
   );
+  getIt.registerLazySingleton<LocalArchiveQuotaGate>(
+    () => const LocalArchiveQuotaGate(),
+  );
   getIt.registerLazySingleton<IMeteringQuotaRepository>(
     () => MeteringQuotaRepository(getIt<SupabaseClientHandle>()),
   );
@@ -271,6 +275,8 @@ Future<void> configureDependencies() async {
       keyCustodyService: getIt<KeyCustodyService>(),
       isolateLockCoordinator: getIt<IsolateLockCoordinator>(),
       journalRepository: getIt<JournalRepository>(),
+      localQuotaGate: getIt<LocalArchiveQuotaGate>(),
+      archiveQuotaService: getIt<ArchiveQuotaService>(),
     ),
   );
 

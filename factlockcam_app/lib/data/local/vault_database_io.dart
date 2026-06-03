@@ -183,6 +183,20 @@ class VaultDatabase {
     return rows.map(ArchiveItem.fromDatabase).toList(growable: false);
   }
 
+  /// Sum of sealed asset payload sizes for local-first quota enforcement.
+  Future<int> sumLocalByteLength() async {
+    final db = await _db;
+    final rows = await db.rawQuery(
+      'SELECT COALESCE(SUM(byte_length), 0) AS total FROM archive_items '
+      'WHERE is_locally_available = 1',
+    );
+    if (rows.isEmpty) return 0;
+    final total = rows.first['total'];
+    if (total is int) return total;
+    if (total is num) return total.toInt();
+    return int.tryParse(total.toString()) ?? 0;
+  }
+
   /// Items still marked for remote sync (e.g. offline or recoverable API failure).
   Future<List<ArchiveItem>> listPendingArchiveItems() async {
     final db = await _db;

@@ -11,7 +11,7 @@ const faqs = [
   },
   {
     q: 'Can FactLockCam recover my encrypted files?',
-    a: 'No. Only you hold the keys—we cannot access your unencrypted files. FactLockCam is non-custodial; encryption keys live on your device. We cannot reset access or decrypt your archive.',
+    a: 'No. Only you hold the keys—we cannot decrypt your archive or reset a lost backup password. Export a .factlock sovereign key backup from Account & Settings and store it safely. Cloud sync stores ciphertext we cannot read; it is not a downloadable photo library backup.',
   },
   {
     q: 'How does Send Proof work?',
@@ -19,11 +19,23 @@ const faqs = [
   },
   {
     q: 'What data leaves my device?',
-    a: 'Only SHA-256 hashes and optional ledger metadata you explicitly sync. Original media bytes stay encrypted locally unless you export or send proof.',
+    a: 'Proof hashes and ledger metadata sync to our backend. Sealed media lives on your device as encrypted .seal files. After sealing, optional blind ciphertext may upload for the same account—we cannot read it, and you do not download it like a cloud photo backup. Send Proof shares a time-limited courier link when you choose.',
+  },
+  {
+    q: 'How do I back up my archive?',
+    a: 'Use Account & Settings → Export archive keys to create a password-protected .factlock file. That backs up your sovereign decryption keys only—not photos or videos from our servers. Re-export periodically or before Lock Archive, uninstall, or device replacement.',
+  },
+  {
+    q: 'What is Lock Archive vs Burn Account?',
+    a: 'Lock Archive removes cryptographic keys from this device but keeps local .seal files. Import your .factlock backup to unlock the app again; cloud data for your account is unchanged. Burn Account permanently deletes your account, cloud ciphertext, local archive, and keys. A .factlock from before Burn cannot restore that burned identity.',
+  },
+  {
+    q: 'What if I reinstall the app?',
+    a: 'Uninstalling removes local keys and usually local sealed files. Sign in with the same email, then import your .factlock file on the restore screen to decrypt cloud sync again. Without .factlock, encrypted cloud and local assets are inaccessible.',
   },
   {
     q: 'How do I delete my account?',
-    a: 'Open Account & Settings in the app, choose Burn Account, and confirm twice. This calls the perform_full_burn RPC and removes your profile-linked cloud data.',
+    a: 'Open Account & Settings → Burn Account and confirm twice. This permanently deletes your Supabase identity, linked cloud storage, local archive, and keys. A prior .factlock backup cannot resurrect that account.',
   },
 ];
 ---

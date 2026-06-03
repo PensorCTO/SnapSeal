@@ -25,9 +25,15 @@ Eighteenth structural pass (**2026-06-03**): align FactLockCam with production l
 
 Initial Account panel placed three full disclaimer paragraphs in the **fixed bottom** `Padding` above action buttons. On device, that replaced visible **Log out / Export / Lock / Burn** controls with dense mono text. **Fix:** disclaimers moved to **Key custody & limits** dialog tile; hub footnote removed. User-confirmed QA pass after fix.
 
-### Open follow-up
+### Hosted legal (2026-06-03) — deployed
 
-- **Hosted legal:** Patch **factlockcam.com** Terms and Privacy HTML to mirror in-app language (sovereign non-recovery, epistemic boundary, Polygon SLA). App links via `AppConfig.termsUrl` / `privacyUrl`; separate Astro/content deploy.
+- **Pass 1:** Removed “back up encrypted assets”; distinguished local `.seal`, `.factlock`, cloud ciphertext.
+- **Pass 2 (scenario matrix):** Terms §6–9, Privacy §7, Support FAQs + `disclaimers.dart` — Lock vs uninstall vs Burn; keys-only backup; Burn irreversible. Canonical: [[Data_Custody_And_Backup_Model_2026]].
+- **Deploy:** `scripts/deploy_factlockcam_site_cf.sh` → Cloudflare Pages (`factlockcam`); user **QA passed** on `AppConfig.termsUrl` / in-app Account flows.
+
+### Remaining follow-up
+
+- Optional: add epistemic + Polygon SLA paragraphs to hosted marketing pages (in-app `disclaimers.dart` remains source of truth for custody matrix).
 
 ### Explicitly out of scope
 
@@ -44,6 +50,7 @@ Initial Account panel placed three full disclaimer paragraphs in the **fixed bot
 * [[FactLockCam_Product_Baseline_2026-05]]
 * [[Production_Transition_2026-05]]
 * [[App_Store_Hardening_2026-05]]
+* [[Data_Custody_And_Backup_Model_2026]]
 * [[Sovereign_Key_Lifecycle_2026-05]]
 * [[Web_Deployment_Architecture_2026-05]]
 * [[overview]]

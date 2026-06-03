@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/legal/disclaimers.dart';
 import '../interceptors/archive_quota_block_reason.dart';
 import '../providers/subscription_upgrade_provider.dart';
 
@@ -43,9 +44,17 @@ class SubscriptionUpgradeView extends ConsumerWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 12),
+              Text(
+                archiveSubscriptionTierDisclaimer,
+                style: AppTextStyles.monoSm(
+                  color: AppColors.starkWhite.withValues(alpha: 0.65),
+                ),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 20),
               _TierCard(
-                title: 'The Creator',
+                title: 'Core Pro Tier',
                 priceLabel: '\$1 / month',
                 storageLabel: '5 GB Archive',
                 egressLabel: '25 GB egress / month',
@@ -54,7 +63,7 @@ class SubscriptionUpgradeView extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               _TierCard(
-                title: 'The Archivist',
+                title: 'Sovereign Archivist',
                 priceLabel: '\$10 / month',
                 storageLabel: '50 GB Archive',
                 egressLabel: '200 GB egress / month',
@@ -84,6 +93,8 @@ class SubscriptionUpgradeView extends ConsumerWidget {
         'Your Archive storage limit has been reached. Upgrade to seal more assets.',
       ArchiveQuotaBlockReason.egress =>
         'Your monthly Archive egress limit has been reached. Upgrade to send more proofs.',
+      ArchiveQuotaBlockReason.singleCapture =>
+        'Free tier video captures are limited to 50 MB. Upgrade for longer recordings.',
     };
   }
 

@@ -50,25 +50,121 @@ import LegalLayout from '../layouts/LegalLayout.astro';
   <h2>5. Non-Custodial Access Protocol</h2>
   <p>
     <strong>CRITICAL:</strong> FactLockCam utilizes non-custodial security. We do not store your
-    keys or password hashes. We cannot reset your password, restore encrypted files, or recover
-    cryptographic keys. Users are solely responsible for securing their device access and backing
-    up their encrypted data.
+    encryption keys or backup passwords. We cannot reset your password, decrypt your archive, or
+    recover lost keys. You are solely responsible for device access and for exporting and safeguarding
+    your <strong>.factlock</strong> sovereign key backup (Account &amp; Settings → Export archive keys).
   </p>
 
-  <h2>6. Integrity Maintenance</h2>
+  <h2>6. Keys-Only Backup (Not Media from the Cloud)</h2>
+  <p>
+    The <strong>only</strong> backup you can create in FactLockCam is a password-protected
+    <strong>.factlock</strong> file (Account &amp; Settings → Export archive keys). It contains your
+    sovereign decryption keys (EVM signing key and archive AES key)—<em>not</em> your photos, videos, or
+    files downloaded from our servers. FactLockCam cannot restore access without your
+    <strong>.factlock</strong> backup and backup password.
+  </p>
+  <p>
+    Re-export your <strong>.factlock</strong> periodically, before Lock Archive, before uninstalling the
+    app, or before replacing your device. Keys are stable for a given app install; you do not need to
+    export after every capture.
+  </p>
+
+  <h2>7. Where Your Archive Lives</h2>
+  <p>FactLockCam is <strong>local-first</strong>:</p>
+  <ul>
+    <li>
+      <strong>On your device:</strong> Sealed media is stored as encrypted <code>.seal</code> files in
+      the app sandbox. This is the archive you browse, verify, and export from the app.
+    </li>
+    <li>
+      <strong>On our servers (optional sync):</strong> After sealing, ciphertext may upload for the same
+      signed-in account. These blobs are zero-knowledge—we cannot read them, and they are
+      <em>not</em> a user-managed media backup you download from a dashboard. They can help re-sync after
+      reinstall <strong>only when you import your .factlock keys</strong> and sign in with the same email.
+    </li>
+    <li>
+      <strong>Send Proof (courier):</strong> Time-limited recipient links are delivery channels, not a
+      substitute for your <strong>.factlock</strong> key backup.
+    </li>
+  </ul>
+
+  <h2>8. Key Custody Scenarios</h2>
+  <p>
+    Losing your keys without a <strong>.factlock</strong> backup means permanent loss of access to
+    <strong>all</strong> encrypted assets—local <code>.seal</code> files and any cloud ciphertext for your
+    account.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Scenario</th>
+        <th>Local keys</th>
+        <th>Local <code>.seal</code></th>
+        <th>Cloud + account</th>
+        <th><code>.factlock</code> backup</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Normal use</td>
+        <td>Present</td>
+        <td>Present</td>
+        <td>Present if sync ran</td>
+        <td>Optional; re-export periodically or before Lock/uninstall</td>
+      </tr>
+      <tr>
+        <td>Keys lost (no <code>.factlock</code>)</td>
+        <td>Gone</td>
+        <td>Unreadable</td>
+        <td>Unreadable</td>
+        <td>N/A — total loss</td>
+      </tr>
+      <tr>
+        <td>Lock Archive</td>
+        <td>Purged from device</td>
+        <td>Remain on device</td>
+        <td>Unchanged on server</td>
+        <td>Import to unlock app and read local archive again</td>
+      </tr>
+      <tr>
+        <td>App uninstalled</td>
+        <td>Gone (OS wipes sandbox)</td>
+        <td>Usually gone with app data</td>
+        <td>Still on server for same email</td>
+        <td>Must import after reinstall + sign-in to decrypt cloud sync</td>
+      </tr>
+      <tr>
+        <td>Burn Account</td>
+        <td>Purged locally</td>
+        <td>Wiped locally</td>
+        <td>Account and linked cloud data deleted</td>
+        <td>Useless for that burned identity</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    <strong>Lock Archive ≠ Burn Account.</strong> Lock removes keys from this device but leaves local
+    sealed files; import <strong>.factlock</strong> to resume. Burn permanently deletes your Supabase
+    identity, associated cloud ciphertext, local archive, and keys—a prior <strong>.factlock</strong>
+    cannot restore a burned account or its cloud archive.
+  </p>
+
+  <h2>9. Burn Account Is Irreversible</h2>
+  <p>
+    Burn Account (Account &amp; Settings, with double confirmation) permanently destroys your remote
+    account, profile-linked cloud storage, local archive database and sealed files, and cryptographic
+    keys on the device. A <strong>.factlock</strong> file created before Burn cannot resurrect that
+    identity or decrypt cloud data tied to the burned account. You may create a new account with the
+    same email only as a fresh identity with no restored prior archive.
+  </p>
+
+  <h2>10. Integrity Maintenance</h2>
   <p>
     If the original file is modified or access to the certifying identity is lost, the link to the
     blockchain record is broken. FactLockCam cannot restore this connection.
   </p>
 
-  <h2>7. Professional Asset Backup</h2>
-  <p>
-    To support long-term verification, we recommend backing up the encrypted version of your assets.
-    Modifications to file metadata by third-party operating systems can alter a file&apos;s hash;
-    maintaining the encrypted archive copy preserves cryptographic integrity.
-  </p>
-
-  <h2>8. Secure Delivery Expiration</h2>
+  <h2>11. Secure Delivery Expiration</h2>
   <p>
     The FactLockCam delivery system allows for secure, time-limited file access. Assets may have an
     expiration policy or limited access attempts. FactLockCam is not liable for assets that become
@@ -76,7 +172,7 @@ import LegalLayout from '../layouts/LegalLayout.astro';
     recipients.
   </p>
 
-  <h2>9. Limitation of Liability</h2>
+  <h2>12. Limitation of Liability</h2>
   <p>
     A certificate draft is a mathematical record of a digital state. It is not a guarantee of
     physical truth, accuracy of content, or legal standing. FactLockCam documents that a file
@@ -84,7 +180,7 @@ import LegalLayout from '../layouts/LegalLayout.astro';
     file.
   </p>
 
-  <h2>10. Service Availability</h2>
+  <h2>13. Service Availability</h2>
   <p>
     Services are provided &quot;as is&quot;. FactLockCam is not liable for blockchain network
     congestion, device-level hardware failure, or third-party service interruptions that may affect

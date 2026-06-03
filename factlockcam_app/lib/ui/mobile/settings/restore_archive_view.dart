@@ -126,9 +126,10 @@ class _RestoreArchiveViewState extends ConsumerState<RestoreArchiveView> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Cryptographic keys were removed from this device. '
-                        'Import your .factlock backup and enter your backup password '
-                        'to resume archive operations.',
+                        'Cryptographic keys were removed from this device (Lock) or '
+                        'the app was reinstalled. Import your .factlock backup and '
+                        'enter your backup password. After reinstall, sign in with the '
+                        'same email first, then import here to read cloud ciphertext.',
                         textAlign: TextAlign.center,
                         style: AppTextStyles.monoSm(
                           color: AppColors.starkWhite.withValues(alpha: 0.8),

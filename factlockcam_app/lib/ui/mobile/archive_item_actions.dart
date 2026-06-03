@@ -12,11 +12,10 @@ import '../../core/marketing/approved_pitch.dart';
 import '../../core/archive/presentation/widgets/universal_asset_toolbar.dart';
 import '../../core/di/service_providers.dart';
 import '../../data/models/archive_item.dart';
-import '../controllers/dashboard_controller.dart';
 import '../../features/archive/presentation/providers/send_proof_provider.dart';
+import '../../features/archive_quota/presentation/interceptors/archive_quota_paywall.dart';
 import '../../features/archive_quota/presentation/interceptors/metering_credit_interceptor.dart';
 import 'archive_media_download.dart';
-import 'archive/providers/thumbnail_cache_provider.dart';
 import 'archive_photo_view.dart';
 import 'archive_video_view.dart';
 
@@ -176,6 +175,11 @@ class ArchiveItemActions {
     if (form.password.isEmpty) {
       if (!context.mounted) return;
       await _showErrorDialog(context, 'Recipient password is required.');
+      return;
+    }
+
+    if (!context.mounted) return;
+    if (!await ensureArchiveQuotaForSendProof(context, ref)) {
       return;
     }
 

@@ -9,6 +9,8 @@ summary: "Authoritative May 2026 baseline: verified hub/archive/capture workflow
 
 As of this baseline, the **primary product workflow is verified end-to-end** on hosted Supabase: **logon** → **archive hub** → **capture or browse** → sealed assets with remote proof when online.
 
+- **Twentieth structural pass 2026-06-03**: **Key custody scenario matrix** — keys-only `.factlock` backup; Lock vs uninstall vs Burn; hosted Terms/Privacy/Support deployed; in-app `disclaimers.dart` + Account/Burn/Restore/onboarding UX; user **QA passed**; **82/82** tests ([[Data_Custody_And_Backup_Model_2026]]).
+- **Nineteenth structural pass 2026-06-03**: **Archive subscription foundation** — local SQLite quota pre-flight (`LocalArchiveQuotaGate`), free-tier 50 MB video stop, subscription onboarding + paywall disclaimer, compliant tier display names ([[Archive_Subscription_Tiers_2026]]).
 - **Eighteenth structural pass 2026-06-03**: **Compliance refactor** — `/archive` hub route, `disclaimers.dart`, UI `ArchiveHomeView` / `lib/ui/mobile/archive/`, marketing ban test, Account key-custody dialog UX; **74/74** tests ([[Compliance_Refactor_2026-06]]).
 - **Seventeenth structural pass 2026-06-02**: **Dual-layer Archive quota & credit metering** — byte layer (`archive_quotas`, `QuotaTelemetryWidget`, mock paywall) + credit layer (`subscription_cycles`, `quotaStateProvider`, camera gas gauge, Egress Pass badge, Verification Credit modal); migrations pushed hosted; device QA pass; `flutter test` **72/72** ([[Archive_Quota_Telemetry_2026-06]]).
 - **Sixteenth QA pass 2026-05-30**: **Archive owner UX** — Download Media (decrypt + share sheet), Send Proof password-only with certificate title/description from asset metadata, **View/Play media** labels, chronology **⋯** action sheet; debug `enableProofLinks` when archive URL set; **55/55** tests ([[Archive_Owner_UX_2026-05]]).
@@ -51,7 +53,8 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 
 ### Still not product-complete (pointers)
 
-- **Archive quota wiring:** Byte + credit UI and schema landed; production billing (StoreKit/Stripe), `VaultSyncCoordinator` storage increment, and byte-layer capture/Send Proof interceptors remain follow-ups ([[Archive_Quota_Telemetry_2026-06]]).
+- **Hosted legal deploy:** Terms/Privacy corrected for `.factlock` vs cloud ciphertext ([[Data_Custody_And_Backup_Model_2026]]); deploy FactLockCam_Site so production URLs match.
+- **Archive quota wiring:** Local pre-flight + camera/Send Proof interceptors landed nineteenth pass ([[Archive_Subscription_Tiers_2026]]); production billing (StoreKit), `VaultSyncCoordinator` storage increment RPC remain follow-ups ([[Archive_Quota_Telemetry_2026-06]]).
 - **Relayer wallet ops:** Active payer is a funded hot wallet (`RELAYER_PRIVATE_KEY` in Supabase secrets); rotate or fund as needed — not the user's profile EVM address ([[Polygon_Mainnet_Wiring_2026-05]]).
 - **Hardware-backed signing:** **Device** `signHash` uses Secure Enclave / Keystore (fifteenth QA); EVM wallet remains software-keyed in Secure Storage. Server-side P-256 verify of `device_signature` is follow-up.
 - **Courier / Send Proof:** Certificate PDF + courier package + share sheet wired; recipient unlock on **`archive.factlockcam.com/courier`** (Flutter courier-only deploy). Bind custom domain in Cloudflare Pages before App Store review ([[Web_Deployment_Architecture_2026-05]], [[Send_Proof_Courier_2026-05]]).

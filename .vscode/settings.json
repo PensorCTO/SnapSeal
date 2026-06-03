@@ -1,7 +1,10 @@
 {
-  "deno.enablePaths": [
-    "supabase/functions"
-  ],
+  "dart.enableSdkFormatter": true,
+  "dart.projectSearchPaths": ["factlockcam_app"],
+  "dart.analysisServerFoldingPreserved": true,
+  "deno.enable": true,
+  "deno.enablePaths": ["supabase/functions"],
+  "deno.config": "./supabase/functions/deno.json",
   "deno.lint": true,
   "deno.unstable": [
     "bare-node-builtins",
@@ -20,5 +23,9 @@
   ],
   "[typescript]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "files.watcherExclude": {
+    "**/factlockcam_app/build/**": true,
+    "**/projects/FactLockCam_Site/dist/**": true
   }
 }

@@ -44,4 +44,6 @@ class VaultDatabase {
   Future<void> deleteAll() async {}
 
   Future<int> deleteArchiveItem(String assetFingerprint) async => 0;
+
+  Future<int> sumLocalByteLength() async => 0;
 }

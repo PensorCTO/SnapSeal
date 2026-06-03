@@ -21,7 +21,31 @@ const String epistemicIntegrityDisclaimer =
 const String sovereignKeyCustodyDisclaimer =
     'You hold the only keys that decrypt your archive. FactLockCam cannot access '
     'your unencrypted files, reset your private keys, or recover lost archives '
-    'if you lose your device keys or .factlock backup.';
+    'if you lose your device keys or .factlock backup. Burning your account '
+    'permanently destroys that identity and its cloud data—a prior .factlock '
+    'cannot restore a burned account.';
+
+/// Keys-only backup — not media from Supabase.
+const String keyBackupOnlyDisclaimer =
+    'The only backup you can create is a .factlock file (Export archive keys). '
+    'It contains your private decryption keys—not your photos or videos, and '
+    'not files downloaded from our servers.';
+
+/// Lock, uninstall, Burn, and key-loss outcomes (consumer summary).
+const String keyCustodyScenarioSummary =
+    'Losing your keys without a .factlock backup means permanent loss of access '
+    'to all encrypted assets, local and cloud. Lock removes keys from this device '
+    'but keeps local sealed files—import .factlock to unlock. Reinstalling the app '
+    'removes local keys; sign in and import .factlock to read cloud ciphertext again. '
+    'Burn Account deletes your account, cloud archive, and local keys—a .factlock '
+    'from before Burn cannot restore that account. Re-export .factlock periodically '
+    'or before Lock, reinstall, or device replacement.';
+
+/// Burn account — irreversible destruction.
+const String burnAccountDisclaimer =
+    'Burn Account permanently deletes your Supabase identity, linked cloud '
+    'ciphertext, local archive files, and cryptographic keys on this device. '
+    'A .factlock backup cannot resurrect a burned account or its cloud archive.';
 
 /// Polygon mainnet / relay — no uptime or gas SLA.
 const String polygonNetworkDisclaimer =
@@ -35,21 +59,48 @@ const String hardwareCapabilityDisclaimer =
     'signing (Secure Enclave or Keystore). Web and simulator builds do not '
     'originate device seals.';
 
-/// Short logon footnote combining epistemic + key custody.
-const String logonComplianceFootnote =
-    '$epistemicIntegrityDisclaimer $sovereignKeyCustodyDisclaimer';
-
-/// Account panel block — key custody, epistemic, Polygon.
-const String accountKeyCustodyBlock =
-    'KEY CUSTODY & LIMITS\n\n'
-    '$sovereignKeyCustodyDisclaimer\n\n'
-    '$epistemicIntegrityDisclaimer\n\n'
-    '$polygonNetworkDisclaimer';
+/// Subscription tiers — bandwidth only; no key recovery or escrow.
+const String archiveSubscriptionTierDisclaimer =
+    'Higher tiers provide larger bandwidth pipelines, but zero data recovery. '
+    'FactLockCam cannot restore lost keys or decrypt your archive.';
 
 /// Restore / brick screen — non-recovery emphasis.
 const String restoreKeyCustodyDisclaimer =
     'Without your .factlock backup and backup password, FactLockCam cannot '
-    'restore cryptographic keys or decrypt your archive on this device.';
+    'restore cryptographic keys or decrypt your archive on this device. '
+    'After reinstall, sign in with the same email, then import .factlock here.';
+
+/// Export keys dialog helper.
+const String exportArchiveKeysDisclaimer =
+    '$keyBackupOnlyDisclaimer Re-export after Lock, before uninstall or device '
+    'replacement, or periodically.';
+
+/// Short logon footnote combining epistemic + key custody.
+const String logonComplianceFootnote =
+    '$epistemicIntegrityDisclaimer $sovereignKeyCustodyDisclaimer';
+
+/// First-run onboarding: epistemic + custody + scenarios + subscription limits.
+const List<String> archiveOnboardingParagraphs = [
+  epistemicIntegrityDisclaimer,
+  sovereignKeyCustodyDisclaimer,
+  keyCustodyScenarioSummary,
+  archiveSubscriptionTierDisclaimer,
+];
+
+/// Lock Archive confirmation (keys purged; local seals remain).
+const String lockArchiveDisclaimer =
+    'Lock Archive removes your cryptographic keys from this device. '
+    'Local sealed files remain. Import your .factlock backup and password '
+    'to unlock the app again. Cloud data for your account is unchanged.\n\n'
+    '$restoreKeyCustodyDisclaimer';
+
+/// Account panel block — key custody, epistemic, Polygon, scenarios.
+const String accountKeyCustodyBlock =
+    'KEY CUSTODY & LIMITS\n\n'
+    '$keyBackupOnlyDisclaimer\n\n'
+    '$keyCustodyScenarioSummary\n\n'
+    '$epistemicIntegrityDisclaimer\n\n'
+    '$polygonNetworkDisclaimer';
 
 /// Certificate PDF footer (consumer-safe, no FRE on every line).
 const String certificateEpistemicFooter =
@@ -61,10 +112,16 @@ const List<String> userVisibleComplianceStrings = [
   epistemicIntegrityShort,
   epistemicIntegrityDisclaimer,
   sovereignKeyCustodyDisclaimer,
+  keyBackupOnlyDisclaimer,
+  keyCustodyScenarioSummary,
+  burnAccountDisclaimer,
   polygonNetworkDisclaimer,
   hardwareCapabilityDisclaimer,
   logonComplianceFootnote,
   accountKeyCustodyBlock,
   restoreKeyCustodyDisclaimer,
+  exportArchiveKeysDisclaimer,
+  archiveSubscriptionTierDisclaimer,
+  lockArchiveDisclaimer,
   certificateEpistemicFooter,
 ];

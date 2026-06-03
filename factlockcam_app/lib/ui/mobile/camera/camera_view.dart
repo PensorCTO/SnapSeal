@@ -15,11 +15,11 @@ import '../../../core/ui/widgets/archive_panel_navigation_bar.dart';
 import '../../../core/ui/painters/reticle_painter.dart';
 import '../../../core/ui/painters/shutter_button_painter.dart';
 import '../../../data/supabase/auth_repository.dart';
-import '../../../domain/services/vault_service.dart';
-import '../../controllers/dashboard_controller.dart';
-import '../archive/providers/thumbnail_cache_provider.dart';
 import '../archive_home_view.dart';
+import '../../../features/archive_quota/presentation/interceptors/archive_quota_paywall.dart';
 import '../../../features/archive_quota/presentation/interceptors/metering_credit_interceptor.dart';
+import '../../../features/archive_quota/presentation/providers/local_archive_quota_gate_provider.dart';
+import '../../../features/archive_quota/presentation/interceptors/archive_quota_block_reason.dart';
 import 'acquisition_mode.dart';
 import 'camera_chrome_frame.dart';
 import 'camera_geolocation_stream.dart';
@@ -49,6 +49,9 @@ class CameraView extends ConsumerStatefulWidget {
 }
 
 class _CameraViewState extends ConsumerState<CameraView> {
+  /// Conservative in-recording estimate for high preset (~1.5 MB/s).
+  static const int _videoBytesPerSecondEstimate = 1500000;
+
   CameraController? _controller;
   bool _isInitializing = true;
   int _archivingCount = 0;
@@ -57,6 +60,9 @@ class _CameraViewState extends ConsumerState<CameraView> {
   int _verifiedFlashTrigger = 0;
   String? _errorMessage;
   final CameraGeolocationStream _geolocation = CameraGeolocationStream();
+  Timer? _recordingQuotaTimer;
+  DateTime? _recordingStartedAt;
+  bool _stoppingForQuotaCap = false;
 
   @override
   void initState() {
@@ -140,6 +146,14 @@ class _CameraViewState extends ConsumerState<CameraView> {
     try {
       final xfile = await controller.takePicture();
       final bufferedBytes = await xfile.readAsBytes();
+      if (!mounted) return;
+      if (!await ensureArchiveQuotaForSeal(
+        context,
+        ref,
+        incomingBytes: bufferedBytes.length,
+      )) {
+        return;
+      }
       unawaited(_sealCapturedFile(xfile, bufferedBytes: bufferedBytes));
     } catch (error) {
       if (!mounted) return;
@@ -165,8 +179,17 @@ class _CameraViewState extends ConsumerState<CameraView> {
     }
 
     try {
+      if (!await ensureArchiveQuotaForSeal(context, ref, incomingBytes: 1)) {
+        return;
+      }
       await controller.startVideoRecording();
       if (!mounted) return;
+      _recordingStartedAt = DateTime.now();
+      _recordingQuotaTimer?.cancel();
+      _recordingQuotaTimer = Timer.periodic(
+        const Duration(milliseconds: 400),
+        (_) => unawaited(_pollVideoRecordingQuota()),
+      );
       setState(() {
         _isRecording = true;
         _errorMessage = null;
@@ -191,6 +214,8 @@ class _CameraViewState extends ConsumerState<CameraView> {
     });
 
     try {
+      _recordingQuotaTimer?.cancel();
+      _recordingQuotaTimer = null;
       final xfile = await controller.stopVideoRecording();
       final bufferedBytes = await xfile.readAsBytes();
       if (!mounted) return;
@@ -198,6 +223,17 @@ class _CameraViewState extends ConsumerState<CameraView> {
         _isRecording = false;
         _isCapturing = false;
       });
+      if (_stoppingForQuotaCap) {
+        _stoppingForQuotaCap = false;
+        return;
+      }
+      if (!await ensureArchiveQuotaForSeal(
+        context,
+        ref,
+        incomingBytes: bufferedBytes.length,
+      )) {
+        return;
+      }
       unawaited(_sealCapturedFile(xfile, bufferedBytes: bufferedBytes));
     } catch (error) {
       if (!mounted) return;
@@ -207,6 +243,61 @@ class _CameraViewState extends ConsumerState<CameraView> {
         _isCapturing = false;
       });
     }
+  }
+
+  Future<void> _pollVideoRecordingQuota() async {
+    if (!mounted || !_isRecording || _stoppingForQuotaCap) return;
+    if (widget.mode != AcquisitionMode.video) return;
+
+    final snapshot = ref.read(archiveQuotaNotifierProvider).value;
+    final gate = ref.read(localArchiveQuotaGateProvider);
+    if (!gate.isFreeTier(snapshot)) return;
+
+    final cap = gate.maxSingleCaptureBytes(snapshot);
+    final started = _recordingStartedAt;
+    if (started == null) return;
+
+    final elapsedSeconds =
+        DateTime.now().difference(started).inMilliseconds / 1000.0;
+    final estimatedBytes =
+        (elapsedSeconds * _videoBytesPerSecondEstimate).round();
+    if (estimatedBytes < cap) return;
+
+    await _stopVideoAtQuotaCap();
+  }
+
+  Future<void> _stopVideoAtQuotaCap() async {
+    if (_stoppingForQuotaCap || !_isRecording) return;
+    _stoppingForQuotaCap = true;
+    _recordingQuotaTimer?.cancel();
+    _recordingQuotaTimer = null;
+
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) {
+      _stoppingForQuotaCap = false;
+      return;
+    }
+
+    try {
+      await controller.stopVideoRecording();
+    } catch (_) {
+      _stoppingForQuotaCap = false;
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _isRecording = false;
+      _isCapturing = false;
+      _recordingStartedAt = null;
+    });
+    _stoppingForQuotaCap = false;
+
+    await presentArchiveQuotaPaywall(
+      context,
+      ref,
+      reason: ArchiveQuotaBlockReason.singleCapture,
+    );
   }
 
   Future<void> _sealCapturedFile(
@@ -240,8 +331,16 @@ class _CameraViewState extends ConsumerState<CameraView> {
       await ref.read(dashboardControllerProvider.notifier).refreshArchive();
     } catch (error) {
       if (!mounted) return;
+      final message = error.toString();
+      if (message.contains('QuotaExceededException')) {
+        await presentArchiveQuotaPaywall(
+          context,
+          ref,
+          reason: ArchiveQuotaBlockReason.storage,
+        );
+      }
       setState(() {
-        _errorMessage = error.toString();
+        _errorMessage = message;
         _isRecording = false;
       });
     } finally {
@@ -255,6 +354,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
 
   @override
   void dispose() {
+    _recordingQuotaTimer?.cancel();
     unawaited(_geolocation.stop());
     final controller = _controller;
     final wasRecording = _isRecording;

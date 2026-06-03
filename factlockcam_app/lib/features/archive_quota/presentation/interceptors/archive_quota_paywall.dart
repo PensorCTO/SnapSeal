@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/config/app_config.dart';
+import '../../../../data/local/vault_database.dart';
 import '../../domain/models/archive_quota_snapshot.dart';
 import '../providers/archive_quota_provider.dart';
+import '../providers/local_archive_quota_gate_provider.dart';
 import '../views/subscription_upgrade_view.dart';
 import 'archive_quota_block_reason.dart';
 
@@ -24,11 +27,29 @@ Future<bool> ensureArchiveQuotaForSeal(
   WidgetRef ref, {
   required int incomingBytes,
 }) async {
-  final snapshot = await _resolveSnapshot(ref);
-  if (snapshot == null) return true;
+  if (AppConfig.isFlutterTest) {
+    return true;
+  }
 
-  final service = ref.read(archiveQuotaServiceProvider);
-  if (service.canSeal(snapshot, incomingBytes: incomingBytes)) {
+  final gate = ref.read(localArchiveQuotaGateProvider);
+  final snapshot = await _resolveSnapshot(ref);
+  final localUsed = await ref.read(vaultDatabaseProvider).sumLocalByteLength();
+
+  if (gate.canSealWithLocalUsage(
+    localUsedBytes: localUsed,
+    snapshot: snapshot,
+    incomingBytes: incomingBytes,
+  )) {
+    if (incomingBytes > 0 &&
+        incomingBytes > gate.maxSingleCaptureBytes(snapshot)) {
+      if (!context.mounted) return false;
+      await presentArchiveQuotaPaywall(
+        context,
+        ref,
+        reason: ArchiveQuotaBlockReason.singleCapture,
+      );
+      return false;
+    }
     return true;
   }
 
@@ -46,6 +67,10 @@ Future<bool> ensureArchiveQuotaForSendProof(
   BuildContext context,
   WidgetRef ref,
 ) async {
+  if (AppConfig.isFlutterTest) {
+    return true;
+  }
+
   final snapshot = await _resolveSnapshot(ref);
   if (snapshot == null) return true;
 

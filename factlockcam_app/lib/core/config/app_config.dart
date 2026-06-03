@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import 'generated_dart_defines.dart';
+import 'generated_dart_defines.stub.dart';
 import 'runtime_test_flag.dart';
 
 class AppConfig {

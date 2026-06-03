@@ -1,24 +1,20 @@
+import 'package:factlockcam/app/theme/app_colors.dart';
+import 'package:factlockcam/app/theme/app_typography.dart';
+import 'package:factlockcam/core/config/app_config.dart';
+import 'package:factlockcam/core/di/service_providers.dart';
+import 'package:factlockcam/core/legal/disclaimers.dart';
+import 'package:factlockcam/core/navigation/compliance_navigation.dart';
+import 'package:factlockcam/core/ui/widgets/archive_panel_navigation_bar.dart';
+import 'package:factlockcam/core/ui/widgets/heavy_metal_backdrop.dart';
+import 'package:factlockcam/core/ui/widgets/heavy_metal_hub_tile.dart';
+import 'package:factlockcam/features/archive_quota/presentation/widgets/quota_telemetry_widget.dart';
+import 'package:factlockcam/ui/mobile/settings/burn_account_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart' show Icons, Scaffold;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
-
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_typography.dart';
-import '../../../core/config/app_config.dart';
-import '../../../core/di/service_providers.dart';
-import '../../../core/navigation/compliance_navigation.dart';
-import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
-import '../../../core/ui/widgets/heavy_metal_hub_tile.dart';
-import '../../../core/legal/disclaimers.dart';
-import '../../../core/ui/widgets/archive_panel_navigation_bar.dart';
-import '../../../features/archive_quota/presentation/widgets/quota_telemetry_widget.dart';
-import '../../controllers/auth_controller.dart';
-import '../../controllers/dashboard_controller.dart';
-import '../settings/burn_account_view.dart';
-import 'providers/thumbnail_cache_provider.dart';
 
 /// Account & Settings panel — logout, key custody, account deletion, legal links.
 class AccountSettingsPanel extends ConsumerStatefulWidget {
@@ -51,8 +47,9 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
 
   Future<void> _signOut() async {
     await ref.read(authControllerProvider.notifier).signOut();
-    ref.invalidate(dashboardControllerProvider);
-    ref.invalidate(thumbnailCacheProvider);
+    ref
+      ..invalidate(dashboardControllerProvider)
+      ..invalidate(thumbnailCacheProvider);
   }
 
   Future<void> _exportArchiveKeys() async {
@@ -103,11 +100,7 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 8),
-                  const Text(
-                    'Create a strong one-time backup password. You will need this '
-                    'password to restore your keys from the .factlock file. '
-                    'FactLockCam cannot recover lost keys without your .factlock backup.',
-                  ),
+                  const Text(exportArchiveKeysDisclaimer),
                   const SizedBox(height: 12),
                   CupertinoTextField(
                     controller: passwordController,
@@ -190,11 +183,7 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
       context: context,
       builder: (context) => CupertinoAlertDialog(
         title: const Text('Lock Archive?'),
-        content: Text(
-          'This removes your cryptographic keys from this device. '
-          'You will need your .factlock backup file and password to open '
-          'the app again.\n\n$restoreKeyCustodyDisclaimer',
-        ),
+        content: const Text(lockArchiveDisclaimer),
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.of(context).pop(false),
@@ -235,9 +224,7 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
         title: const Text('Key custody & limits'),
         content: SingleChildScrollView(
           child: Text(
-            '$sovereignKeyCustodyDisclaimer\n\n'
-            '$epistemicIntegrityDisclaimer\n\n'
-            '$polygonNetworkDisclaimer',
+            accountKeyCustodyBlock,
             style: const TextStyle(fontSize: 13, height: 1.4),
           ),
         ),
@@ -254,12 +241,12 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
   Future<void> _showAlert(String title, String message) {
     return showCupertinoDialog<void>(
       context: context,
-      builder: (context) => CupertinoAlertDialog(
+      builder: (dialogContext) => CupertinoAlertDialog(
         title: Text(title),
         content: Text(message),
         actions: [
           CupertinoDialogAction(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('OK'),
           ),
         ],
@@ -303,9 +290,15 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
                           children: [
                             Expanded(
                               child: SingleChildScrollView(
-                                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                                padding: const EdgeInsets.fromLTRB(
+                                  20,
+                                  16,
+                                  20,
+                                  16,
+                                ),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     Text(
                                       'ACCOUNT & SETTINGS',
@@ -321,7 +314,8 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
                                     HeavyMetalHubTile(
                                       icon: Icons.description_outlined,
                                       label: 'Terms of Service',
-                                      subtitle: 'End-user license and usage terms',
+                                      subtitle:
+                                          'End-user license and usage terms',
                                       onTap: () => _openCompliancePage(
                                         AppConfig.termsUrl,
                                       ),
@@ -376,7 +370,12 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                              padding: const EdgeInsets.fromLTRB(
+                                20,
+                                8,
+                                20,
+                                24,
+                              ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [

@@ -62,6 +62,8 @@ class VaultService {
     Object? keyCustodyService,
     Object? isolateLockCoordinator,
     Object? journalRepository,
+    Object? localQuotaGate,
+    Object? archiveQuotaService,
   });
 
   Future<String> sealAndStore(

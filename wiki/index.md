@@ -11,7 +11,9 @@ Read this page first when answering questions about the wiki.
 
 | Page | When to read |
 |------|----------------|
-| [[Compliance_Refactor_2026-06]] | **Eighteenth pass (2026-06-03)** — `/archive` route, `disclaimers.dart`, Archive UI rename, marketing compliance test, Account key-custody dialog UX; **74/74** tests; hosted ToS follow-up open |
+| [[Data_Custody_And_Backup_Model_2026]] | **Twentieth pass QA passed (2026-06-03)** — Keys-only `.factlock`; scenario matrix; hosted Terms deployed; **82/82** tests |
+| [[Archive_Subscription_Tiers_2026]] | **Nineteenth pass (2026-06-03)** — local SQLite quota pre-flight, free-tier 50 MB video stop, subscription onboarding + paywall disclaimer, compliant tier labels |
+| [[Compliance_Refactor_2026-06]] | **Eighteenth pass (2026-06-03)** — `/archive` route, `disclaimers.dart`, Archive UI rename, marketing compliance test, Account key-custody dialog UX |
 | [[Archive_Quota_Telemetry_2026-06]] | **Seventeenth pass (2026-06-02)** — dual-layer quota: byte telemetry + credit metering (gas gauge, Egress Pass, verification modal); **72/72** tests; migrations pushed |
 | [[Archive_Owner_UX_2026-05]] | **Sixteenth QA (2026-05-30)** — Download Media, Send Proof metadata, View/Play labels, debug proof-links gate |
 | [[App_Store_Hardening_2026-05]] | **Fifteenth QA (2026-05-30)** — manifest remediation: hardware signing, ENABLE_PROOF_LINKS gate, sync/delete/DI hardening, 55/55 tests |
@@ -32,6 +34,7 @@ Read this page first when answering questions about the wiki.
 
 ## Sources
 
+- [[Compliant_Subscription_Architecture_Source]] - App Store 3.1.1 three-tier Archive subscription spec (`raw/compliant_subscription_architecture.md`).
 - [[Sample_Source]] - Bootstrap source describing the LLM Wiki workflow.
 - [[ProofLock_Architectural_Manifest]] - ProofLock viability manifest and target system architecture (ingested raw source summary).
 - [[Project_Audit_2026-05-11_Source]] - Immutable 2026-05-11 repo vs wiki audit (`raw/project_audit_2026-05-11.md`); see [[Project_Audit_2026-05-11]].
@@ -45,6 +48,8 @@ Read this page first when answering questions about the wiki.
 - [[UI_Polish_Hub_Archive_2026-05]] - Eleventh QA: logo banner, Account heavy-metal tiles, chronology scroll fix.
 - [[App_Store_Remediation_2026-05]] - Tenth QA: App Store remediation, WEB_ARCHIVE_BASE_URL, courier archive indices, TestFlight-first.
 - [[Production_Transition_2026-05]] - Ninth QA: production config, courier lookup migrations, iOS compliance, test suite.
+- [[Data_Custody_And_Backup_Model_2026]] - Canonical backup/custody: device `.seal`, `.factlock` keys, cloud ciphertext (not user media backup).
+- [[Archive_Subscription_Tiers_2026]] - Three-tier subscription foundation: local-first gates, 50 MB free video cap, compliant tier names, legal onboarding (June 2026).
 - [[Archive_Quota_Telemetry_2026-06]] - Dual-layer Archive metering: byte storage/egress + credit pro proofs/verification credits; gas gauge, Egress Pass badge, paywall (June 2026, device QA).
 - [[Archive_Owner_UX_2026-05]] - Sixteenth QA: Download Media, certificate metadata from asset, View/Play labels, chronology actions icon.
 - [[Send_Proof_Courier_2026-05]] - Send Proof: certificate PDF + courier link; utility positioning; production web archive URL.

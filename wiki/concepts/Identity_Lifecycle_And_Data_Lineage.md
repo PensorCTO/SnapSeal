@@ -41,7 +41,7 @@ FactLockCam now treats **Supabase auth identity** (`auth.users` / `profiles.id`)
 
 ### Presentation
 
-- **`ArchiveGridItem`** — If legacy placeholder + missing local file → `RestoreArchiveBanner` (import encrypted backup via platform picker). If legacy but local file present → historical tile (media-type icon, no standard thumbnail pipeline).
+- **`ArchiveGridItem`** — If legacy placeholder + missing local file → `RestoreArchiveBanner` (import a **single sealed backup file** for that asset—not a `.factlock` key backup; see [[Data_Custody_And_Backup_Model_2026]]). If legacy but local file present → historical tile (media-type icon, no standard thumbnail pipeline).
 - **`OmniGridView`** — Wraps grid cells with `ArchiveGridItem`.
 
 ### Cursor rule

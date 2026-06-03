@@ -17,6 +17,7 @@ import 'package:video_thumbnail/video_thumbnail.dart' as video_thumbnail;
 
 import '../../application/vault/vault_sync_coordinator.dart';
 import '../../core/config/app_config.dart';
+import '../../core/errors/exceptions.dart';
 import '../../core/crypto/courier_crypto.dart';
 import '../../core/crypto/vault_encryption_handler.dart';
 import '../../core/di/locator.dart';
@@ -37,6 +38,9 @@ import '../blockchain/chain_notarizer.dart';
 import '../blockchain/vault_blockchain_handler.dart';
 import '../blockchain/wallet_service.dart';
 import '../../features/archive/application/proof_courier_service.dart';
+import '../../features/archive_quota/domain/models/archive_quota_snapshot.dart';
+import '../../features/archive_quota/domain/services/archive_quota_service.dart';
+import '../../features/archive_quota/domain/services/local_archive_quota_gate.dart';
 import 'proof_sync_notifier.dart';
 
 final vaultServiceProvider = Provider<VaultService>(
@@ -121,6 +125,8 @@ class VaultService {
     required KeyCustodyService keyCustodyService,
     required IsolateLockCoordinator isolateLockCoordinator,
     required JournalRepository journalRepository,
+    LocalArchiveQuotaGate? localQuotaGate,
+    ArchiveQuotaService? archiveQuotaService,
   }) : _database = database,
        _storage = storage,
        _secureStorage = secureStorage,
@@ -138,7 +144,9 @@ class VaultService {
        _vaultSyncCoordinator = vaultSyncCoordinator,
        _keyCustodyService = keyCustodyService,
        _isolateLockCoordinator = isolateLockCoordinator,
-       _journalRepository = journalRepository;
+       _journalRepository = journalRepository,
+       _localQuotaGate = localQuotaGate ?? const LocalArchiveQuotaGate(),
+       _archiveQuotaService = archiveQuotaService;
 
   static const _vaultKeyName = KeyStorageKeys.vaultAesKey;
   static const _legacyVaultKeyName = KeyStorageKeys.legacyVaultAesKey;
@@ -166,6 +174,8 @@ class VaultService {
   final KeyCustodyService _keyCustodyService;
   final IsolateLockCoordinator _isolateLockCoordinator;
   final JournalRepository _journalRepository;
+  final LocalArchiveQuotaGate _localQuotaGate;
+  final ArchiveQuotaService? _archiveQuotaService;
   Future<void>? _captureSealChain;
 
   static const _simulatedSignaturePrefix = 'SIMULATED_DEV|';
@@ -590,6 +600,7 @@ class VaultService {
   }) {
     final mimeType = _resolveCaptureMimeType(capturedFile.path, bufferedBytes);
     return _enqueueCaptureSeal(() async {
+      await _assertLocalQuotaForSeal(bufferedBytes.length);
       final path = capturedFile.path;
       try {
         final bundle = await _hashBytesInIsolate(bufferedBytes);
@@ -611,6 +622,35 @@ class VaultService {
         await _deleteTemporaryCapture(path);
       }
     });
+  }
+
+  Future<void> _assertLocalQuotaForSeal(int incomingBytes) async {
+    if (AppConfig.isFlutterTest) {
+      return;
+    }
+    final localUsed = await _database.sumLocalByteLength();
+    ArchiveQuotaSnapshot? snapshot;
+    final quotaService = _archiveQuotaService;
+    if (quotaService != null && quotaService.isConfigured) {
+      try {
+        snapshot = await quotaService.refresh();
+      } catch (_) {
+        snapshot = null;
+      }
+    }
+    if (!_localQuotaGate.canSealWithLocalUsage(
+      localUsedBytes: localUsed,
+      snapshot: snapshot,
+      incomingBytes: incomingBytes,
+    )) {
+      throw QuotaExceededException('Archive storage limit reached.');
+    }
+    if (incomingBytes > 0 &&
+        incomingBytes > _localQuotaGate.maxSingleCaptureBytes(snapshot)) {
+      throw QuotaExceededException(
+        'Asset exceeds tier single-capture limit.',
+      );
+    }
   }
 
   Future<String> createCourierPackage({

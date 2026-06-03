@@ -2,4 +2,5 @@
 enum ArchiveQuotaBlockReason {
   storage,
   egress,
+  singleCapture,
 }

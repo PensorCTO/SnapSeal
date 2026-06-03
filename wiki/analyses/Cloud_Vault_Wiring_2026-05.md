@@ -42,7 +42,9 @@ Camera UI → VaultService → VaultSyncCoordinator
 | Storage RLS | Owner upload scoped to `{auth.uid()}/…`; recipient read gated by unlock + download quota |
 | Remote sync | **21/21** migrations (local = remote) after push |
 
-**Distinct from Send Proof:** Owner-initiated courier sharing still uploads pre-sealed `.seal` blobs to **`courier-blobs`** via `ProofCourierService`. Cloud vault backs up **raw capture bytes** (re-encrypted for cloud envelope) for restore-after-rebuild.
+**Distinct from Send Proof:** Owner-initiated courier sharing still uploads pre-sealed `.seal` blobs to **`courier-blobs`** via `ProofCourierService`.
+
+**Not a user-facing media backup:** `factlock_vault` stores **blind ciphertext** for optional same-account re-sync after reinstall. Users do **not** download archive media from Supabase; recovery of *keys* requires a **`.factlock`** export ([[Data_Custody_And_Backup_Model_2026]]). Local `.seal` files remain the on-device archive the app displays.
 
 ### Flutter modules
 
@@ -82,6 +84,7 @@ Camera UI → VaultService → VaultSyncCoordinator
 
 ## Related Notes
 
+* [[Data_Custody_And_Backup_Model_2026]]
 * [[Send_Proof_Courier_2026-05]]
 * [[Production_Transition_2026-05]]
 * [[Identity_Lifecycle_And_Data_Lineage]]

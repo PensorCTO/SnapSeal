@@ -54,9 +54,22 @@ import LegalLayout from '../layouts/LegalLayout.astro';
   <h2>7. Non-Custodial Security Policy</h2>
   <p>
     Because FactLockCam is non-custodial and operates on zero-knowledge principles, we do not store
-    your encryption keys or credentials. Consequently, we cannot reset passwords or recover
-    accounts. Users are solely responsible for maintaining access to their credentials and backing
-    up their encrypted assets.
+    your encryption keys or backup passwords. We cannot reset passwords or decrypt your archive.
+    Sealed media is stored on your device as encrypted <code>.seal</code> files; optional cloud sync
+    holds ciphertext we cannot read and is not a downloadable photo library.
+  </p>
+  <p>
+    Your <strong>only</strong> user-managed backup is a <strong>.factlock</strong> file (Export archive
+    keys)—sovereign decryption keys, not media from our servers. Losing keys without
+    <strong>.factlock</strong> means permanent loss of access to all encrypted assets, local and cloud.
+  </p>
+  <p>
+    <strong>Lock Archive</strong> removes keys from the device but leaves local sealed files; import
+    <strong>.factlock</strong> to unlock. <strong>App uninstall</strong> removes local keys; after
+    reinstall, sign in and import <strong>.factlock</strong> to read cloud ciphertext for the same
+    account. <strong>Burn Account</strong> deletes your identity, cloud data, local archive, and keys—a
+    prior <strong>.factlock</strong> cannot restore a burned account. See our
+    <a href="/terms">Terms of Service</a> for the full scenario table.
   </p>
 
   <h2>8. Location Data</h2>

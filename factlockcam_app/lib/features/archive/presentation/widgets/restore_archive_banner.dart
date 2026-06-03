@@ -36,7 +36,8 @@ class RestoreArchiveBanner extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Import encrypted backup to rehydrate this asset.',
+                'Import a sealed backup file for this asset (.seal). '
+                'For lost keys, use Account → Export archive keys.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.monoSm(
                   color: AppColors.starkWhite.withValues(alpha: 0.7),

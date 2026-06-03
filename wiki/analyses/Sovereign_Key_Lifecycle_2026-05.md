@@ -11,7 +11,9 @@ summary: "Thirteenth QA pass (2026-05-29): multi-key .factlock backup, zero-know
 
 ### Multi-key custody model
 
-Both sovereign keys travel together through backup, brick, and restore:
+Both sovereign keys travel together through **`.factlock` key backup** (keys only—never Supabase media), brick, and restore. See scenario matrix: [[Data_Custody_And_Backup_Model_2026]].
+
+**Lock ≠ Burn:** Lock purges keys only; local `.seal` remain. Burn deletes account + cloud + local wallet; prior `.factlock` cannot restore that identity.
 
 | Key | FlutterSecureStorage | Role |
 |-----|----------------------|------|
@@ -24,12 +26,13 @@ Bricking only the EVM key leaves archive bytes decryptable from Keychain; restor
 
 - **Inner payload** (AES-GCM encrypted): `{ version, evm_key, vault_key }`.
 - **Outer envelope**: PBKDF2 (100k iter) + AES-GCM + HMAC-SHA256 MAC over `salt || iv || ciphertext`.
-- **Export UX**: Account → Export archive keys → share sheet (`share_plus`).
+- **Export UX**: Account → Export archive keys → share sheet (`share_plus`). This exports **keys only**—not photo/video files from cloud storage ([[Data_Custody_And_Backup_Model_2026]]).
 - **Import UX**: `/restore` bricked shell → native document picker (`pickFactlockBackupBytes`) → password → rehydrate both keys.
 
 ### Zero-knowledge lock (brick)
 
 - Pre-flight: `BackupMetadataStore` requires at least one successful export on device.
+- **Re-export:** After Lock prep, reinstall prep, or periodically—not after each capture (archive AES key stable per install).
 - `AppLockCoordinator.lockArchive()` deletes both keys with retry; no SharedPreferences brick flag.
 - Supabase session remains; `keyCustodyProvider` + stable `GoRouter` `refreshListenable` redirect to `/restore`.
 
@@ -66,6 +69,7 @@ Bricking only the EVM key leaves archive bytes decryptable from Keychain; restor
 
 ## Related Notes
 
+* [[Data_Custody_And_Backup_Model_2026]]
 * [[Identity_Lifecycle_And_Data_Lineage]]
 * [[App_Store_Prep_Capture_Seal_2026-05]]
 * [[UI_Polish_Hub_Archive_2026-05]]

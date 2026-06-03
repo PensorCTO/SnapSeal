@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme/app_colors.dart';
+import '../../features/archive_quota/presentation/views/archive_subscription_onboarding_sheet.dart';
 import '../../app/theme/app_typography.dart';
 import '../../data/supabase/auth_repository.dart';
 import '../controllers/key_custody_provider.dart';
@@ -31,6 +34,23 @@ class ArchiveHomeView extends ConsumerStatefulWidget {
 
 class _ArchiveHomeViewState extends ConsumerState<ArchiveHomeView> {
   int _selectedIndex = 0;
+  bool _onboardingScheduled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowOnboarding());
+    }
+  }
+
+  Future<void> _maybeShowOnboarding() async {
+    if (_onboardingScheduled || !mounted) return;
+    final session = ref.read(authRepositoryProvider).currentSession;
+    if (session == null) return;
+    _onboardingScheduled = true;
+    await showArchiveSubscriptionOnboardingIfNeeded(context);
+  }
 
   void _returnToHub() {
     setState(() {

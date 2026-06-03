@@ -19,12 +19,14 @@ resolve_wrangler() {
     echo "$bin"
     return
   fi
-  if [[ -d "$SITE_DIR/node_modules/wrangler" ]]; then
-    echo "npx --prefix $SITE_DIR wrangler"
-    return
-  fi
-  echo ""
+  echo "npx --prefix $SITE_DIR wrangler"
 }
+
+if [[ ! -d "$SITE_DIR" ]]; then
+  echo "Site directory not found: $SITE_DIR" >&2
+  echo "Run from repo root: bash scripts/deploy_factlockcam_site_cf.sh" >&2
+  exit 1
+fi
 
 echo "==> Building FactLockCam marketing site"
 (
@@ -33,13 +35,11 @@ echo "==> Building FactLockCam marketing site"
 )
 
 WRANGLER="$(resolve_wrangler)"
-if [[ -z "$WRANGLER" ]]; then
-  echo "Wrangler not found. Run: cd projects/FactLockCam_Site && npm install" >&2
-  exit 1
-fi
 
 if [[ ! -d "$PAYLOAD" ]]; then
   echo "Missing deploy payload: $PAYLOAD" >&2
+  echo "Build first: (cd \"$SITE_DIR\" && npm run build)" >&2
+  echo "Do not deploy from factlockcam_app — dist lives under projects/FactLockCam_Site/dist" >&2
   exit 1
 fi
 

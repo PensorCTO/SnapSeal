@@ -212,12 +212,14 @@ serve(async (req) => {
 
     const feeData = await provider.getFeeData();
     const maxPriorityFeePerGas = ethers.utils.parseUnits("40", "gwei");
+    const baseFee = feeData.lastBaseFeePerGas ?? feeData.gasPrice;
+    if (!baseFee) {
+      throw new Error("Polygon RPC returned no fee data");
+    }
 
     const tx = await contract.notarize(fileHashBytes32, {
       maxPriorityFeePerGas,
-      maxFeePerGas: feeData.lastBaseFeePerGas
-        .mul(2)
-        .add(maxPriorityFeePerGas),
+      maxFeePerGas: baseFee.mul(2).add(maxPriorityFeePerGas),
     });
 
     txHash = tx.hash;

@@ -7,6 +7,27 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 ## 2026-06-03
 
+- **Twentieth pass — Key custody scenario matrix** (legal + wiki) — **user QA passed**:
+  - **Model:** Keys-only `.factlock` backup; losing keys = total loss; Lock (keys purged, local `.seal` remain) vs uninstall (reimport keys for cloud) vs Burn (account + cloud destroyed, prior `.factlock` useless).
+  - **Wiki:** [[Data_Custody_And_Backup_Model_2026]] — canonical scenario table, Lock vs Burn, re-export cadence, implementation anchors.
+  - **App:** `disclaimers.dart` (`keyBackupOnlyDisclaimer`, `keyCustodyScenarioSummary`, `lockArchiveDisclaimer`, `archiveOnboardingParagraphs`); `LegalDisclosureColumn`; `account_settings_panel` package imports + `service_providers` exports; `app_config` → `generated_dart_defines.stub.dart`; `vault_service_web` quota params for analyzer parity.
+  - **Hosted:** Terms §6–9 (keys-only, scenario table, Burn irreversible), Privacy §7, Support FAQs — deployed via `scripts/deploy_factlockcam_site_cf.sh` (Cloudflare Pages `factlockcam`).
+  - **Edge:** `supabase/functions/deno.json`; `anchor-relay` fee-data null guard.
+  - **Tests:** **82/82** `flutter test`; `flutter analyze` clean.
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
+- **Legal QA — backup/custody copy correction** (merged into twentieth pass):
+  - Removed “back up encrypted assets”; distinguished `.seal`, `.factlock`, blind `factlock_vault` ciphertext.
+
+- **Nineteenth pass — Three-Tiered Archive Subscription Foundation**:
+  - **Raw:** `raw/compliant_subscription_architecture.md` ingested → [[Compliant_Subscription_Architecture_Source]].
+  - **Skill:** `docs/skills/SKILL_IMPLEMENT_ARCHIVE_SUBSCRIPTIONS.md`.
+  - **Supabase:** `20260603120000_archive_tiers_compliant_labels.sql` — compliant display names, `max_single_capture_bytes`, `get_my_archive_quota` JSON.
+  - **Flutter:** `LocalArchiveQuotaGate`, `VaultDatabase.sumLocalByteLength()`, camera/send-proof/seal pre-flight, free-tier video 50 MB heuristic stop, `ArchiveSubscriptionOnboardingSheet`, subscription disclaimer on paywall.
+  - **Tests:** **80/80** `flutter test`.
+  - **Wiki:** [[Archive_Subscription_Tiers_2026]]; refreshed index, overview, glossary.
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 - **Eighteenth pass — compliance refactor (A + B + C)** — user-confirmed device QA after Account panel fix:
   - **Copy:** `disclaimers.dart` — epistemic integrity, sovereign key custody, Polygon no-SLA; certificate PDF footer; logon, restore, capture HUD, inspector, burn scoped to account.
   - **Routing:** Canonical **`/archive`** (`ArchiveHomeView`); legacy **`/vault-home`**, **`/vault-dashboard`**, **`/camera`** redirect.

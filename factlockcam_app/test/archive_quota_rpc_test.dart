@@ -15,6 +15,7 @@ void main() {
     'egress_limit_bytes': 3221225472,
     'egress_period_start': '2026-06-01T00:00:00.000Z',
     'monthly_price_cents': 0,
+    'max_single_capture_bytes': 52428800,
     'updated_at': '2026-06-02T12:00:00.000Z',
     'storage_pct': 0.0,
     'egress_pct': 0.0,

@@ -32,7 +32,12 @@ export '../../features/archive/data/archive_repository.dart'
     show archiveRepositoryProvider, archiveAssetManifestProvider;
 export '../../features/identity/presentation/providers/current_profile_provider.dart'
     show currentProfileProvider;
+export '../../ui/controllers/auth_controller.dart' show authControllerProvider;
+export '../../ui/controllers/dashboard_controller.dart'
+    show dashboardControllerProvider;
 export '../../ui/controllers/key_custody_provider.dart' show keyCustodyProvider;
+export '../../ui/mobile/archive/providers/thumbnail_cache_provider.dart'
+    show thumbnailCacheProvider;
 
 /// ProofLock-facing bridge for archive interactions.
 ///
