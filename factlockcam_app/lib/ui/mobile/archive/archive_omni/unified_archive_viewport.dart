@@ -8,7 +8,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/services/haptic_service.dart';
 import '../../../../core/ui/widgets/heavy_metal_backdrop.dart';
-import '../../../../core/ui/widgets/vault_panel_navigation_bar.dart';
+import '../../../../core/ui/widgets/archive_panel_navigation_bar.dart';
 import '../../../../data/models/archive_item.dart';
 import '../../../controllers/dashboard_controller.dart';
 import '../../archive_item_actions.dart';
@@ -97,7 +97,7 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
         child: Column(
           children: [
             if (widget.onBackToHub != null)
-              VaultPanelNavigationBar(
+              ArchivePanelNavigationBar(
                 title: 'Archive',
                 onBack: widget.onBackToHub!,
               ),

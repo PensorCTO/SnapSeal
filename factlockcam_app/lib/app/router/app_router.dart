@@ -5,10 +5,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../ui/controllers/auth_controller.dart';
 import '../../ui/controllers/key_custody_provider.dart';
+import '../../ui/mobile/archive_home_view.dart';
 import '../../ui/mobile/logon_view.dart';
 import '../../ui/mobile/settings/burn_account_view.dart';
 import '../../ui/mobile/settings/restore_archive_view.dart';
-import '../../ui/mobile/vault_home_view.dart';
 import '../../ui/web/courier_unlock_view.dart';
 import '../../ui/web/web_archive_gate_view.dart';
 
@@ -42,9 +42,14 @@ class AppRouterRefreshNotifier extends ChangeNotifier {
     final isOnBurn = location == BurnAccountView.routePath;
     const cameraRoutePath = '/camera';
     final isCaptureRoute = location == cameraRoutePath;
+    final isLegacyVaultHome =
+        location == ArchiveHomeView.legacyVaultHomePath;
+    final isLegacyVaultDashboard = location == '/vault-dashboard';
 
-    if (isCaptureRoute) {
-      return VaultHomeView.routePath;
+    if (isCaptureRoute ||
+        isLegacyVaultHome ||
+        isLegacyVaultDashboard) {
+      return ArchiveHomeView.routePath;
     }
 
     final custody = _ref.read(keyCustodyProvider);
@@ -67,11 +72,11 @@ class AppRouterRefreshNotifier extends ChangeNotifier {
     }
 
     if (isAuthenticated && !keysMissing && isOnRestore) {
-      return VaultHomeView.routePath;
+      return ArchiveHomeView.routePath;
     }
 
     if (isAuthenticated && isOnLogon) {
-      return VaultHomeView.routePath;
+      return ArchiveHomeView.routePath;
     }
 
     if (!isAuthenticated && !isOnLogon && !isCourierRoute) {
@@ -109,11 +114,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/vault-dashboard',
-        redirect: (_, _) => VaultHomeView.routePath,
+        redirect: (_, _) => ArchiveHomeView.routePath,
       ),
       GoRoute(
-        path: VaultHomeView.routePath,
-        builder: (context, state) => const VaultHomeView(),
+        path: ArchiveHomeView.legacyVaultHomePath,
+        redirect: (_, _) => ArchiveHomeView.routePath,
+      ),
+      GoRoute(
+        path: ArchiveHomeView.routePath,
+        builder: (context, state) => const ArchiveHomeView(),
       ),
       GoRoute(
         path: RestoreArchiveView.routePath,
@@ -125,7 +134,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/camera',
-        redirect: (_, _) => VaultHomeView.routePath,
+        redirect: (_, _) => ArchiveHomeView.routePath,
       ),
       GoRoute(
         path: CourierUnlockView.routePath,

@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_typography.dart';
 import '../../core/config/app_config.dart';
+import '../../core/legal/disclaimers.dart';
 import '../../core/marketing/approved_pitch.dart';
 import '../../core/services/haptic_service.dart';
 import '../../core/ui/widgets/heavy_metal_backdrop.dart';
@@ -104,6 +105,16 @@ class _LogonViewState extends ConsumerState<LogonView>
         style: TextStyle(
           fontSize: 15,
           color: AppColors.starkWhite.withValues(alpha: 0.78),
+        ),
+      ),
+      const SizedBox(height: 12),
+      Text(
+        logonComplianceFootnote,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 12,
+          height: 1.4,
+          color: AppColors.starkWhite.withValues(alpha: 0.55),
         ),
       ),
       const SizedBox(height: 20),

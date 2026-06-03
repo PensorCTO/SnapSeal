@@ -46,6 +46,8 @@ $ledgerTxLine
 Captured At (UTC): ${item.createdAt.toUtc().toIso8601String()}
 Description: $description
 
+$certificateEpistemicFooter
+
 $fre902EvidencePackagingDisclaimer
 ''';
   }
@@ -253,6 +255,8 @@ Future<Uint8List> _buildCertificatePdf(_CertificatePdfInput input) async {
         ],
         pw.SizedBox(height: 24),
         pw.Divider(),
+        pw.SizedBox(height: 8),
+        pw.Text(certificateEpistemicFooter, style: mono),
         pw.SizedBox(height: 8),
         pw.Text(fre902EvidencePackagingDisclaimer, style: mono),
       ],

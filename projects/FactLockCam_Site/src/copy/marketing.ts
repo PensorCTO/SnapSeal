@@ -54,10 +54,10 @@ export const heroImageAlt = 'Decorative FactLockCam homepage background';
 export const panel1Title = 'Seal at capture';
 export const panel1Label = 'Verified Digital DNA on device';
 export const panel1Body =
-  'Every photo and video is sealed the instant you capture—local-first encrypted archive, hardware-backed signing, and a transactional journal that records prepare/commit integrity on your device.';
+  'Every photo and video is sealed the instant you capture—local-first encrypted archive, optional hardware-backed signing on supported iOS and Android devices, and a transactional journal that records prepare/commit integrity on your device.';
 export const panel1Bullets = [
   'Location + timestamp at seal',
-  'Secure Enclave · device-held keys',
+  'Hardware-backed signing on supported devices',
   'Transactional journal integrity',
 ] as const;
 
@@ -75,7 +75,7 @@ export const panel2Bullets = [
 export const whyHeadline = 'When a normal photo is not enough';
 
 export const whyBody =
-  'AI deepfakes and digital manipulation make it harder than ever to prove what really happened. For insurance claims, accident documentation, journalistic evidence, or protecting intellectual property, a standard smartphone photo is no longer enough. You need proof that a specific file existed in a specific form at a specific point in time—without any technical expertise.';
+  'AI deepfakes and digital manipulation make it harder to show that a specific file existed unchanged at a point in time. For insurance claims, accident documentation, journalistic evidence, or protecting intellectual property, a standard smartphone photo is no longer enough. FactLockCam provides a cryptographic snapshot and verifiable chain-of-custody for the capture—not a guarantee of physical truth.';
 
 export const whyUseCases = [
   'Insurance claims',
@@ -93,7 +93,7 @@ export const trustBody =
   'FactLockCam is built so you do not have to trust us. Sovereign, local-first architecture means we do not hold your keys and cannot access your unencrypted files. Your proof is not locked in a proprietary corporate database; it is anchored on an independent public record that others can verify independently.';
 
 export const trustDisclaimer =
-  'Local-first encrypted archive, transactional journal, and tamper-proof certificates—without promising flawless or indefinite security. Evidentiary and procedural details for professionals are in our Terms of Service.';
+  'Local-first encrypted archive, transactional journal, and tamper-proof certificates—without promising flawless or indefinite security. Seals certify file integrity, not the physical truth of the scene. Ledger notarization on Polygon mainnet has no uptime or gas SLA. Evidentiary and procedural details for professionals are in our Terms of Service.';
 
 export const footerTagline = 'Sovereign keys. Verifiable seal.';
 export const footerBlurb =

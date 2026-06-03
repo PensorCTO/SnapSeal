@@ -7,7 +7,7 @@ import '../../../app/theme/app_colors.dart';
 
 /// Canonical asset path for the Heavy Metal video backdrop.
 ///
-/// Both [VaultHomeView] and [LogonView] read this same file through
+/// Both [ArchiveHomeView] and [LogonView] read this same file through
 /// [HeavyMetalBackdropMixin]. The binary is bundled via the
 /// `assets/videos/` directory declaration in `pubspec.yaml`.
 const String kHeavyMetalBackdropAsset =
@@ -103,7 +103,7 @@ class HeavyMetalLogoBanner extends StatelessWidget {
   final Widget? child;
   final List<Widget> actions;
 
-  /// When `false`, omits [MediaQuery.padding.top] — use beneath [VaultPanelNavigationBar].
+  /// When `false`, omits [MediaQuery.padding.top] — use beneath [ArchivePanelNavigationBar].
   final bool includeTopSafeArea;
 
   @override

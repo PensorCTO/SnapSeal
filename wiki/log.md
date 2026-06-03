@@ -5,6 +5,18 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-06-03
+
+- **Eighteenth pass — compliance refactor (A + B + C)** — user-confirmed device QA after Account panel fix:
+  - **Copy:** `disclaimers.dart` — epistemic integrity, sovereign key custody, Polygon no-SLA; certificate PDF footer; logon, restore, capture HUD, inspector, burn scoped to account.
+  - **Routing:** Canonical **`/archive`** (`ArchiveHomeView`); legacy **`/vault-home`**, **`/vault-dashboard`**, **`/camera`** redirect.
+  - **UI:** `lib/ui/mobile/archive/` panel tree; `ArchivePanelNavigationBar`; Account **Key custody & limits** dialog tile; hub tiles without footnote clutter.
+  - **Marketing:** `marketing.ts` + `approved_pitch.dart`; `marketing_compliance_test.dart`.
+  - **Tests:** **74/74**.
+  - **Wiki:** [[Compliance_Refactor_2026-06]]; refreshed baseline, index, glossary, overview.
+  - **Open task:** Hosted **factlockcam.com** ToS/Privacy HTML (glossary + overview).
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 ## 2026-06-02
 
 - **Seventeenth pass — dual-layer Archive quota & credit metering** — user-confirmed device QA:

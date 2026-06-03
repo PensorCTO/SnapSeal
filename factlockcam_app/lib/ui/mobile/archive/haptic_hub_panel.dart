@@ -115,16 +115,20 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
                                       constraints.maxHeight * 1.1,
                               captureEnabled: !kIsWeb,
                               onArchive: () => _handleHubTap(
-                                () => widget.onHubDestinationSelected?.call(3),
+                                () =>
+                                    widget.onHubDestinationSelected?.call(3),
                               ),
                               onPicture: () => _handleHubTap(
-                                () => widget.onHubDestinationSelected?.call(1),
+                                () =>
+                                    widget.onHubDestinationSelected?.call(1),
                               ),
                               onVideo: () => _handleHubTap(
-                                () => widget.onHubDestinationSelected?.call(2),
+                                () =>
+                                    widget.onHubDestinationSelected?.call(2),
                               ),
                               onAccount: () => _handleHubTap(
-                                () => widget.onHubDestinationSelected?.call(4),
+                                () =>
+                                    widget.onHubDestinationSelected?.call(4),
                               ),
                             ),
                           ),

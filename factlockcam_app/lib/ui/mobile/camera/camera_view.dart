@@ -11,14 +11,14 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/di/service_providers.dart';
 import '../../../core/services/haptic_service.dart';
-import '../../../core/ui/widgets/vault_panel_navigation_bar.dart';
+import '../../../core/ui/widgets/archive_panel_navigation_bar.dart';
 import '../../../core/ui/painters/reticle_painter.dart';
 import '../../../core/ui/painters/shutter_button_painter.dart';
 import '../../../data/supabase/auth_repository.dart';
 import '../../../domain/services/vault_service.dart';
 import '../../controllers/dashboard_controller.dart';
-import '../vault/providers/thumbnail_cache_provider.dart';
-import '../vault_home_view.dart';
+import '../archive/providers/thumbnail_cache_provider.dart';
+import '../archive_home_view.dart';
 import '../../../features/archive_quota/presentation/interceptors/metering_credit_interceptor.dart';
 import 'acquisition_mode.dart';
 import 'camera_chrome_frame.dart';
@@ -295,7 +295,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
       } else if (context.canPop()) {
         context.pop();
       } else {
-        context.go(VaultHomeView.routePath);
+        context.go(ArchiveHomeView.routePath);
       }
     }
 
@@ -374,7 +374,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
     if (widget.onBackToHub != null) {
       return CupertinoPageScaffold(
         backgroundColor: Colors.black,
-        navigationBar: VaultPanelNavigationBar(
+        navigationBar: ArchivePanelNavigationBar(
           title: isVideo ? 'Video' : 'Picture',
           onBack: onBackPressed,
         ),

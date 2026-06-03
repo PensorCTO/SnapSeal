@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/di/service_providers.dart';
+import '../../../core/legal/disclaimers.dart';
 
 /// Bricked-state shell: import `.factlock` and rehydrate sovereign keys.
 class RestoreArchiveView extends ConsumerStatefulWidget {
@@ -131,6 +132,15 @@ class _RestoreArchiveViewState extends ConsumerState<RestoreArchiveView> {
                         textAlign: TextAlign.center,
                         style: AppTextStyles.monoSm(
                           color: AppColors.starkWhite.withValues(alpha: 0.8),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        restoreKeyCustodyDisclaimer,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.monoSm(
+                          color: AppColors.starkWhite.withValues(alpha: 0.65),
+                          height: 1.4,
                         ),
                       ),
                       const SizedBox(height: 28),

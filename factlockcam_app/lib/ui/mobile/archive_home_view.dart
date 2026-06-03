@@ -9,24 +9,27 @@ import '../../data/supabase/auth_repository.dart';
 import '../controllers/key_custody_provider.dart';
 import 'camera/acquisition_mode.dart';
 import 'camera/capture_panel.dart';
-import 'vault/account_settings_panel.dart';
-import 'vault/archive_omni/unified_archive_viewport.dart';
-import 'vault/haptic_hub_panel.dart';
+import 'archive/account_settings_panel.dart';
+import 'archive/archive_omni/unified_archive_viewport.dart';
+import 'archive/haptic_hub_panel.dart';
 
-/// Post-login vault shell.
+/// Post-login archive hub shell.
 ///
 /// Hosts an [IndexedStack] with hub + four destination panels. Navigation is
 /// hub-tile push and panel back buttons (no persistent bottom nav).
-class VaultHomeView extends ConsumerStatefulWidget {
-  const VaultHomeView({super.key});
+class ArchiveHomeView extends ConsumerStatefulWidget {
+  const ArchiveHomeView({super.key});
 
-  static const routePath = '/vault-home';
+  static const routePath = '/archive';
+
+  /// Legacy deep links and QA notes.
+  static const legacyVaultHomePath = '/vault-home';
 
   @override
-  ConsumerState<VaultHomeView> createState() => _VaultHomeViewState();
+  ConsumerState<ArchiveHomeView> createState() => _ArchiveHomeViewState();
 }
 
-class _VaultHomeViewState extends ConsumerState<VaultHomeView> {
+class _ArchiveHomeViewState extends ConsumerState<ArchiveHomeView> {
   int _selectedIndex = 0;
 
   void _returnToHub() {

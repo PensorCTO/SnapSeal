@@ -12,12 +12,13 @@ import '../../../core/di/service_providers.dart';
 import '../../../core/navigation/compliance_navigation.dart';
 import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
 import '../../../core/ui/widgets/heavy_metal_hub_tile.dart';
-import '../../../core/ui/widgets/vault_panel_navigation_bar.dart';
+import '../../../core/legal/disclaimers.dart';
+import '../../../core/ui/widgets/archive_panel_navigation_bar.dart';
 import '../../../features/archive_quota/presentation/widgets/quota_telemetry_widget.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/dashboard_controller.dart';
 import '../settings/burn_account_view.dart';
-import '../vault/providers/thumbnail_cache_provider.dart';
+import 'providers/thumbnail_cache_provider.dart';
 
 /// Account & Settings panel — logout, key custody, account deletion, legal links.
 class AccountSettingsPanel extends ConsumerStatefulWidget {
@@ -104,7 +105,8 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
                   const SizedBox(height: 8),
                   const Text(
                     'Create a strong one-time backup password. You will need this '
-                    'password to restore your keys from the .factlock file.',
+                    'password to restore your keys from the .factlock file. '
+                    'FactLockCam cannot recover lost keys without your .factlock backup.',
                   ),
                   const SizedBox(height: 12),
                   CupertinoTextField(
@@ -188,10 +190,10 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
       context: context,
       builder: (context) => CupertinoAlertDialog(
         title: const Text('Lock Archive?'),
-        content: const Text(
+        content: Text(
           'This removes your cryptographic keys from this device. '
           'You will need your .factlock backup file and password to open '
-          'the app again.',
+          'the app again.\n\n$restoreKeyCustodyDisclaimer',
         ),
         actions: [
           CupertinoDialogAction(
@@ -226,6 +228,29 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
     context.push(BurnAccountView.routePath);
   }
 
+  Future<void> _showKeyCustodyLimits() {
+    return showCupertinoDialog<void>(
+      context: context,
+      builder: (dialogContext) => CupertinoAlertDialog(
+        title: const Text('Key custody & limits'),
+        content: SingleChildScrollView(
+          child: Text(
+            '$sovereignKeyCustodyDisclaimer\n\n'
+            '$epistemicIntegrityDisclaimer\n\n'
+            '$polygonNetworkDisclaimer',
+            style: const TextStyle(fontSize: 13, height: 1.4),
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _showAlert(String title, String message) {
     return showCupertinoDialog<void>(
       context: context,
@@ -252,7 +277,7 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
       body: Column(
         children: [
           if (widget.onBackToHub != null)
-            VaultPanelNavigationBar(
+            ArchivePanelNavigationBar(
               title: 'Account',
               onBack: widget.onBackToHub!,
             ),
@@ -337,6 +362,14 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
                                       onTap: () => _openCompliancePage(
                                         AppConfig.guideUrl,
                                       ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    HeavyMetalHubTile(
+                                      icon: Icons.vpn_key_outlined,
+                                      label: 'Key custody & limits',
+                                      subtitle:
+                                          'Zero-knowledge keys, file integrity, Polygon',
+                                      onTap: _showKeyCustodyLimits,
                                     ),
                                   ],
                                 ),

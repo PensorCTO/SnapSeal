@@ -7,9 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
 import 'package:factlockcam/domain/services/notarization_monitor_service.dart';
 import 'package:factlockcam/ui/controllers/dashboard_controller.dart';
-import 'package:factlockcam/ui/mobile/vault/archive_omni/unified_archive_viewport.dart';
-import 'package:factlockcam/ui/mobile/vault/chronology_card.dart';
-import 'package:factlockcam/ui/mobile/vault/providers/thumbnail_cache_provider.dart';
+import 'package:factlockcam/ui/mobile/archive/archive_omni/unified_archive_viewport.dart';
+import 'package:factlockcam/ui/mobile/archive/chronology_card.dart';
+import 'package:factlockcam/ui/mobile/archive/providers/thumbnail_cache_provider.dart';
 
 import 'test_dependencies.dart';
 

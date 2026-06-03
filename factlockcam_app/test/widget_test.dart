@@ -7,7 +7,7 @@ import 'package:factlockcam/core/marketing/approved_pitch.dart';
 import 'package:factlockcam/core/ui/widgets/heavy_metal_backdrop.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
 import 'package:factlockcam/ui/controllers/dashboard_controller.dart';
-import 'package:factlockcam/ui/mobile/vault_home_view.dart';
+import 'package:factlockcam/ui/mobile/archive_home_view.dart';
 
 import 'test_dependencies.dart';
 
@@ -24,7 +24,7 @@ void main() {
     expect(find.text(logonPitchFragment), findsOneWidget);
   });
 
-  testWidgets('hub tiles switch between vault home and camera views', (
+  testWidgets('hub tiles switch between archive home and camera views', (
     tester,
   ) async {
     final buildCounter = ValueNotifier<int>(0);
@@ -39,7 +39,7 @@ void main() {
             () => _CountingDashboardController(buildCounter),
           ),
         ],
-        child: const MaterialApp(home: VaultHomeView()),
+        child: const MaterialApp(home: ArchiveHomeView()),
       ),
     );
     await tester.pump(const Duration(seconds: 1));

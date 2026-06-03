@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../core/legal/disclaimers.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/services/haptic_service.dart';
 import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
@@ -198,6 +199,14 @@ class _AssetInspectorScreenState extends ConsumerState<AssetInspectorScreen>
 
                     // ── 3. Asset info strip ─────────
                     _InfoStrip(item: widget.item),
+                    const SizedBox(height: 12),
+                    Text(
+                      epistemicIntegrityShort,
+                      style: AppTextStyles.monoSm(
+                        color: AppColors.starkWhite.withValues(alpha: 0.55),
+                        height: 1.35,
+                      ),
+                    ),
                     const SizedBox(height: 28),
 
                     // ── 4. Action matrix ────────────

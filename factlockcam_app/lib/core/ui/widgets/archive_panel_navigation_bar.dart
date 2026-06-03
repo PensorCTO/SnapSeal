@@ -3,16 +3,16 @@ import 'package:flutter/cupertino.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
 
-/// iOS-style back bar for vault shell child panels (archive, camera, settings).
-class VaultPanelNavigationBar extends StatelessWidget
+/// iOS-style back bar for archive hub child panels (archive, camera, settings).
+class ArchivePanelNavigationBar extends StatelessWidget
     implements ObstructingPreferredSizeWidget {
-  const VaultPanelNavigationBar({
+  const ArchivePanelNavigationBar({
     super.key,
     required this.title,
     required this.onBack,
     /// Unique per panel; avoids Hero collisions when multiple bars share a route.
     String? heroTag,
-  }) : heroTag = heroTag ?? 'vault_panel_nav_$title';
+  }) : heroTag = heroTag ?? 'archive_panel_nav_$title';
 
   final String title;
   final VoidCallback onBack;

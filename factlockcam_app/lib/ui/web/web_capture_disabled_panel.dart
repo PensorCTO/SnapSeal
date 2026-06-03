@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_typography.dart';
-import '../../core/ui/widgets/vault_panel_navigation_bar.dart';
+import '../../core/ui/widgets/archive_panel_navigation_bar.dart';
 
 /// Read-only placeholder shown on web where native camera capture would appear.
 ///
@@ -18,7 +18,7 @@ class WebCaptureDisabledPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.titaniumDeep,
-      appBar: VaultPanelNavigationBar(
+      appBar: ArchivePanelNavigationBar(
         title: 'Capture',
         onBack: onBackToHub,
         heroTag: 'web_capture_disabled_nav',

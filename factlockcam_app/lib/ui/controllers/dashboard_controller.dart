@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/local/vault_database.dart';
 import '../../data/models/archive_item.dart';
 import '../../domain/services/vault_service.dart';
-import '../mobile/vault/providers/thumbnail_cache_provider.dart';
+import '../mobile/archive/providers/thumbnail_cache_provider.dart';
 
 final dashboardControllerProvider =
     AsyncNotifierProvider<DashboardController, List<ArchiveItem>>(

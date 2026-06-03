@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../core/legal/disclaimers.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/di/service_providers.dart';
 import 'acquisition_mode.dart';
@@ -239,6 +240,15 @@ class _TelemetryOverlayState extends ConsumerState<TelemetryOverlay>
             Align(
               alignment: Alignment.bottomLeft,
               child: Text(_hashLine(), style: mono),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              epistemicIntegrityShort,
+              style: mono.copyWith(
+                fontSize: 9,
+                color: AppColors.starkWhite.withValues(alpha: 0.5),
+                height: 1.3,
+              ),
             ),
           ],
         ),

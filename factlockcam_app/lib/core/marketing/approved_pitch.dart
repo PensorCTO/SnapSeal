@@ -47,6 +47,11 @@ const String logonPitchFragment =
 const String archiveHubSubtitle =
     'Verified Digital DNA · sealed on this device';
 
+/// Consumer epistemic boundary (keep in sync with marketing.ts whyBody / trustDisclaimer).
+const String consumerEpistemicLine =
+    'Cryptographic snapshot and verifiable chain-of-custody for the file—not '
+    'physical truth of the scene.';
+
 const String certificatePdfSubtitle =
     'Tamper-proof certificate · independent global public ledger';
 

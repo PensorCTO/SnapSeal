@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:factlockcam/data/models/archive_item.dart';
 import 'package:factlockcam/ui/controllers/dashboard_controller.dart';
-import 'package:factlockcam/ui/mobile/vault_home_view.dart';
+import 'package:factlockcam/ui/mobile/archive_home_view.dart';
 
 import 'test_dependencies.dart';
 
@@ -13,8 +13,9 @@ void main() {
     await setupTestDependencies();
   });
 
-  test('VaultHomeView hub route path', () {
-    expect(VaultHomeView.routePath, '/vault-home');
+  test('ArchiveHomeView hub route path', () {
+    expect(ArchiveHomeView.routePath, '/archive');
+    expect(ArchiveHomeView.legacyVaultHomePath, '/vault-home');
   });
 
   testWidgets('vault hub shows four action tiles without instructional copy', (
@@ -27,7 +28,7 @@ void main() {
             _EmptyVaultDashboardController.new,
           ),
         ],
-        child: const MaterialApp(home: VaultHomeView()),
+        child: const MaterialApp(home: ArchiveHomeView()),
       ),
     );
     await tester.pump(const Duration(seconds: 1));
@@ -49,13 +50,13 @@ void main() {
             _EmptyVaultDashboardController.new,
           ),
         ],
-        child: const MaterialApp(home: VaultHomeView()),
+        child: const MaterialApp(home: ArchiveHomeView()),
       ),
     );
     await tester.pump(const Duration(seconds: 1));
 
     final stacks = find.descendant(
-      of: find.byType(VaultHomeView),
+      of: find.byType(ArchiveHomeView),
       matching: find.byType(Stack),
     );
     expect(stacks, findsWidgets);
@@ -72,7 +73,7 @@ void main() {
             _EmptyVaultDashboardController.new,
           ),
         ],
-        child: const MaterialApp(home: VaultHomeView()),
+        child: const MaterialApp(home: ArchiveHomeView()),
       ),
     );
     await tester.pump(const Duration(seconds: 1));
@@ -88,8 +89,13 @@ void main() {
     expect(find.text('HELP & SUPPORT'), findsOneWidget);
     expect(find.text('APP WEB PAGE'), findsOneWidget);
     expect(find.text('USER GUIDE'), findsOneWidget);
+    expect(find.text('KEY CUSTODY & LIMITS'), findsOneWidget);
     expect(find.text('BURN ACCOUNT'), findsOneWidget);
     expect(find.text('LOG OUT'), findsOneWidget);
+    expect(
+      find.textContaining('You hold the only keys that decrypt'),
+      findsNothing,
+    );
   });
 
   testWidgets('shows pending sync banner and retry on vault hub', (
@@ -102,7 +108,7 @@ void main() {
             _PendingArchiveDashboardController.new,
           ),
         ],
-        child: const MaterialApp(home: VaultHomeView()),
+        child: const MaterialApp(home: ArchiveHomeView()),
       ),
     );
     await tester.pump();

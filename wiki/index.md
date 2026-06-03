@@ -11,6 +11,7 @@ Read this page first when answering questions about the wiki.
 
 | Page | When to read |
 |------|----------------|
+| [[Compliance_Refactor_2026-06]] | **Eighteenth pass (2026-06-03)** — `/archive` route, `disclaimers.dart`, Archive UI rename, marketing compliance test, Account key-custody dialog UX; **74/74** tests; hosted ToS follow-up open |
 | [[Archive_Quota_Telemetry_2026-06]] | **Seventeenth pass (2026-06-02)** — dual-layer quota: byte telemetry + credit metering (gas gauge, Egress Pass, verification modal); **72/72** tests; migrations pushed |
 | [[Archive_Owner_UX_2026-05]] | **Sixteenth QA (2026-05-30)** — Download Media, Send Proof metadata, View/Play labels, debug proof-links gate |
 | [[App_Store_Hardening_2026-05]] | **Fifteenth QA (2026-05-30)** — manifest remediation: hardware signing, ENABLE_PROOF_LINKS gate, sync/delete/DI hardening, 55/55 tests |
@@ -57,6 +58,7 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses (active)
 
+- [[Compliance_Refactor_2026-06]] — Eighteenth pass: legal/compliance copy, `/archive` routing, presentation-layer Archive rename, QA Account panel fix (June 2026).
 - [[Archive_Owner_UX_2026-05]] - Sixteenth QA: Download Media, Send Proof metadata from asset, View/Play labels, chronology actions icon (May 2026).
 - [[App_Store_Hardening_2026-05]] - Fifteenth QA: architectural manifest remediation, Secure Enclave / Keystore signing, compile-time gates (May 2026).
 - [[Web_Deployment_Architecture_2026-05]] - Fourteenth QA: public web split, courier-only archive subdomain, Cloudflare deploy scripts (May 2026).

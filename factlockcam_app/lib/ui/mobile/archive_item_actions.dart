@@ -16,7 +16,7 @@ import '../controllers/dashboard_controller.dart';
 import '../../features/archive/presentation/providers/send_proof_provider.dart';
 import '../../features/archive_quota/presentation/interceptors/metering_credit_interceptor.dart';
 import 'archive_media_download.dart';
-import 'vault/providers/thumbnail_cache_provider.dart';
+import 'archive/providers/thumbnail_cache_provider.dart';
 import 'archive_photo_view.dart';
 import 'archive_video_view.dart';
 

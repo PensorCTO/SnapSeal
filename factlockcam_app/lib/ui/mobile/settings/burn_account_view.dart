@@ -7,7 +7,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/dashboard_controller.dart';
-import '../vault/providers/thumbnail_cache_provider.dart';
+import '../archive/providers/thumbnail_cache_provider.dart';
 
 /// Multi-step account burn with typed OBLITERATE confirmation.
 class BurnAccountView extends ConsumerStatefulWidget {
@@ -134,8 +134,10 @@ class _BurnAccountViewState extends ConsumerState<BurnAccountView> {
                               setState(() => _acknowledged = !_acknowledged);
                             },
                             child: Text(
-                              'I understand that cloud and local archive data will '
-                              'be permanently destroyed and cannot be recovered.',
+                              'I understand that my account and associated cloud '
+                              'data will be permanently destroyed. This does not '
+                              'grant FactLockCam the ability to recover archives '
+                              'without my keys.',
                               style: AppTextStyles.monoSm(
                                 color: AppColors.starkWhite,
                               ),
