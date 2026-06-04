@@ -1,6 +1,6 @@
 ---
 tags: [concept, factlockcam, baseline, supabase, product_status]
-summary: "Authoritative May 2026 baseline: verified hub/archive/capture workflow and compressed Supabase repair/backfill narrative with migration pointers."
+summary: "Authoritative May 2026 baseline: verified hub/archive/capture workflow, 100% Pre-Connect Submission Ready, and compressed Supabase repair/backfill narrative."
 ---
 
 # FactLockCam Product Baseline (2026-05)
@@ -9,6 +9,12 @@ summary: "Authoritative May 2026 baseline: verified hub/archive/capture workflow
 
 As of this baseline, the **primary product workflow is verified end-to-end** on hosted Supabase: **logon** → **archive hub** → **capture or browse** → sealed assets with remote proof when online.
 
+**Submission readiness (2026-06-03):** **100% Pre-Connect Submission Ready** — App Store audit P1/P2 items closed (legal HTML without dead PDF links, Podfile iOS 15, export compliance, pre-upload audit script); manual App Store Connect metadata entry remains.
+
+- **Twenty-third structural pass 2026-06-04**: **Device QA pass** — `Signing.local.xcconfig` device bundle (`com.factlockcam.dev`); solo tester hosted ledger reset script; **94/94** tests ([[Institution_Grade_Payload_Seal_Backlog]], [[iOS_Device_Development_Workflow]]).
+- **Twenty-third structural pass 2026-06-04**: **Device QA pass** — `Signing.local.xcconfig` → `com.factlockcam.dev` on personal team; `./run_device.sh --release` verified on iPhoneTanto; solo tester hosted ledger reset ([[iOS_Device_Development_Workflow]]).
+- **Foundation pass 2026-06-04**: **Payload pipeline foundation** — `courier_packages.content_mime_type` / `content_category`, Dart `ArchiveContentCategory` + `ENABLE_ARBITRARY_FILE_SEAL=false`; consumer workflow **unchanged** (Picture/Video only); institution-grade arbitrary file import deferred ([[Institution_Grade_Payload_Seal_Backlog]]).
+- **Twenty-second structural pass 2026-06-03**: **App Store audit remediation** — removed dead legal PDF links + site deploy; Podfile `platform :ios, '15.0'`; Info.plist tab fix; `audit_submission_readiness.sh`; **90/90** tests; `ENABLE_PROOF_LINKS=false` preserved.
 - **Twenty-first structural pass 2026-06-03**: **UI layout polish** — responsive hub (`HapticHubPanel`), archive omni (`UnifiedArchiveViewport`), inspector, account settings; device QA passed; **90/90** tests ([[UI_Layout_Polish_2026-06]]).
 - **Twentieth structural pass 2026-06-03**: **Key custody scenario matrix** — keys-only `.factlock` backup; Lock vs uninstall vs Burn; hosted Terms/Privacy/Support deployed; in-app `disclaimers.dart` + Account/Burn/Restore/onboarding UX; user **QA passed**; **82/82** tests ([[Data_Custody_And_Backup_Model_2026]]).
 - **Nineteenth structural pass 2026-06-03**: **Archive subscription foundation** — local SQLite quota pre-flight (`LocalArchiveQuotaGate`), free-tier 50 MB video stop, subscription onboarding + paywall disclaimer, compliant tier display names ([[Archive_Subscription_Tiers_2026]]).
@@ -54,12 +60,11 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 
 ### Still not product-complete (pointers)
 
-- **Hosted legal deploy:** Terms/Privacy corrected for `.factlock` vs cloud ciphertext ([[Data_Custody_And_Backup_Model_2026]]); deploy FactLockCam_Site so production URLs match.
 - **Archive quota wiring:** Local pre-flight + camera/Send Proof interceptors landed nineteenth pass ([[Archive_Subscription_Tiers_2026]]); production billing (StoreKit), `VaultSyncCoordinator` storage increment RPC remain follow-ups ([[Archive_Quota_Telemetry_2026-06]]).
 - **Relayer wallet ops:** Active payer is a funded hot wallet (`RELAYER_PRIVATE_KEY` in Supabase secrets); rotate or fund as needed — not the user's profile EVM address ([[Polygon_Mainnet_Wiring_2026-05]]).
 - **Hardware-backed signing:** **Device** `signHash` uses Secure Enclave / Keystore (fifteenth QA); EVM wallet remains software-keyed in Secure Storage. Server-side P-256 verify of `device_signature` is follow-up.
 - **Courier / Send Proof:** Certificate PDF + courier package + share sheet wired; recipient unlock on **`archive.factlockcam.com/courier`** (Flutter courier-only deploy). Bind custom domain in Cloudflare Pages before App Store review ([[Web_Deployment_Architecture_2026-05]], [[Send_Proof_Courier_2026-05]]).
-- Automated tests: **72/72** passing under production notarizer defaults (includes archive quota + credit metering tests); still thinner than a production bar on some crypto/sync edge cases.
+- Automated tests: **90/90** passing under production notarizer defaults (includes archive quota + credit metering + layout tests); still thinner than a production bar on some crypto/sync edge cases.
 - **C2PA** and full **ProofLock manifest** assurance: see [[ProofLock_Refactor_Scope]] and [[ProofLock_Architectural_Manifest]].
 
 Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
@@ -72,6 +77,7 @@ Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
 
 ## Related Notes
 
+* [[Institution_Grade_Payload_Seal_Backlog]]
 * [[UI_Layout_Polish_2026-06]]
 * [[Compliance_Refactor_2026-06]]
 * [[Archive_Quota_Telemetry_2026-06]]

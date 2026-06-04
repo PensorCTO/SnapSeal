@@ -7,7 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
 import 'package:factlockcam/ui/mobile/archive/archive_presentation_copy.dart';
 import 'package:factlockcam/ui/mobile/archive/asset_inspector_screen.dart';
-import 'package:factlockcam/ui/mobile/archive/providers/asset_metadata_provider.dart';
 import 'package:factlockcam/ui/mobile/archive/providers/thumbnail_cache_provider.dart';
 
 import 'helpers/layout_test_helpers.dart';

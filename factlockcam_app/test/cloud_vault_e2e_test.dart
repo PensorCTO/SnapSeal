@@ -63,6 +63,8 @@ void main() {
         encodedVaultKey: any(named: 'encodedVaultKey'),
         fileExtension: any(named: 'fileExtension'),
         storagePath: any(named: 'storagePath'),
+        contentMimeType: any(named: 'contentMimeType'),
+        contentCategory: any(named: 'contentCategory'),
       ),
     ).thenAnswer((_) async => packageId);
 

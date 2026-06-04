@@ -5,7 +5,30 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-06-04
+
+- **Twenty-third pass — Device QA + hosted ledger reset** — **user QA passed**:
+  - **iOS:** `Signing.local.xcconfig` (gitignored) → `com.factlockcam.dev` for team **G8968T57MB**; App Store ID `com.factlockcam.app` unchanged for production archives.
+  - **Hosted reset:** `scripts/solo_tester_remote_data_reset.sql` — solo tester `proof_ledger` trimmed to keeper hash `a283f677…` (2026-06-04 capture); `courier_packages`, metered credits, and `archive_quotas` zeroed for that user.
+  - **Tooling:** `run_device.sh` auto-provisions signing local file; pipeline `query-file` command.
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
+- **Payload pipeline foundation** (no consumer UX change):
+  - **Product:** Picture + Video capture only; arbitrary file sealing **deferred** to institution-grade app ([[Institution_Grade_Payload_Seal_Backlog]]).
+  - **Supabase:** `20260604120000_courier_payload_metadata_foundation.sql` (`content_mime_type`, `content_category`, RPC extensions); `20260604130000_courier_bucket_octet_stream_only.sql`.
+  - **Flutter:** `ArchiveContentCategory`, `mime_extension_map.dart`, `ArchiveIngressPort` / `FileArchiveIngress` stub, `ENABLE_ARBITRARY_FILE_SEAL=false`; Send Proof passes image/video metadata to `get_or_create_courier_package`.
+  - **Tests:** `archive_content_category_test.dart`; **94/94** `flutter test` (was 90/90).
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+
 ## 2026-06-03
+
+- **Twenty-second pass — App Store Audit Remediation** — **P1/P2 closed (2026-06-03)**:
+  - **P1:** Removed dead `/legal/*.pdf` links from `privacy.astro` and `terms.astro`; deployed FactLockCam marketing site (Cloudflare Pages `factlockcam`); Podfile `platform :ios, '15.0'`; `flutter analyze` clean; **90/90** `flutter test`.
+  - **P2:** Info.plist tab normalization (L48–55); `factlockcam_app/tools/audit_submission_readiness.sh` (privacy manifest, export compliance, production URL hygiene, analyze + test).
+  - **Skill:** `factlockcam_app/tools/SKILL_Audit_Remediation.md`.
+  - **Constraint:** `ENABLE_PROOF_LINKS=false` submission default preserved (`generated_dart_defines.dart`).
+  - **Wiki:** [[FactLockCam_Product_Baseline_2026-05]] → **100% Pre-Connect Submission Ready**.
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
 
 - **Twenty-first pass — UI Layout Polish** (presentation-only) — **user QA passed (2026-06-03)**:
   - **Wiki:** [[UI_Layout_Polish_2026-06]]; skill `docs/skills/SKILL_FORENSIC_UI_REFINEMENT.md`.

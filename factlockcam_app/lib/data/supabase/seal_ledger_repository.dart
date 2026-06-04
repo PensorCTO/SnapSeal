@@ -215,6 +215,8 @@ class SealLedgerRepository {
     required String encodedVaultKey,
     required String fileExtension,
     required String storagePath,
+    String? contentMimeType,
+    String? contentCategory,
   }) async {
     final client = _requiredClient();
     final userId = client.auth.currentUser?.id;
@@ -230,6 +232,10 @@ class SealLedgerRepository {
         'p_encoded_vault_key': encodedVaultKey,
         'p_file_extension': fileExtension,
         'p_storage_path': storagePath,
+        if (contentMimeType != null && contentMimeType.isNotEmpty)
+          'p_content_mime_type': contentMimeType,
+        if (contentCategory != null && contentCategory.isNotEmpty)
+          'p_content_category': contentCategory,
       },
     );
     if (response is! String || response.isEmpty) {

@@ -1,0 +1,10 @@
+// Copy to Signing.local.xcconfig (same directory). That file is gitignored.
+//
+// Use when Xcode reports com.factlockcam.app cannot be registered to your
+// development team (bundle ID owned by the App Store / production Apple account).
+//
+// Pick a unique bundle ID your team can register, then open Runner.xcworkspace
+// once and confirm Signing & Capabilities shows Automatic signing + your team.
+
+PRODUCT_BUNDLE_IDENTIFIER=com.factlockcam.dev
+DEVELOPMENT_TEAM=G8968T57MB

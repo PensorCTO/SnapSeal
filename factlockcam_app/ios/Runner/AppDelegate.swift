@@ -77,6 +77,7 @@ import MobileCoreServices
             self.backgroundTaskId = .invalid
           }
           result(nil)
+        // INSTITUTION: pickSealSourceFile — UIDocumentPicker with broad UTTypes
         case "pickEncryptedBackupBytes", "pickFactlockBackupBytes":
           self.pendingBackupPickerResult = result
           let picker = UIDocumentPickerViewController(

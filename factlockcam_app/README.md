@@ -22,21 +22,32 @@ secrets such as `SUPABASE_DB_PASSWORD` stay out of the binary) and runs Flutter:
 ```
 
 **IDE / plain `flutter run`:** sync defines from `.env.local` once (writes `dart_defines.json`
-and `lib/core/config/generated_dart_defines.dart` so plain `flutter run` picks up keys):
+and updates `lib/core/config/generated_dart_defines.dart` so plain `flutter run` picks up keys):
 
 ```bash
 ../scripts/sync_flutter_dart_defines.sh
 flutter run
+# or release QA on device:
+./run_device.sh --release
 ```
 
-Optional explicit defines file (overrides generated fallbacks):
+**Device signing:** `com.factlockcam.app` is reserved for App Store / production Apple
+Developer. For iPhone install on a personal team, copy
+`ios/Flutter/Signing.local.xcconfig.example` → `Signing.local.xcconfig` (gitignored;
+`run_device.sh` creates it automatically). Use a bundle ID your team can register
+(e.g. `com.factlockcam.dev`). App Store **Archive** builds must use the production
+team and `com.factlockcam.app` in Xcode without `Signing.local.xcconfig` overrides.
+```
+
+Optional explicit defines file (CLI overrides generated fallbacks — use for IPA/archive builds):
 
 ```bash
 flutter run --dart-define-from-file dart_defines.json
+flutter build ipa --release --dart-define-from-file dart_defines.json
 ```
 
-Or use the VS Code / Cursor launch configuration **factlockcam_app (Supabase from .env.local)**,
-which runs the sync script before debug (`factlockcam_app/dart_defines.json` is gitignored).
+Or use the VS Code / Cursor launch configuration **factlockcam_app (Supabase from .env.local)**
+or **factlockcam_app (Release)**, which runs the sync script before launch.
 
 Manual one-liners still work:
 

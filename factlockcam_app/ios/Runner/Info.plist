@@ -49,9 +49,9 @@
 	<string>FactLockCam requires camera access to capture photos and video and seal them with verified Digital DNA—cryptographic fingerprints generated on your device.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>FactLockCam records audio with video captures so the sealed clip preserves its original soundtrack.</string>
-  <key>NSLocationWhenInUseUsageDescription</key>
-  <string>FactLockCam displays live GPS coordinates on the camera viewfinder for forensic metadata capture.</string>
-  <key>ITSAppUsesNonExemptEncryption</key>
-  <false/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>FactLockCam displays live GPS coordinates on the camera viewfinder for forensic metadata capture.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

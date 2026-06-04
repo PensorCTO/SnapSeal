@@ -4,6 +4,9 @@ import 'dart:isolate';
 
 import 'package:crypto/crypto.dart' as crypto;
 
+import '../../core/archive/domain/archive_content_category.dart';
+import '../../core/archive/domain/mime_extension_map.dart';
+import '../../core/config/app_config.dart';
 import '../../core/cloud/supabase_vault_service.dart';
 import '../../core/crypto/courier_crypto.dart';
 import '../../core/crypto/vault_encryption_handler.dart';
@@ -73,7 +76,11 @@ class VaultSyncCoordinator {
       );
     }
 
-    final fileExtension = _fileExtensionForMimeType(mimeType);
+    final fileExtension = fileExtensionForMimeType(mimeType);
+    final contentCategory = categoryFromMime(mimeType);
+    contentCategory.assertConsumerSupported(
+      arbitraryFileSealEnabled: AppConfig.enableArbitraryFileSeal,
+    );
     final provisionalPath = _normalizedStoragePath(
       '$userId/vault/$assetHash.pending',
     );
@@ -84,6 +91,8 @@ class VaultSyncCoordinator {
       encodedVaultKey: encodedVaultKey,
       fileExtension: fileExtension,
       storagePath: provisionalPath,
+      contentMimeType: mimeType,
+      contentCategory: contentCategory.rpcValue,
     );
 
     final storagePath = _normalizedStoragePath('$userId/$packageId.enc');
@@ -136,14 +145,4 @@ class VaultSyncCoordinator {
     return path;
   }
 
-  static String _fileExtensionForMimeType(String? mimeType) {
-    return switch (mimeType?.trim().toLowerCase()) {
-      'image/png' => '.png',
-      'image/heic' || 'image/heif' => '.heic',
-      'video/quicktime' => '.mov',
-      'video/webm' => '.webm',
-      'video/mp4' || 'video/x-m4v' => '.mp4',
-      _ => '.jpg',
-    };
-  }
 }

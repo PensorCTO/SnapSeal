@@ -1,2 +1,5 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
 #include "Generated.xcconfig"
+PRODUCT_BUNDLE_IDENTIFIER=com.factlockcam.app
+DEVELOPMENT_TEAM=G8968T57MB
+#include? "Signing.local.xcconfig"

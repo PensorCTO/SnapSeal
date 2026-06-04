@@ -16,6 +16,8 @@ import 'package:postgrest/postgrest.dart';
 import 'package:video_thumbnail/video_thumbnail.dart' as video_thumbnail;
 
 import '../../application/vault/vault_sync_coordinator.dart';
+import '../../core/archive/domain/archive_content_category.dart';
+import '../../core/archive/domain/mime_extension_map.dart';
 import '../../core/config/app_config.dart';
 import '../../core/errors/exceptions.dart';
 import '../../core/crypto/courier_crypto.dart';
@@ -43,32 +45,12 @@ import '../../features/archive_quota/domain/services/archive_quota_service.dart'
 import '../../features/archive_quota/domain/services/local_archive_quota_gate.dart';
 import 'proof_sync_notifier.dart';
 
+export '../../core/archive/domain/mime_extension_map.dart'
+    show videoThumbnailTempExtensionForMime;
+
 final vaultServiceProvider = Provider<VaultService>(
   (ref) => getIt<VaultService>(),
 );
-
-String videoThumbnailTempExtensionForMime(String? mimeType) {
-  final normalized = mimeType?.trim().toLowerCase();
-  switch (normalized) {
-    case 'video/quicktime':
-      return '.mov';
-    case 'video/webm':
-      return '.webm';
-    case 'video/3gpp':
-      return '.3gp';
-    case 'video/x-msvideo':
-      return '.avi';
-    case 'video/mpeg':
-      return '.mpeg';
-    case 'video/mp4':
-    case 'video/x-m4v':
-    case null:
-    case '':
-      return '.mp4';
-    default:
-      return '.mp4';
-  }
-}
 
 /// Strips leading slashes so Storage RLS `split_part(..., '/', 1)` matches [auth.uid()].
 String _normalizedCourierBlobPath(String raw) {
@@ -703,7 +685,11 @@ class VaultService {
     );
     final keyBytes = await _loadOrCreateKeyBytes();
     final encodedVaultKey = _vaultEncryption.encodeKey(keyBytes);
-    final fileExtension = _fileExtensionForMimeType(resolved.mimeType);
+    final fileExtension = fileExtensionForMimeType(resolved.mimeType);
+    final contentCategory = categoryFromMime(resolved.mimeType);
+    contentCategory.assertConsumerSupported(
+      arbitraryFileSealEnabled: AppConfig.enableArbitraryFileSeal,
+    );
     final storagePath = _normalizedCourierBlobPath(
       '$userId/$assetHash$fileExtension.seal',
     );
@@ -723,6 +709,8 @@ class VaultService {
       encodedVaultKey: encodedVaultKey,
       fileExtension: fileExtension,
       storagePath: storagePath,
+      contentMimeType: resolved.mimeType,
+      contentCategory: contentCategory.rpcValue,
     );
 
     final base = courierArchiveBase.endsWith('/')
@@ -1440,17 +1428,6 @@ class VaultService {
       return 'image/jpeg';
     }
     return 'application/octet-stream';
-  }
-
-  String _fileExtensionForMimeType(String? mimeType) {
-    return switch (mimeType?.trim().toLowerCase()) {
-      'image/png' => '.png',
-      'image/heic' || 'image/heif' => '.heic',
-      'video/quicktime' => '.mov',
-      'video/webm' => '.webm',
-      'video/mp4' || 'video/x-m4v' => '.mp4',
-      _ => '.jpg',
-    };
   }
 
   Future<void> _attemptCloudVaultSync({

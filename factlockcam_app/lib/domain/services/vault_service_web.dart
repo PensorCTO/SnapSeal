@@ -3,24 +3,16 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/di/locator.dart';
+import '../../core/archive/domain/mime_extension_map.dart';
 import '../../data/models/archive_item.dart';
 import '../../data/models/sealed_asset.dart';
+
+export '../../core/archive/domain/mime_extension_map.dart'
+    show videoThumbnailTempExtensionForMime;
 
 final vaultServiceProvider = Provider<VaultService>(
   (ref) => getIt<VaultService>(),
 );
-
-String videoThumbnailTempExtensionForMime(String? mimeType) {
-  final normalized = mimeType?.trim().toLowerCase();
-  return switch (normalized) {
-    'video/quicktime' => '.mov',
-    'video/webm' => '.webm',
-    'video/3gpp' => '.3gp',
-    'video/x-msvideo' => '.avi',
-    'video/mpeg' => '.mpeg',
-    _ => '.mp4',
-  };
-}
 
 class ProofLockConflictException implements Exception {
   ProofLockConflictException(this.status);

@@ -31,6 +31,7 @@ Commands:
   push-dry-run  Preview remote migration push
   push          Push migrations to linked remote project
   migration-list  Local vs remote migration history (loads .env.local; needs SUPABASE_DB_PASSWORD)
+  query-file <path>  Run a SQL file against the linked remote database
   config-push   Push supabase/config.toml Auth/project settings to remote
   flutter-defines  Write factlockcam_app/dart_defines.json from .env.local (filtered)
   app-run       Run Flutter app using dart_defines.json from .env.local
@@ -112,6 +113,13 @@ case "${1:-help}" in
   migration-list)
     supabase_cmd migration list
     ;;
+  query-file)
+    if [[ -z "${2:-}" ]]; then
+      echo "Usage: $0 query-file <path.sql>" >&2
+      exit 1
+    fi
+    supabase_cmd db query --linked -f "$2"
+    ;;
   config-push)
     require_env FACTLOCKCAM_SUPABASE_PROJECT_REF
     supabase_cmd config push --project-ref "$FACTLOCKCAM_SUPABASE_PROJECT_REF"
@@ -132,7 +140,7 @@ case "${1:-help}" in
       --env-file "$ENV_FILE" \
       --out "$APP_DIR/dart_defines.json" \
       --dart-out "$APP_DIR/lib/core/config/generated_dart_defines.dart"
-    (cd "$APP_DIR" && flutter run --dart-define-from-file dart_defines.json)
+    (cd "$APP_DIR" && flutter run)
     ;;
   help|--help|-h)
     usage

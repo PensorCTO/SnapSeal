@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../archive_content_category.dart';
 import '../models/media_action_type.dart';
 
 class AssetActionRegistry {
@@ -45,44 +46,16 @@ class AssetActionRegistry {
   }
 
   static List<MediaActionType> _resolveActions(String mediaType) {
-    switch (_normalizeMediaType(mediaType)) {
-      case _AssetMediaKind.picture:
-      case _AssetMediaKind.video:
+    switch (categoryFromMime(mediaType)) {
+      case ArchiveContentCategory.image:
+      case ArchiveContentCategory.video:
         return _viewableActions;
-      case _AssetMediaKind.document:
+      case ArchiveContentCategory.document:
+      case ArchiveContentCategory.audio:
+      case ArchiveContentCategory.archive:
         return _documentActions;
-      case _AssetMediaKind.unknown:
+      case ArchiveContentCategory.binary:
         return _baseActions;
     }
   }
-
-  static _AssetMediaKind _normalizeMediaType(String mediaType) {
-    final normalized = mediaType.trim().toLowerCase();
-    if (normalized.isEmpty) {
-      return _AssetMediaKind.unknown;
-    }
-
-    if (normalized == 'picture' ||
-        normalized == 'photo' ||
-        normalized == 'image' ||
-        normalized.startsWith('image/')) {
-      return _AssetMediaKind.picture;
-    }
-
-    if (normalized == 'video' || normalized.startsWith('video/')) {
-      return _AssetMediaKind.video;
-    }
-
-    if (normalized == 'document' ||
-        normalized == 'pdf' ||
-        normalized == 'application/pdf' ||
-        normalized.startsWith('text/') ||
-        normalized.startsWith('application/')) {
-      return _AssetMediaKind.document;
-    }
-
-    return _AssetMediaKind.unknown;
-  }
 }
-
-enum _AssetMediaKind { picture, video, document, unknown }

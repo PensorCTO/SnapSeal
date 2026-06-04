@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import 'generated_dart_defines.stub.dart';
+import 'generated_dart_defines.dart';
 import 'runtime_test_flag.dart';
 
 class AppConfig {
@@ -43,6 +43,10 @@ class AppConfig {
     'SUPPORT_URL',
     defaultValue: GeneratedDartDefines.supportUrl,
   );
+  static const _enableArbitraryFileSeal = bool.fromEnvironment(
+    'ENABLE_ARBITRARY_FILE_SEAL',
+    defaultValue: GeneratedDartDefines.enableArbitraryFileSeal,
+  );
   static String get supabaseAnonKey => _supabaseAnonKey;
   static String get localAnonKey => _localAnonKey;
 
@@ -74,6 +78,9 @@ class AppConfig {
 
   static bool get usePolygonNotarizer => _usePolygonNotarizer;
   static bool get requireHardwareAttestation => _requireHardwareAttestation;
+
+  /// Institution-grade arbitrary file ingress; consumer builds leave this false.
+  static bool get enableArbitraryFileSeal => _enableArbitraryFileSeal;
 
   /// When false, Send Proof / courier URL generation is disabled.
   ///
@@ -108,9 +115,6 @@ class AppConfig {
   static String? get polygonRpcUrl {
     const fromEnv = String.fromEnvironment('POLYGON_RPC_URL');
     if (fromEnv.isNotEmpty) return fromEnv;
-    if (kReleaseMode || kProfileMode) {
-      return null;
-    }
     const fromGenerated = GeneratedDartDefines.polygonRpcUrl;
     if (fromGenerated.isNotEmpty) return fromGenerated;
     return null;

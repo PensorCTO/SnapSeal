@@ -1,5 +1,5 @@
-// Empty fallback template — run scripts/sync_flutter_dart_defines.sh to populate
-// generated_dart_defines.dart from repo-root `.env.local`.
+// Template for [generated_dart_defines.dart] — run scripts/sync_flutter_dart_defines.sh
+// to populate the committed generated file from repo-root `.env.local`.
 
 /// Fallback Supabase / app defines when CLI omits `--dart-define`.
 abstract final class GeneratedDartDefines {
@@ -13,4 +13,5 @@ abstract final class GeneratedDartDefines {
   static const usePolygonNotarizer = false;
   static const polygonRpcUrl = '';
   static const enableProofLinks = false;
+  static const enableArbitraryFileSeal = false;
 }

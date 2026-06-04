@@ -29,24 +29,37 @@ As of **May 2026**, FactLockCam on a **physical iPhone** (iOS 26.x) with **Flutt
    ./scripts/factlockcam_supabase_pipeline.sh flutter-defines
    ```
 
-2. Build and install from the **main repo** (not a forensic worktree):
+2. **Device signing:** copy `ios/Flutter/Signing.local.xcconfig.example` → `Signing.local.xcconfig` (gitignored; `run_device.sh` creates it). Uses `com.factlockcam.dev` when `com.factlockcam.app` is reserved for App Store production.
+
+3. Build and install from the **main repo** (not a forensic worktree):
 
    ```bash
    cd factlockcam_app
-   flutter build ios --debug --dart-define-from-file dart_defines.json
-   flutter install -d iPhoneTanto --debug
+   ./run_device.sh --release
+   # or: flutter build ios --debug --dart-define-from-file dart_defines.json
+   #       flutter install -d iPhoneTanto --debug
    ```
 
-3. Open **FactLockCam** on the device from the home screen.
+4. Open **FactLockCam** on the device from the home screen.
 
-4. Optional debugger (second terminal):
+5. Optional debugger (second terminal):
 
    ```bash
    cd factlockcam_app
    flutter attach -d iPhoneTanto --debug
    ```
 
-5. Alternative: **Xcode** → open `factlockcam_app/ios/Runner.xcworkspace` → Run on device.
+6. Alternative: **Xcode** → open `factlockcam_app/ios/Runner.xcworkspace` → Run on device.
+
+### Solo tester hosted ledger reset
+
+After a device reinstall wipes local SQLite, hosted `proof_ledger` may still list stale hashes. Trim to the current keeper capture:
+
+```bash
+./scripts/factlockcam_supabase_pipeline.sh query-file scripts/solo_tester_remote_data_reset.sql
+```
+
+Edit `v_keep_asset_hash` in that script before running if the legitimate capture changed.
 
 ### Audit / forensic discipline
 

@@ -11,6 +11,8 @@ Read this page first when answering questions about the wiki.
 
 | Page | When to read |
 |------|----------------|
+| [[FactLockCam_Product_Baseline_2026-05]] | **Canonical status** — **100% Pre-Connect Submission Ready** (2026-06-03); verified workflow, Supabase ops, branding |
+| [[Institution_Grade_Payload_Seal_Backlog]] | **Foundation (2026-06-04)** — MIME-agnostic pipeline deferred; consumer stays Picture/Video only |
 | [[UI_Layout_Polish_2026-06]] | **Twenty-first pass QA passed (2026-06-03)** — responsive hub/archive/inspector/account layouts; landscape overflow fix; **90/90** tests |
 | [[Data_Custody_And_Backup_Model_2026]] | **Twentieth pass QA passed (2026-06-03)** — Keys-only `.factlock`; scenario matrix; hosted Terms deployed; **82/82** tests |
 | [[Archive_Subscription_Tiers_2026]] | **Nineteenth pass (2026-06-03)** — local SQLite quota pre-flight, free-tier 50 MB video stop, subscription onboarding + paywall disclaimer, compliant tier labels |
@@ -25,7 +27,6 @@ Read this page first when answering questions about the wiki.
 | [[App_Store_Remediation_2026-05]] | **Tenth QA (2026-05-24)** — WEB_ARCHIVE_BASE_URL rename, courier archive indices pushed, TestFlight posture |
 | [[Production_Transition_2026-05]] | **Ninth QA (2026-05-24)** — production dart-defines, courier lookup migrations, iOS privacy/export, 40/40 tests |
 | [[Send_Proof_Courier_2026-05]] | **Send Proof (May 2026)** — PDF + share sheet, production web archive URL, live-host gate |
-| [[FactLockCam_Product_Baseline_2026-05]] | **Canonical status** — verified workflow, Supabase ops, branding, open gaps |
 | [[Polygon_Mainnet_Wiring_2026-05]] | **Eighth QA (2026-05-22)** — live Polygon mainnet on iPhone, secrets, sim fallback removed |
 | [[App_Store_Prep_Capture_Seal_2026-05]] | **Fifth QA (2026-05-21)** — App Store legal bundle, multi-shot seal hardening, vault I/O fixes |
 | [[Identity_Lifecycle_And_Data_Lineage]] | **Sixth QA (2026-05-21)** — Wallet lineage, EVM key rotation, JIT courier upload, archive placeholders |
@@ -65,6 +66,7 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses (active)
 
+- [[Institution_Grade_Payload_Seal_Backlog]] — Deferred arbitrary-file sealing; foundation schema/Dart contracts (June 2026).
 - [[UI_Layout_Polish_2026-06]] — Twenty-first pass: Heavy Metal responsive layouts, device QA on iPhone landscape (June 2026).
 - [[Compliance_Refactor_2026-06]] — Eighteenth pass: legal/compliance copy, `/archive` routing, presentation-layer Archive rename, QA Account panel fix (June 2026).
 - [[Archive_Owner_UX_2026-05]] - Sixteenth QA: Download Media, Send Proof metadata from asset, View/Play labels, chronology actions icon (May 2026).
