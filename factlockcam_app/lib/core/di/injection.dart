@@ -1,14 +1,18 @@
 import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import '../../data/local/vault_database.dart';
-import '../../data/services/local_vault_storage.dart';
-import '../../data/services/vault_path_resolver.dart';
+import '../../data/local/archive_database.dart';
+import '../../data/local/vault_database.dart' show VaultDatabase;
+import '../../data/services/archive_storage.dart';
+import '../../data/services/local_vault_storage.dart' show LocalVaultStorage;
+import '../../data/services/archive_path_resolver.dart';
+import '../../data/services/vault_path_resolver.dart' show VaultPathResolver;
 import '../../data/supabase/auth_repository.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
-import '../../application/vault/vault_sync_coordinator.dart';
-import '../../core/cloud/supabase_vault_service.dart';
+import '../../application/archive/archive_sync_coordinator.dart';
+import '../../core/cloud/supabase_archive_service.dart';
 import '../../data/supabase/courier_repository.dart';
+import '../../features/ugc_safety/data/safety_repository.dart';
 import '../../features/archive_quota/data/archive_quota_repository.dart';
 import '../../features/archive_quota/data/metering_quota_repository.dart';
 import '../../features/archive_quota/data/mock_subscription_billing_gateway.dart';
@@ -19,7 +23,8 @@ import '../../features/archive_quota/domain/services/local_archive_quota_gate.da
 import '../../features/archive_quota/domain/services/metering_quota_service.dart';
 import '../../features/archive_quota/domain/services/subscription_billing_gateway.dart';
 import '../../data/supabase/supabase_client_handle.dart';
-import '../crypto/vault_encryption_handler.dart';
+import '../crypto/archive_encryption_handler.dart';
+import '../crypto/vault_encryption_handler.dart' show VaultEncryptionHandler;
 import '../journal/journal_database_factory.dart';
 import '../journal/journal_repository.dart';
 import '../journal/transactional_archive_persister.dart';
@@ -28,11 +33,17 @@ import '../lock/lock_journal_sync.dart';
 import '../../domain/export/certificate_export_service.dart';
 import '../../domain/export/proof_bundle_export_service.dart';
 import '../../domain/blockchain/chain_notarizer.dart';
-import '../../domain/blockchain/vault_blockchain_handler.dart';
+import '../../domain/blockchain/archive_blockchain_handler.dart';
+import '../../domain/blockchain/vault_blockchain_handler.dart'
+    show VaultBlockchainHandler;
+import '../../application/vault/vault_sync_coordinator.dart'
+    show VaultSyncCoordinator;
+import '../../core/cloud/supabase_vault_service.dart' show SupabaseVaultService;
 import '../../domain/blockchain/wallet_service.dart';
 import '../../domain/services/notarization_monitor_service.dart';
 import '../../domain/services/proof_sync_notifier.dart';
-import '../../domain/services/vault_service.dart';
+import '../../domain/services/archive_service.dart';
+import '../../domain/services/vault_service.dart' show VaultService;
 import '../ghost_key/app_lock_coordinator.dart';
 import '../ghost_key/backup_metadata_store.dart';
 import '../ghost_key/factlock_keystore.dart';
@@ -55,7 +66,7 @@ Future<void> resetDependenciesForTest() async {
 
 /// Clears a partial GetIt graph when [configureDependencies] fails or times out.
 Future<void> resetDependenciesAfterStartupFailure() async {
-  if (_diConfigured || getIt.isRegistered<VaultDatabase>()) {
+  if (_diConfigured || getIt.isRegistered<ArchiveDatabase>()) {
     await getIt.reset();
   }
   _diConfigured = false;
@@ -96,16 +107,16 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<SupabaseClientHandle>(SupabaseClientHandle.new);
 
-  getIt.registerLazySingleton<VaultDatabase>(VaultDatabase.new);
+  getIt.registerLazySingleton<ArchiveDatabase>(ArchiveDatabase.new);
   getIt.registerLazySingleton<IsolateLockCoordinator>(
     IsolateLockCoordinator.new,
   );
   if (!kIsWeb) {
-    getIt.registerLazySingleton<LocalVaultStorage>(
-      () => LocalVaultStorage(lockCoordinator: getIt<IsolateLockCoordinator>()),
+    getIt.registerLazySingleton<LocalArchiveStorage>(
+      () => LocalArchiveStorage(lockCoordinator: getIt<IsolateLockCoordinator>()),
     );
   } else {
-    getIt.registerLazySingleton<LocalVaultStorage>(LocalVaultStorage.new);
+    getIt.registerLazySingleton<LocalArchiveStorage>(LocalArchiveStorage.new);
   }
   if (!kIsWeb) {
     getIt.registerLazySingleton<JournalDatabaseFactory>(
@@ -117,14 +128,14 @@ Future<void> configureDependencies() async {
     getIt.registerLazySingleton<TransactionalArchivePersister>(
       () => TransactionalArchivePersister(
         journal: getIt<JournalRepository>(),
-        storage: getIt<LocalVaultStorage>(),
-        database: getIt<VaultDatabase>(),
+        storage: getIt<LocalArchiveStorage>(),
+        database: getIt<ArchiveDatabase>(),
         lockCoordinator: getIt<IsolateLockCoordinator>(),
       ),
     );
   }
-  getIt.registerLazySingleton<VaultPathResolver>(
-    () => VaultPathResolver(getIt<LocalVaultStorage>()),
+  getIt.registerLazySingleton<ArchivePathResolver>(
+    () => ArchivePathResolver(getIt<LocalArchiveStorage>()),
   );
   if (!kIsWeb) {
     getIt.registerLazySingleton<NativeEnclaveChannel>(
@@ -132,8 +143,8 @@ Future<void> configureDependencies() async {
     );
   }
 
-  getIt.registerLazySingleton<VaultEncryptionHandler>(
-    DefaultVaultEncryptionHandler.new,
+  getIt.registerLazySingleton<ArchiveEncryptionHandler>(
+    DefaultArchiveEncryptionHandler.new,
   );
 
   getIt.registerLazySingleton<AuthRepository>(
@@ -146,6 +157,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<CourierRepository>(
     () => CourierRepository(getIt<SupabaseClientHandle>()),
+  );
+
+  getIt.registerLazySingleton<SafetyRepository>(
+    () => SafetyRepository(getIt<SupabaseClientHandle>()),
   );
 
   getIt.registerLazySingleton<IArchiveQuotaRepository>(
@@ -179,20 +194,20 @@ Future<void> configureDependencies() async {
         channelCoordinator: getIt<IPlatformChannelCoordinator>(),
       ),
     );
-    getIt.registerLazySingleton<SupabaseVaultService>(
-      () => SupabaseVaultService(handle: getIt<SupabaseClientHandle>()),
+    getIt.registerLazySingleton<SupabaseArchiveService>(
+      () => SupabaseArchiveService(handle: getIt<SupabaseClientHandle>()),
     );
-    getIt.registerLazySingleton<VaultSyncCoordinator>(
-      () => VaultSyncCoordinator(
+    getIt.registerLazySingleton<ArchiveSyncCoordinator>(
+      () => ArchiveSyncCoordinator(
         sealLedgerRepository: getIt<SealLedgerRepository>(),
-        vaultService: getIt<SupabaseVaultService>(),
+        vaultService: getIt<SupabaseArchiveService>(),
         channelCoordinator: getIt<IPlatformChannelCoordinator>(),
       ),
     );
     getIt.registerLazySingleton<ArchiveRepository>(
       () => ArchiveRepository(
-        database: getIt<VaultDatabase>(),
-        storage: getIt<LocalVaultStorage>(),
+        database: getIt<ArchiveDatabase>(),
+        storage: getIt<LocalArchiveStorage>(),
       ),
     );
     getIt.registerLazySingleton<IArchiveRepository>(
@@ -218,7 +233,7 @@ Future<void> configureDependencies() async {
     },
   );
 
-  getIt.registerLazySingleton<VaultBlockchainHandler>(
+  getIt.registerLazySingleton<ArchiveBlockchainHandler>(
     () => AppConfig.usePolygonNotarizer
         ? PolygonBlockchainHandler(getIt<SupabaseClientHandle>())
         : SimulatedBlockchainHandler(getIt<SealLedgerRepository>()),
@@ -231,7 +246,7 @@ Future<void> configureDependencies() async {
         ? SimulatedNotarizationMonitorService()
         : PolygonNotarizationMonitorService(
             handle: getIt<SupabaseClientHandle>(),
-            database: getIt<VaultDatabase>(),
+            database: getIt<ArchiveDatabase>(),
             proofSyncNotifier: getIt<ProofSyncNotifier>(),
             sealLedgerRepository: getIt<SealLedgerRepository>(),
           ),
@@ -253,22 +268,22 @@ Future<void> configureDependencies() async {
     );
   }
 
-  getIt.registerLazySingleton<VaultService>(
-    () => VaultService(
-      database: getIt<VaultDatabase>(),
-      storage: getIt<LocalVaultStorage>(),
+  getIt.registerLazySingleton<ArchiveService>(
+    () => ArchiveService(
+      database: getIt<ArchiveDatabase>(),
+      storage: getIt<LocalArchiveStorage>(),
       secureStorage: getIt<FlutterSecureStorage>(),
-      vaultEncryption: getIt<VaultEncryptionHandler>(),
+      vaultEncryption: getIt<ArchiveEncryptionHandler>(),
       sealLedgerRepository: getIt<SealLedgerRepository>(),
       chainNotarizer: getIt<ChainNotarizer>(),
       walletService: getIt<WalletService>(),
-      blockchainHandler: getIt<VaultBlockchainHandler>(),
+      blockchainHandler: getIt<ArchiveBlockchainHandler>(),
       proofSyncNotifier: getIt<ProofSyncNotifier>(),
       nativeEnclave: _nativeEnclaveForVaultService(),
       authRepository: getIt<AuthRepository>(),
       proofCourierService: kIsWeb ? null : getIt<ProofCourierService>(),
-      pathResolver: getIt<VaultPathResolver>(),
-      vaultSyncCoordinator: kIsWeb ? null : getIt<VaultSyncCoordinator>(),
+      pathResolver: getIt<ArchivePathResolver>(),
+      vaultSyncCoordinator: kIsWeb ? null : getIt<ArchiveSyncCoordinator>(),
       transactionalPersister: kIsWeb
           ? null
           : getIt<TransactionalArchivePersister>(),
@@ -279,10 +294,9 @@ Future<void> configureDependencies() async {
       archiveQuotaService: getIt<ArchiveQuotaService>(),
     ),
   );
-
   // Eager-open SQLite before hub/dashboard and capture can race on first connect.
   if (!kIsWeb) {
-    await getIt<VaultDatabase>().ensureOpen();
+    await getIt<ArchiveDatabase>().ensureOpen();
     final journal = getIt<JournalRepository>();
     await journal.open();
     syncLocksFromPreparedJournal(

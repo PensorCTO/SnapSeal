@@ -143,6 +143,30 @@ class CourierUnlockNotifier extends Notifier<CourierUnlockState> {
     }
   }
 
+  Future<Map<String, dynamic>> reportPackage({
+    required String packageId,
+    required String reason,
+    String? detail,
+    String? reporterEmail,
+  }) {
+    return _courierRepository.reportCourierPackage(
+      packageId: packageId,
+      reason: reason,
+      detail: detail,
+      reporterEmail: reporterEmail,
+    );
+  }
+
+  Future<Map<String, dynamic>> blockSender({
+    required String packageId,
+    String? reporterEmail,
+  }) {
+    return _courierRepository.blockCourierSender(
+      packageId: packageId,
+      reporterEmail: reporterEmail,
+    );
+  }
+
   void reset() {
     state = const CourierUnlockState();
   }

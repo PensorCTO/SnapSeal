@@ -20,7 +20,7 @@ import 'package:factlockcam/data/services/local_vault_storage.dart';
 import 'package:factlockcam/data/supabase/auth_repository.dart';
 import 'package:factlockcam/data/supabase/seal_ledger_repository.dart';
 import 'package:factlockcam/domain/blockchain/chain_notarizer.dart';
-import 'package:factlockcam/domain/blockchain/vault_blockchain_handler.dart';
+import 'package:factlockcam/domain/blockchain/archive_blockchain_handler.dart';
 import 'package:factlockcam/domain/blockchain/wallet_service.dart';
 import 'package:factlockcam/domain/services/proof_sync_notifier.dart';
 import 'package:factlockcam/domain/services/vault_service.dart';
@@ -39,7 +39,7 @@ class _MockChainNotarizer extends Mock implements ChainNotarizer {}
 
 class _MockWalletService extends Mock implements WalletService {}
 
-class _MockBlockchainHandler extends Mock implements VaultBlockchainHandler {}
+class _MockBlockchainHandler extends Mock implements ArchiveBlockchainHandler {}
 
 class _MockNativeEnclaveChannel extends Mock implements NativeEnclaveChannel {}
 

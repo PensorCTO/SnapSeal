@@ -16,6 +16,7 @@ Read this page first when answering questions about the wiki.
 | [[UI_Layout_Polish_2026-06]] | **Twenty-first pass QA passed (2026-06-03)** — responsive hub/archive/inspector/account layouts; landscape overflow fix; **90/90** tests |
 | [[Data_Custody_And_Backup_Model_2026]] | **Twentieth pass QA passed (2026-06-03)** — Keys-only `.factlock`; scenario matrix; hosted Terms deployed; **82/82** tests |
 | [[Archive_Subscription_Tiers_2026]] | **Nineteenth pass (2026-06-03)** — local SQLite quota pre-flight, free-tier 50 MB video stop, subscription onboarding + paywall disclaimer, compliant tier labels |
+| [[UGC_Safety_Reporting_2026-06]] | **Twenty-fourth pass (2026-06-05)** — Guideline 1.2 reporting/blocking, async `courier-content-scan`, Archive service-layer rename |
 | [[Compliance_Refactor_2026-06]] | **Eighteenth pass (2026-06-03)** — `/archive` route, `disclaimers.dart`, Archive UI rename, marketing compliance test, Account key-custody dialog UX |
 | [[Archive_Quota_Telemetry_2026-06]] | **Seventeenth pass (2026-06-02)** — dual-layer quota: byte telemetry + credit metering (gas gauge, Egress Pass, verification modal); **72/72** tests; migrations pushed |
 | [[Archive_Owner_UX_2026-05]] | **Sixteenth QA (2026-05-30)** — Download Media, Send Proof metadata, View/Play labels, debug proof-links gate |
@@ -66,6 +67,9 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses (active)
 
+- [[UGC_Safety_Reporting_2026-06]] — Twenty-fourth pass: App Store 1.2 UGC safety, courier report/block, async moderation (June 2026).
+- [[Zero_Trust_RLS_Audit_2026-06]] — RLS matrix and AES-GCM key isolation audit (June 2026).
+- [[Provisional_Patent_Technical_Exhibit_2026-06]] — Enablement exhibit: journal, isolate locks, Polygon saga (June 2026).
 - [[Institution_Grade_Payload_Seal_Backlog]] — Deferred arbitrary-file sealing; foundation schema/Dart contracts (June 2026).
 - [[UI_Layout_Polish_2026-06]] — Twenty-first pass: Heavy Metal responsive layouts, device QA on iPhone landscape (June 2026).
 - [[Compliance_Refactor_2026-06]] — Eighteenth pass: legal/compliance copy, `/archive` routing, presentation-layer Archive rename, QA Account panel fix (June 2026).

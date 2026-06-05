@@ -2,7 +2,7 @@
 export const prerender = true;
 
 import Layout from '../layouts/Layout.astro';
-import VaultCourier from '../components/VaultCourier';
+import ArchiveCourier from '../components/ArchiveCourier';
 
 const packageId = Astro.url.searchParams.get('pkg');
 ---
@@ -11,5 +11,5 @@ const packageId = Astro.url.searchParams.get('pkg');
   title="Courier Unlock"
   description="Unlock and verify an encrypted FactLockCam courier package."
 >
-  <VaultCourier client:only="react" packageId={packageId} />
+  <ArchiveCourier client:only="react" packageId={packageId} />
 </Layout>

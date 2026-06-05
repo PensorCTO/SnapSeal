@@ -57,6 +57,40 @@ class CourierRepository {
     return Map<String, dynamic>.from(data);
   }
 
+  Future<Map<String, dynamic>> reportCourierPackage({
+    required String packageId,
+    required String reason,
+    String? detail,
+    String? reporterEmail,
+  }) async {
+    final client = _requiredClient();
+    final response = await client.rpc(
+      'report_courier_package',
+      params: {
+        'p_package_id': packageId,
+        'p_reason': reason,
+        'p_detail': detail,
+        'p_reporter_email': reporterEmail,
+      },
+    );
+    return Map<String, dynamic>.from(response as Map);
+  }
+
+  Future<Map<String, dynamic>> blockCourierSender({
+    required String packageId,
+    String? reporterEmail,
+  }) async {
+    final client = _requiredClient();
+    final response = await client.rpc(
+      'block_courier_sender',
+      params: {
+        'p_package_id': packageId,
+        'p_reporter_email': reporterEmail,
+      },
+    );
+    return Map<String, dynamic>.from(response as Map);
+  }
+
   Future<Uint8List> downloadSignedBlob(String signedUrl) async {
     _requiredClient();
     final response = await http.get(Uri.parse(signedUrl));

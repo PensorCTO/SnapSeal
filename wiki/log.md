@@ -5,6 +5,20 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-06-05
+
+- **Twenty-fourth pass — Zero-Trust & App Store Compliance Alignment**:
+  - **UGC safety (Guideline 1.2):** `features/ugc_safety/` module; `CourierUnlockView` report/block affordances; `UniversalAssetToolbar` owner report via `additionalActions`; migration `20260605120000_ugc_safety_infrastructure.sql`; Edge Function `courier-content-scan` (async metadata scan off capture hot path).
+  - **Archive lexicon (PR3–PR6):** `ArchiveService`, `ArchiveDatabase`, `LocalArchiveStorage`, `ArchiveSyncCoordinator`, `ArchiveBlockchainHandler`, `SupabaseArchiveService`, `ArchiveEncryptionHandler`; deprecated `Vault*` typedef shims retained; `ArchiveCourier.tsx` on marketing site.
+  - **Patent exhibit:** [[Provisional_Patent_Technical_Exhibit_2026-06]] + `docs/patent/` export.
+  - **RLS audit:** [[Zero_Trust_RLS_Audit_2026-06]].
+  - **Skill:** `docs/skills/SKILL_Compliance_Architecture.md`.
+  - **Tests:** **96/96** `flutter test` (includes `courier_unlock_reporting_test.dart`).
+  - **Deferred PR9:** `factlock_vault` bucket, SQL `vault_key`, Secure Storage `factlockcam:vault_key`, on-disk `factlockcam_vault.db` filename.
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+- **Hosted deploy (2026-06-05)** — `scripts/factlockcam_supabase_pipeline.sh push` applied **`20260605120000_ugc_safety_infrastructure.sql`** to project `jqvnwtslmoxjwzusmtxs` (fix: `attempt_courier_unlock` drop/recreate with `content_mime_type` + `increment_archive_egress` parity). Edge Function **`courier-content-scan`** deployed (`--no-verify-jwt`). Validation: `python3 scripts/wiki_ingest.py --validate`.
+- **Twenty-fourth pass QA (2026-06-05)** — **user QA passed** on hosted UGC safety: courier report/block on `CourierUnlockView`, owner **Report shared proof** action sheet, async `courier-content-scan` after Send Proof upload; **96/96** `flutter test`. Wiki: [[UGC_Safety_Reporting_2026-06]].
+
 ## 2026-06-04
 
 - **Twenty-third pass — Device QA + hosted ledger reset** — **user QA passed**:

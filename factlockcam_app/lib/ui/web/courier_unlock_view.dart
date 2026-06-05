@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_typography.dart';
+import '../../features/ugc_safety/presentation/widgets/block_sender_dialog.dart';
+import '../../features/ugc_safety/presentation/widgets/report_content_sheet.dart';
 import 'courier_unlock_notifier.dart';
 
 class CourierUnlockView extends ConsumerStatefulWidget {
@@ -122,11 +124,33 @@ class _CourierUnlockViewState extends ConsumerState<CourierUnlockView> {
                           )
                         : const Text('Unlock package'),
                   ),
+                  if (widget.packageId != null &&
+                      widget.packageId!.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: state.isLoading
+                          ? null
+                          : () => showReportContentSheet(
+                                context: context,
+                                ref: ref,
+                                packageId: widget.packageId!,
+                                reporterEmail: _emailController.text,
+                              ),
+                      child: Text(
+                        'Report concerning content',
+                        style: AppTextStyles.monoSm(
+                          color: AppColors.alertAmber,
+                        ),
+                      ),
+                    ),
+                  ],
                   if (state.verifiedBytes != null) ...[
                     const SizedBox(height: 24),
                     _VerifiedPreview(
                       bytes: state.verifiedBytes!,
                       fileExtension: state.fileExtension,
+                      packageId: widget.packageId,
+                      reporterEmail: _emailController.text,
                     ),
                   ],
                 ],
@@ -187,14 +211,21 @@ class _StatusPanel extends StatelessWidget {
   }
 }
 
-class _VerifiedPreview extends StatelessWidget {
-  const _VerifiedPreview({required this.bytes, required this.fileExtension});
+class _VerifiedPreview extends ConsumerWidget {
+  const _VerifiedPreview({
+    required this.bytes,
+    required this.fileExtension,
+    required this.packageId,
+    required this.reporterEmail,
+  });
 
   final Uint8List bytes;
   final String? fileExtension;
+  final String? packageId;
+  final String reporterEmail;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ext = (fileExtension ?? '').replaceFirst('.', '');
     final isImage = {'jpg', 'jpeg', 'png', 'gif', 'webp'}.contains(ext);
 
@@ -208,12 +239,42 @@ class _VerifiedPreview extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: isImage
-            ? Image.memory(bytes, fit: BoxFit.contain)
-            : Text(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (isImage)
+              Image.memory(bytes, fit: BoxFit.contain)
+            else
+              Text(
                 'Verified ${ext.isEmpty ? 'asset' : '.$ext asset'} (${bytes.length} bytes). Preview support for this type is not enabled yet.',
                 style: AppTextStyles.monoMd(),
               ),
+            if (packageId != null && packageId!.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () async {
+                  await showReportContentSheet(
+                    context: context,
+                    ref: ref,
+                    packageId: packageId!,
+                    reporterEmail: reporterEmail,
+                  );
+                  if (!context.mounted) return;
+                  await showBlockSenderDialog(
+                    context: context,
+                    ref: ref,
+                    packageId: packageId!,
+                    reporterEmail: reporterEmail,
+                  );
+                },
+                child: Text(
+                  'Report & block sender',
+                  style: AppTextStyles.monoSm(color: AppColors.alertAmber),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

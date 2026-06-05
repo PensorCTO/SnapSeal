@@ -236,7 +236,7 @@ Per [[Send_Proof_Courier_2026-05]]: recipient E2E is **intentionally parked** un
 | Factor | FactLockCam |
 |--------|-------------|
 | User-generated content | User captures photos/video **locally**; no in-app social feed |
-| Content moderation | N/A — no public UGC platform |
+| Content moderation | **Implemented (2026-06-05)** — `report_courier_package` / `block_courier_sender` on `CourierUnlockView`; async `courier-content-scan`; no in-app social feed |
 | Medical / violent themes | None |
 | Creator app age-gate (1.2.1(a)) | **Not implemented** |
 

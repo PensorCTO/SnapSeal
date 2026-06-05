@@ -13,6 +13,8 @@ import '../../core/archive/presentation/widgets/universal_asset_toolbar.dart';
 import '../../core/di/service_providers.dart';
 import '../../data/models/archive_item.dart';
 import '../../features/archive/presentation/providers/send_proof_provider.dart';
+import '../../features/ugc_safety/presentation/providers/content_report_provider.dart';
+import '../../features/ugc_safety/presentation/widgets/report_content_sheet.dart';
 import '../../features/archive_quota/presentation/interceptors/archive_quota_paywall.dart';
 import '../../features/archive_quota/presentation/interceptors/metering_credit_interceptor.dart';
 import 'archive_media_download.dart';
@@ -28,6 +30,19 @@ class ArchiveItemActions {
     required WidgetRef ref,
     required ArchiveItem item,
   }) async {
+    if (!context.mounted) return;
+
+    String? courierPackageId;
+    final safetyRepo = ref.read(safetyRepositoryProvider);
+    if (safetyRepo.isConfigured) {
+      try {
+        courierPackageId =
+            await safetyRepo.getOwnCourierPackageId(item.assetFingerprint);
+      } catch (_) {
+        courierPackageId = null;
+      }
+    }
+
     if (!context.mounted) return;
     await showCupertinoModalPopup<void>(
       context: context,
@@ -85,6 +100,28 @@ class ArchiveItemActions {
                     await _showMetadataDialog(context, ref, item);
                   },
                   child: const Text('Manage title and description'),
+                ),
+                if (courierPackageId != null)
+                  CupertinoActionSheetAction(
+                    onPressed: () async {
+                      Navigator.of(sheetContext).pop();
+                      if (!context.mounted) return;
+                      await showReportContentSheet(
+                        context: context,
+                        ref: ref,
+                        packageId: courierPackageId!,
+                      );
+                    },
+                    child: const Text('Report shared proof'),
+                  ),
+                CupertinoActionSheetAction(
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  child: Text(
+                    'Block recipient email (coming soon)',
+                    style: TextStyle(
+                      color: CupertinoColors.systemGrey.resolveFrom(context),
+                    ),
+                  ),
                 ),
               ],
             ),

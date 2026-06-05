@@ -6,15 +6,16 @@ import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:factlockcam/application/vault/vault_sync_coordinator.dart';
-import 'package:factlockcam/core/cloud/supabase_vault_service.dart';
-import 'package:factlockcam/core/crypto/vault_encryption_handler.dart';
+import 'package:factlockcam/application/archive/archive_sync_coordinator.dart';
+import 'package:factlockcam/core/cloud/supabase_archive_service.dart';
+import 'package:factlockcam/core/crypto/archive_encryption_handler.dart';
 import 'package:factlockcam/core/platform/platform_channel_coordinator.dart';
 import 'package:factlockcam/data/supabase/seal_ledger_repository.dart';
 
 class _MockSealLedgerRepository extends Mock implements SealLedgerRepository {}
 
-class _MockSupabaseVaultService extends Mock implements SupabaseVaultService {}
+class _MockSupabaseArchiveService extends Mock
+    implements SupabaseArchiveService {}
 
 class _FakePlatformCoordinator extends Fake
     implements IPlatformChannelCoordinator {
@@ -38,10 +39,10 @@ void main() {
   });
 
   late _MockSealLedgerRepository sealLedger;
-  late _MockSupabaseVaultService vaultService;
+  late _MockSupabaseArchiveService vaultService;
   late _FakePlatformCoordinator platformCoordinator;
-  late VaultSyncCoordinator coordinator;
-  late DefaultVaultEncryptionHandler vault;
+  late ArchiveSyncCoordinator coordinator;
+  late DefaultArchiveEncryptionHandler vault;
 
   const packageId = '11111111-1111-1111-1111-111111111111';
   const assetHash = 'deadbeef';
@@ -51,9 +52,9 @@ void main() {
 
   setUp(() {
     sealLedger = _MockSealLedgerRepository();
-    vaultService = _MockSupabaseVaultService();
+    vaultService = _MockSupabaseArchiveService();
     platformCoordinator = _FakePlatformCoordinator();
-    vault = DefaultVaultEncryptionHandler();
+    vault = DefaultArchiveEncryptionHandler();
 
     when(() => sealLedger.isConfigured).thenReturn(true);
     when(
@@ -77,7 +78,7 @@ void main() {
       ),
     ).thenAnswer((_) async => '$userId/$packageId.enc');
 
-    coordinator = VaultSyncCoordinator(
+    coordinator = ArchiveSyncCoordinator(
       sealLedgerRepository: sealLedger,
       vaultService: vaultService,
       channelCoordinator: platformCoordinator,
