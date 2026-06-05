@@ -28,6 +28,9 @@ auth.json
 .agents/.skill-lock.json
 .agents/skills/flutter-expert/
 
+# Accidental nested Supabase init under Flutter app (canonical stack is repo-root supabase/)
+factlockcam_app/supabase/
+
 # External / third-party projects in repo root
 deepseek-cursor-proxy/
 

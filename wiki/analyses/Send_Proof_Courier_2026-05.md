@@ -22,7 +22,7 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; r
 | Courier package upload + link creation (`createCourierPackage`, Supabase RPC + Storage) | Implemented |
 | `SendProof` Riverpod notifier (`send_proof_provider.dart`) | Wired to UI |
 | Share sheet: PDF + courier URL text | Default Send Proof UX |
-| Recipient opens link in browser and unlocks | **Verified** on Cloudflare Pages (`/courier?pkg=…`); custom domain bind required for production URL |
+| Recipient opens link in browser and unlocks | **QA passed** — Secure Communications Console on Cloudflare Pages (`/courier?pkg=…`); interim host `main.factlockcam-archive.pages.dev`; custom domain bind required for production URL ([[Secure_Communications_Console_2026-06]]) |
 
 ### What does not ship in the app
 
@@ -84,6 +84,7 @@ summary: "Send Proof workflow: certificate PDF + courier link via share sheet; r
 
 ## Related Notes
 
+* [[Secure_Communications_Console_2026-06]]
 * [[Archive_Owner_UX_2026-05]]
 * [[Web_Deployment_Architecture_2026-05]]
 * [[Production_Transition_2026-05]]

@@ -28,6 +28,7 @@ OPTIONAL_KEYS = (
     "POLYGON_RPC_URL",
     "ENABLE_PROOF_LINKS",
     "ENABLE_ARBITRARY_FILE_SEAL",
+    "APP_STORE_URL",
 )
 ALLOWED_KEYS = REQUIRED_KEYS + OPTIONAL_KEYS
 
@@ -130,6 +131,7 @@ def write_generated_dart_defines(path: Path, merged: dict[str, str]) -> None:
         f"  static const polygonRpcUrl = {_dart_string_literal(merged.get('POLYGON_RPC_URL', ''))};",
         f"  static const enableProofLinks = {'true' if enable_proof_links else 'false'};",
         f"  static const enableArbitraryFileSeal = {'true' if enable_arbitrary_file_seal else 'false'};",
+        f"  static const appStoreUrl = {_dart_string_literal(merged.get('APP_STORE_URL', ''))};",
         "}",
         "",
     ]

@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,6 +6,12 @@ import '../../app/theme/app_typography.dart';
 import '../../features/ugc_safety/presentation/widgets/block_sender_dialog.dart';
 import '../../features/ugc_safety/presentation/widgets/report_content_sheet.dart';
 import 'courier_unlock_notifier.dart';
+import 'courier_unlock_phase.dart';
+import 'widgets/courier_gate_panel.dart';
+import 'widgets/courier_media_stage.dart';
+import 'widgets/courier_proof_panel.dart';
+import 'widgets/hash_cascade_ticker.dart';
+import 'widgets/viral_loop_overlay.dart';
 
 class CourierUnlockView extends ConsumerStatefulWidget {
   const CourierUnlockView({super.key, required this.packageId});
@@ -60,6 +64,17 @@ class _CourierUnlockViewState extends ConsumerState<CourierUnlockView> {
         );
   }
 
+  Future<void> _report() async {
+    final packageId = widget.packageId;
+    if (packageId == null || packageId.isEmpty) return;
+    await showReportContentSheet(
+      context: context,
+      ref: ref,
+      packageId: packageId,
+      reporterEmail: _emailController.text,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(courierUnlockProvider);
@@ -70,90 +85,12 @@ class _CourierUnlockViewState extends ConsumerState<CourierUnlockView> {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 720),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'FactLockCam Courier',
-                    style: AppTextStyles.monoLg(color: AppColors.verifiedNeon),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Unlock and verify an encrypted courier package locally in this browser.',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  _StatusPanel(
-                    packageId: widget.packageId,
-                    attemptStatus: state.attemptStatus,
-                    message: state.message,
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _emailController,
-                    enabled: !state.isLoading && !state.isLocked,
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    decoration: const InputDecoration(
-                      labelText: 'Recipient email',
-                      hintText: 'name@example.com',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _challengeController,
-                    enabled: !state.isLoading && !state.isLocked,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'One-time password',
-                    ),
-                    onSubmitted: (_) => _unlock(),
-                  ),
-                  const SizedBox(height: 16),
-                  FilledButton(
-                    onPressed:
-                        state.isLoading || state.isLocked ? null : _unlock,
-                    child: state.isLoading
-                        ? const SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Unlock package'),
-                  ),
-                  if (widget.packageId != null &&
-                      widget.packageId!.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: state.isLoading
-                          ? null
-                          : () => showReportContentSheet(
-                                context: context,
-                                ref: ref,
-                                packageId: widget.packageId!,
-                                reporterEmail: _emailController.text,
-                              ),
-                      child: Text(
-                        'Report concerning content',
-                        style: AppTextStyles.monoSm(
-                          color: AppColors.alertAmber,
-                        ),
-                      ),
-                    ),
-                  ],
-                  if (state.verifiedBytes != null) ...[
-                    const SizedBox(height: 24),
-                    _VerifiedPreview(
-                      bytes: state.verifiedBytes!,
-                      fileExtension: state.fileExtension,
-                      packageId: widget.packageId,
-                      reporterEmail: _emailController.text,
-                    ),
-                  ],
-                ],
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              child: SingleChildScrollView(
+                key: ValueKey(state.phase),
+                padding: const EdgeInsets.all(24),
+                child: _buildPhaseBody(state),
               ),
             ),
           ),
@@ -161,121 +98,113 @@ class _CourierUnlockViewState extends ConsumerState<CourierUnlockView> {
       ),
     );
   }
-}
 
-class _StatusPanel extends StatelessWidget {
-  const _StatusPanel({
-    required this.packageId,
-    required this.attemptStatus,
-    required this.message,
-  });
-
-  final String? packageId;
-  final Map<String, dynamic>? attemptStatus;
-  final String? message;
-
-  @override
-  Widget build(BuildContext context) {
-    final attemptsRemaining = attemptStatus?['attempts_remaining'];
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.titaniumPanel,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.titaniumEdge),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: DefaultTextStyle(
-          style: AppTextStyles.monoSm(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('PACKAGE: ${packageId ?? 'missing'}'),
-              if (attemptStatus != null) ...[
-                const SizedBox(height: 8),
-                Text('STATUS: ${attemptStatus!['status']}'),
-                Text('ATTEMPTS REMAINING: $attemptsRemaining'),
-              ],
-              if (message != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  message!,
-                  style: AppTextStyles.monoSm(color: AppColors.alertAmber),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
+  Widget _buildPhaseBody(CourierUnlockState state) {
+    switch (state.phase) {
+      case CourierUnlockPhase.idle:
+      case CourierUnlockPhase.processing:
+        return CourierGatePanel(
+          packageId: widget.packageId,
+          attemptStatus: state.attemptStatus,
+          message: state.message,
+          emailController: _emailController,
+          challengeController: _challengeController,
+          isProcessing: state.phase == CourierUnlockPhase.processing,
+          isLocked: state.isLocked,
+          onUnlock: _unlock,
+          onReport: _report,
+        );
+      case CourierUnlockPhase.cascadeAnimation:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (state.targetAssetHash != null)
+              HashCascadeTicker(targetHash: state.targetAssetHash!),
+          ],
+        );
+      case CourierUnlockPhase.playbackReady:
+      case CourierUnlockPhase.viralLoop:
+        return _PlaybackLayout(
+          state: state,
+          packageId: widget.packageId,
+          reporterEmail: _emailController.text,
+        );
+    }
   }
 }
 
-class _VerifiedPreview extends ConsumerWidget {
-  const _VerifiedPreview({
-    required this.bytes,
-    required this.fileExtension,
+class _PlaybackLayout extends ConsumerWidget {
+  const _PlaybackLayout({
+    required this.state,
     required this.packageId,
     required this.reporterEmail,
   });
 
-  final Uint8List bytes;
-  final String? fileExtension;
+  final CourierUnlockState state;
   final String? packageId;
   final String reporterEmail;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ext = (fileExtension ?? '').replaceFirst('.', '');
-    final isImage = {'jpg', 'jpeg', 'png', 'gif', 'webp'}.contains(ext);
+    final bytes = state.verifiedBytes;
+    if (bytes == null) {
+      return const SizedBox.shrink();
+    }
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppColors.verifiedNeon.withValues(alpha: 0.5),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Stack(
           children: [
-            if (isImage)
-              Image.memory(bytes, fit: BoxFit.contain)
-            else
-              Text(
-                'Verified ${ext.isEmpty ? 'asset' : '.$ext asset'} (${bytes.length} bytes). Preview support for this type is not enabled yet.',
-                style: AppTextStyles.monoMd(),
+            CourierMediaStage(
+              bytes: bytes,
+              fileExtension: state.fileExtension,
+              contentMimeType: state.contentMimeType,
+              onPlaybackCompleted: () => ref
+                  .read(courierUnlockProvider.notifier)
+                  .onPlaybackCompleted(),
+            ),
+            if (state.phase == CourierUnlockPhase.viralLoop)
+              ViralLoopOverlay(
+                onDismiss: () =>
+                    ref.read(courierUnlockProvider.notifier).dismissViralLoop(),
               ),
-            if (packageId != null && packageId!.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () async {
-                  await showReportContentSheet(
-                    context: context,
-                    ref: ref,
-                    packageId: packageId!,
-                    reporterEmail: reporterEmail,
-                  );
-                  if (!context.mounted) return;
-                  await showBlockSenderDialog(
-                    context: context,
-                    ref: ref,
-                    packageId: packageId!,
-                    reporterEmail: reporterEmail,
-                  );
-                },
-                child: Text(
-                  'Report & block sender',
-                  style: AppTextStyles.monoSm(color: AppColors.alertAmber),
-                ),
-              ),
-            ],
           ],
         ),
-      ),
+        const SizedBox(height: 20),
+        CourierProofPanel(
+          packageId: packageId,
+          assetHash: state.targetAssetHash,
+          attestation: state.attestation,
+          showDeepDive: state.showProofDeepDive,
+          onToggleDeepDive: () =>
+              ref.read(courierUnlockProvider.notifier).toggleProofDeepDive(),
+        ),
+        if (packageId != null && packageId!.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () async {
+              await showReportContentSheet(
+                context: context,
+                ref: ref,
+                packageId: packageId!,
+                reporterEmail: reporterEmail,
+              );
+              if (!context.mounted) return;
+              await showBlockSenderDialog(
+                context: context,
+                ref: ref,
+                packageId: packageId!,
+                reporterEmail: reporterEmail,
+              );
+            },
+            child: Text(
+              'Report & block sender',
+              style: AppTextStyles.monoSm(color: AppColors.alertAmber),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

@@ -102,6 +102,7 @@ serve(async (req) => {
     key: row.key,
     file_extension: row.file_extension,
     asset_hash: row.asset_hash,
+    content_mime_type: row.content_mime_type ?? null,
     signed_url: signed.signedUrl,
     expires_in_seconds: SIGNED_URL_TTL_SECONDS,
   });

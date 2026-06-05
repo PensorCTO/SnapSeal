@@ -36,7 +36,7 @@ FactLockCam public web is **two hosts**, not a browser clone of the iOS app:
 `AppRouterRefreshNotifier` on **`kIsWeb`**:
 
 - **`/`** → `WebArchiveGateView` — “courier unlock only”; link to `WEB_BASE_URL` / `factlockcam.com`
-- **`/courier?pkg=…`** → `CourierUnlockView` (unauthenticated; no redirect to `/logon`)
+- **`/courier?pkg=…`** → `CourierUnlockView` — **Secure Communications Console** (phased gate → hash cascade → decrypt → media + Proof Panel → viral CTA); see [[Secure_Communications_Console_2026-06]]
 - **Any other path** → redirect to `/` gate
 
 Mobile routing unchanged (logon → hub → capture/archive).
@@ -65,9 +65,16 @@ Sync via `./scripts/sync_flutter_dart_defines.sh`.
 - Empty Pages deployments return **522**; unbound custom domain DNS returns **530**
 - Working alias after deploy: `https://main.factlockcam-archive.pages.dev`
 
+### Secure Communications Console (twenty-sixth / twenty-seventh pass, 2026-06-05)
+
+- Phase machine: `CourierUnlockPhase` + `CourierUnlockNotifier` staged unlock (RPC → 1.5s cascade → `CourierCrypto`).
+- Proof Panel: `get_public_proof_attestation` RPC (`20260605140000`).
+- Interim QA origin: `https://main.factlockcam-archive.pages.dev` when custom domain DNS is not bound.
+- **Twenty-seventh QA passed** — Send Proof E2E stable; **101/101** tests.
+
 ### Tests
 
-`flutter test` **52/52** after web gate + capture gating changes.
+`flutter test` **101/101** (includes Secure Communications Console + UGC reporting suites).
 
 ## Provenance Tracking
 
@@ -76,6 +83,7 @@ Sync via `./scripts/sync_flutter_dart_defines.sh`.
 
 ## Related Notes
 
+* [[Secure_Communications_Console_2026-06]]
 * [[Send_Proof_Courier_2026-05]]
 * [[App_Store_Remediation_2026-05]]
 * [[FactLockCam_Product_Baseline_2026-05]]

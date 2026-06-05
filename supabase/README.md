@@ -60,6 +60,10 @@ script loads repo-root `.env.local` first, so remote Postgres commands receive
 Use `push-dry-run` before `push` so migration history and SQL are visible before
 the remote database changes.
 
+**Cursor agents:** execute `push` / `functions deploy` directly when a task requires
+hosted schema changes — do not hand off migration steps to the user (see
+`.cursor/rules/supabase-agent-ops.mdc`).
+
 Auth settings such as the 6-digit email OTP length live in
 `supabase/config.toml`, not database migrations. Run `config-push` after linking
 the remote project so the hosted Supabase project uses `auth.email.otp_length =

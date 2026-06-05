@@ -59,6 +59,18 @@ const String sendProofShareIntro =
     'FactLockCam verifiable proof package\n\n'
     'Tamper-proof certificate attached. Secure media link:\n';
 
+/// Unauthenticated web courier unlock console headline.
+const String courierConsoleHeadline = 'Secure Communications Console';
+
+/// Subcopy on the courier gate (recipient unlock surface).
+const String courierConsoleGateSubtitle =
+    'Unlock and verify an encrypted Archive package locally in this browser.';
+
+/// Viral loop overlay pitch (post-playback CTA).
+const String courierConsoleViralPitch =
+    'Sovereign zero-knowledge local lock. Capture, seal, and share verifiable proof '
+    'from your device.';
+
 /// One-line package description (pubspec / manifest).
 const String packageDescription =
     'Private, tamper-evident media archive with verified Digital DNA at capture and tamper-proof certificates on an independent global public ledger.';

@@ -9,8 +9,10 @@ summary: "Authoritative May 2026 baseline: verified hub/archive/capture workflow
 
 As of this baseline, the **primary product workflow is verified end-to-end** on hosted Supabase: **logon** → **archive hub** → **capture or browse** → sealed assets with remote proof when online.
 
-**Submission readiness (2026-06-05):** **100% Pre-Connect Submission Ready** + **UGC safety infrastructure** for Guideline 1.2 (reporting/blocking on courier surfaces; async moderation scan). Zero-trust communication primitive positioning enforced in wiki and internal `Archive*` service layer (deprecated `Vault*` typedef shims remain for non-breaking migration).
+**Submission readiness (2026-06-05):** **100% Pre-Connect Submission Ready** + **UGC safety infrastructure** for Guideline 1.2 + **Secure Communications Console QA passed**. Zero-trust communication primitive positioning enforced in wiki and internal `Archive*` service layer (deprecated `Vault*` typedef shims remain for non-breaking migration).
 
+- **Twenty-seventh QA pass 2026-06-05**: **Application stable** — user **QA passed** on Send Proof → web courier E2E (phased console, hosted schema repair, Pages deploy); **101/101** tests ([[Secure_Communications_Console_2026-06]]).
+- **Twenty-sixth structural pass 2026-06-05**: **Secure Communications Console** — web courier unlock phased UI (hash cascade animation, deferred decrypt, Proof Panel + `get_public_proof_attestation`, viral loop CTA); `docs/skills/SKILL_Secure_Comm_Console.md`; **101/101** tests ([[Web_Deployment_Architecture_2026-05]], [[Secure_Communications_Console_2026-06]]).
 - **Twenty-fifth QA pass 2026-06-05**: **QA env boot + Send Proof device cold-start** — `.env.qa.local` + `FACTLOCKCAM_ENV_FILE`; VS Code / `run_device.sh` `--dart-define-from-file`; user **QA passed** on physical iPhone Send Proof ([[iOS_Device_Development_Workflow]], `docs/skills/SKILL_QA_Env_Boot.md`).
 - **Twenty-fourth QA pass 2026-06-05**: **Zero-trust compliance alignment** — user **QA passed** on hosted report/block + async moderation scan ([[UGC_Safety_Reporting_2026-06]]); migration `20260605120000` + `courier-content-scan` pushed/deployed (`jqvnwtslmoxjwzusmtxs`); Archive service-layer rename with shims ([[Zero_Trust_RLS_Audit_2026-06]], [[Provisional_Patent_Technical_Exhibit_2026-06]]); **96/96** tests.
 - **Twenty-third structural pass 2026-06-04**: **Device QA pass** — `Signing.local.xcconfig` → `com.factlockcam.dev`; solo tester hosted ledger reset; payload pipeline foundation; **94/94** tests ([[Institution_Grade_Payload_Seal_Backlog]], [[iOS_Device_Development_Workflow]]).
@@ -44,6 +46,17 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 3. When **`USE_POLYGON_NOTARIZER=true`** (default after dart-defines sync), capture runs the **Polygon saga**: **`check_proof_status`** → device sign + **EIP-191 EVM sign** → local **AES-GCM** vault + SQLite → **`proof_ledger`** insert (`pending_notarization`) → **await `anchor-relay`** (camera overlay **Generating Proof…**) → local **`chain_tx_hash`** + `pending_sync` cleared ([[Polygon_Saga_Live]]). On successful seal, **`pro_proof`** credit is debited optimistically (`quotaStateProvider`) with RPC reconcile ([[Archive_Quota_Telemetry_2026-06]]). **Certificate draft** includes the ledger transaction hash (local SQLite or remote `proof_ledger` fetch). When the flag is **false**, the legacy synchronous **`SimulatedChainNotarizer`** path applies unchanged.
 4. Browse sealed media from the **Archive** hub tile (`UnifiedArchiveViewport`: grid/chronology omni-surface with filters), not a separate `/archive` route. **Egress Pass** badge shows verification credit balance; **QuotaTelemetryWidget** shows byte storage/egress bars ([[Archive_Quota_Telemetry_2026-06]]). Default **chronology** view: tap card → asset inspector; **⋯** (top-left) or grid tap → action sheet. Chronology scroll keeps scale/fan transforms without opacity dimming ([[UI_Polish_Hub_Archive_2026-05]]). **SECURING FILE…** overlay during writes ([[Isolate_Lock_Coordinator]]). **View/Play media** decrypts via `extractForCourier` (inspector or action sheet). **Download Media** and **verify/export** actions consume a **Verification Credit** after pre-flight modal ([[Archive_Quota_Telemetry_2026-06]]). **Send Proof** (password-only dialog; certificate uses saved title/description) builds PDF + courier URL → share sheet; recipient unlocks at **`{WEB_ARCHIVE_BASE_URL}/courier?pkg=…`** ([[Send_Proof_Courier_2026-05]], [[Web_Deployment_Architecture_2026-05]]). **DELETE FROM DEVICE** removes local SQLite + files (remote ledger may remain).
 
+### Web courier capability matrix (twenty-sixth pass)
+
+| Capability | Status |
+|------------|--------|
+| Phased Secure Communications Console UI (`CourierUnlockView`) | **QA passed** — device E2E + tests |
+| 1.5s hash cascade animation before decrypt | Verified — `courier_unlock_notifier_test.dart` |
+| Deferred browser decrypt (`CourierCrypto` post-cascade) | Verified — test-covered |
+| Proof Panel + `get_public_proof_attestation` deep-dive | Verified — migration + repository wired |
+| Web blob video playback (`courier_web_media_source`) | Implemented — web target |
+| Viral loop CTA overlay (end-of-stream / timed image) | Verified — `courier_unlock_console_test.dart` |
+
 ### Branding
 
 - **App icon:** FactLockCam camera/lock artwork at `factlockcam_app/assets/images/FactLockCamAppIcon.png` (1024×1024 source). Regenerate platform launchers with `dart run flutter_launcher_icons` (`flutter_launcher_icons` in `pubspec.yaml`). Covers iOS `AppIcon.appiconset`, Android adaptive icons, and web PWA icons/favicon.
@@ -64,8 +77,8 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 - **Archive quota wiring:** Local pre-flight + camera/Send Proof interceptors landed nineteenth pass ([[Archive_Subscription_Tiers_2026]]); production billing (StoreKit), `VaultSyncCoordinator` storage increment RPC remain follow-ups ([[Archive_Quota_Telemetry_2026-06]]).
 - **Relayer wallet ops:** Active payer is a funded hot wallet (`RELAYER_PRIVATE_KEY` in Supabase secrets); rotate or fund as needed — not the user's profile EVM address ([[Polygon_Mainnet_Wiring_2026-05]]).
 - **Hardware-backed signing:** **Device** `signHash` uses Secure Enclave / Keystore (fifteenth QA); EVM wallet remains software-keyed in Secure Storage. Server-side P-256 verify of `device_signature` is follow-up.
-- **Courier / Send Proof:** Certificate PDF + courier package + share sheet wired; recipient unlock on **`archive.factlockcam.com/courier`** (Flutter courier-only deploy). Bind custom domain in Cloudflare Pages before App Store review ([[Web_Deployment_Architecture_2026-05]], [[Send_Proof_Courier_2026-05]]).
-- Automated tests: **90/90** passing under production notarizer defaults (includes archive quota + credit metering + layout tests); still thinner than a production bar on some crypto/sync edge cases.
+- **Courier / Send Proof:** Certificate PDF + courier package + share sheet wired; recipient unlock on **`{WEB_ARCHIVE_BASE_URL}/courier`** (Flutter Secure Communications Console). Interim QA host: `main.factlockcam-archive.pages.dev`; bind **`archive.factlockcam.com`** in Cloudflare Pages before App Store review ([[Web_Deployment_Architecture_2026-05]], [[Send_Proof_Courier_2026-05]], [[Secure_Communications_Console_2026-06]]).
+- Automated tests: **101/101** passing under production notarizer defaults (includes Secure Communications Console courier tests); still thinner than a production bar on some crypto/sync edge cases.
 - **C2PA** and full **ProofLock manifest** assurance: see [[ProofLock_Refactor_Scope]] and [[ProofLock_Architectural_Manifest]].
 
 Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
@@ -78,6 +91,7 @@ Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
 
 ## Related Notes
 
+* [[Secure_Communications_Console_2026-06]]
 * [[Institution_Grade_Payload_Seal_Backlog]]
 * [[UI_Layout_Polish_2026-06]]
 * [[Compliance_Refactor_2026-06]]

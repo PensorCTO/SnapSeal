@@ -91,6 +91,18 @@ class CourierRepository {
     return Map<String, dynamic>.from(response as Map);
   }
 
+  Future<Map<String, dynamic>> fetchPublicAttestation(String assetHash) async {
+    final client = _requiredClient();
+    final response = await client.rpc(
+      'get_public_proof_attestation',
+      params: {'p_asset_hash': assetHash},
+    );
+    if (response is Map) {
+      return Map<String, dynamic>.from(response);
+    }
+    return const {'found': false};
+  }
+
   Future<Uint8List> downloadSignedBlob(String signedUrl) async {
     _requiredClient();
     final response = await http.get(Uri.parse(signedUrl));

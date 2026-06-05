@@ -15,6 +15,9 @@ void main() {
     sendProofShareIntro,
     packageDescription,
     consumerEpistemicLine,
+    courierConsoleHeadline,
+    courierConsoleGateSubtitle,
+    courierConsoleViralPitch,
     ...userVisibleComplianceStrings,
     ...ArchivePresentationCopy.curatedUserVisible,
   ];

@@ -2,11 +2,8 @@ import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../data/local/archive_database.dart';
-import '../../data/local/vault_database.dart' show VaultDatabase;
 import '../../data/services/archive_storage.dart';
-import '../../data/services/local_vault_storage.dart' show LocalVaultStorage;
 import '../../data/services/archive_path_resolver.dart';
-import '../../data/services/vault_path_resolver.dart' show VaultPathResolver;
 import '../../data/supabase/auth_repository.dart';
 import '../../data/supabase/seal_ledger_repository.dart';
 import '../../application/archive/archive_sync_coordinator.dart';
@@ -24,7 +21,6 @@ import '../../features/archive_quota/domain/services/metering_quota_service.dart
 import '../../features/archive_quota/domain/services/subscription_billing_gateway.dart';
 import '../../data/supabase/supabase_client_handle.dart';
 import '../crypto/archive_encryption_handler.dart';
-import '../crypto/vault_encryption_handler.dart' show VaultEncryptionHandler;
 import '../journal/journal_database_factory.dart';
 import '../journal/journal_repository.dart';
 import '../journal/transactional_archive_persister.dart';
@@ -34,16 +30,10 @@ import '../../domain/export/certificate_export_service.dart';
 import '../../domain/export/proof_bundle_export_service.dart';
 import '../../domain/blockchain/chain_notarizer.dart';
 import '../../domain/blockchain/archive_blockchain_handler.dart';
-import '../../domain/blockchain/vault_blockchain_handler.dart'
-    show VaultBlockchainHandler;
-import '../../application/vault/vault_sync_coordinator.dart'
-    show VaultSyncCoordinator;
-import '../../core/cloud/supabase_vault_service.dart' show SupabaseVaultService;
 import '../../domain/blockchain/wallet_service.dart';
 import '../../domain/services/notarization_monitor_service.dart';
 import '../../domain/services/proof_sync_notifier.dart';
 import '../../domain/services/archive_service.dart';
-import '../../domain/services/vault_service.dart' show VaultService;
 import '../ghost_key/app_lock_coordinator.dart';
 import '../ghost_key/backup_metadata_store.dart';
 import '../ghost_key/factlock_keystore.dart';

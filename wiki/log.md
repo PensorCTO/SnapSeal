@@ -7,6 +7,20 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 ## 2026-06-05
 
+- **Twenty-seventh pass QA — application stable** — **user QA passed**:
+  - **E2E:** iPhone Send Proof → recipient unlock on `{WEB_ARCHIVE_BASE_URL}/courier?pkg=…` through full console phases (gate → cascade → decrypt → media + Proof Panel → viral CTA).
+  - **Hosted repair:** `20260605210000_repair_send_proof_schema.sql` restored metering RPCs and 7-param `get_or_create_courier_package` after accidental `my_schema` drift; `get_public_proof_attestation` live.
+  - **Deploy:** Archive web on `main.factlockcam-archive.pages.dev`; custom domain DNS deferred.
+  - **Tests:** **101/101** `flutter test`; `flutter analyze` clean on web courier paths.
+  - **Wiki:** [[Secure_Communications_Console_2026-06]]; baseline + overview reconciled.
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+- **Twenty-sixth structural pass — Secure Communications Console (web courier)**:
+  - **Web target:** Unauthenticated `/courier?pkg=…` refactored from utility downloader into phased **Secure Communications Console** — Gate → 1.5s hash cascade → deferred browser decrypt → media + Proof Panel → viral loop CTA overlay.
+  - **State machine:** `CourierUnlockPhase` (`idle`, `processing`, `cascadeAnimation`, `playbackReady`, `viralLoop`); encrypted blob downloaded immediately after RPC; `CourierCrypto` runs only after cascade completes.
+  - **Backend:** `get_public_proof_attestation` anon-safe RPC (`20260605140000`); `courier-unlock` forwards `content_mime_type`.
+  - **Skill:** `docs/skills/SKILL_Secure_Comm_Console.md`.
+  - **Tests:** **101/101** `flutter test` (`courier_unlock_console_test.dart`, `courier_unlock_notifier_test.dart`).
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
 - **Twenty-fifth pass — QA env boot + Send Proof device cold-start** — **user QA passed**:
   - **Env split:** `.env.qa.example` → gitignored `.env.qa.local`; `FACTLOCKCAM_ENV_FILE` selects QA vs production `.env.local` in sync + VS Code **iOS (QA Tunnel)** preLaunchTask.
   - **Launch path:** All VS Code configs + `run_device.sh` use `--dart-define-from-file=dart_defines.json`; cold start required after define changes.

@@ -11,7 +11,8 @@ Read this page first when answering questions about the wiki.
 
 | Page | When to read |
 |------|----------------|
-| [[FactLockCam_Product_Baseline_2026-05]] | **Canonical status** — **100% Pre-Connect Submission Ready** (2026-06-03); verified workflow, Supabase ops, branding |
+| [[FactLockCam_Product_Baseline_2026-05]] | **Canonical status** — **100% Pre-Connect Submission Ready** + **twenty-seventh QA passed (2026-06-05)**; Secure Communications Console stable |
+| [[Secure_Communications_Console_2026-06]] | **Twenty-seventh pass QA passed (2026-06-05)** — web `/courier` phased console, hash cascade, Proof Panel, viral CTA; **101/101** tests |
 | [[Institution_Grade_Payload_Seal_Backlog]] | **Foundation (2026-06-04)** — MIME-agnostic pipeline deferred; consumer stays Picture/Video only |
 | [[UI_Layout_Polish_2026-06]] | **Twenty-first pass QA passed (2026-06-03)** — responsive hub/archive/inspector/account layouts; landscape overflow fix; **90/90** tests |
 | [[Data_Custody_And_Backup_Model_2026]] | **Twentieth pass QA passed (2026-06-03)** — Keys-only `.factlock`; scenario matrix; hosted Terms deployed; **82/82** tests |
@@ -67,6 +68,7 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses (active)
 
+- [[Secure_Communications_Console_2026-06]] — Twenty-seventh pass: phased web courier console, user QA stable, **101/101** tests (June 2026).
 - [[UGC_Safety_Reporting_2026-06]] — Twenty-fourth pass: App Store 1.2 UGC safety, courier report/block, async moderation (June 2026).
 - [[Zero_Trust_RLS_Audit_2026-06]] — RLS matrix and AES-GCM key isolation audit (June 2026).
 - [[Provisional_Patent_Technical_Exhibit_2026-06]] — Enablement exhibit: journal, isolate locks, Polygon saga (June 2026).
@@ -105,6 +107,7 @@ Historical context only — prefer [[FactLockCam_Product_Baseline_2026-05]] for 
 | Skill | Purpose |
 |-------|---------|
 | `docs/skills/SKILL_QA_Env_Boot.md` | Safe physical-device QA cold-start (`.env.qa.local`, no secrets in agent context) |
+| `docs/skills/SKILL_Secure_Comm_Console.md` | Web courier Secure Communications Console — phase machine, attestation RPC, validation |
 | `docs/skills/SKILL_Compliance_Architecture.md` | Zero-trust lexicon, UGC safety, patent exhibit scaffolding |
 | `docs/skills/SKILL_FORENSIC_UI_REFINEMENT.md` | Presentation-only Heavy Metal layout polish |
 | `docs/skills/SKILL_IMPLEMENT_ARCHIVE_SUBSCRIPTIONS.md` | Three-tier subscription foundation |

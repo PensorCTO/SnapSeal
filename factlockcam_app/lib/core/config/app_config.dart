@@ -43,6 +43,10 @@ class AppConfig {
     'SUPPORT_URL',
     defaultValue: GeneratedDartDefines.supportUrl,
   );
+  static const _appStoreUrl = String.fromEnvironment(
+    'APP_STORE_URL',
+    defaultValue: GeneratedDartDefines.appStoreUrl,
+  );
   static const _enableArbitraryFileSeal = bool.fromEnvironment(
     'ENABLE_ARBITRARY_FILE_SEAL',
     defaultValue: GeneratedDartDefines.enableArbitraryFileSeal,
@@ -157,4 +161,9 @@ class AppConfig {
   static String get termsUrl => '$webBaseUrl/terms';
 
   static String get guideUrl => '$webBaseUrl/guide';
+
+  /// App Store listing for viral loop CTA on courier unlock surface.
+  ///
+  /// Falls back to empty string; UI uses [webBaseUrl] when unset.
+  static String get appStoreUrl => _appStoreUrl;
 }
