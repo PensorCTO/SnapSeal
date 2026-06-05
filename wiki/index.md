@@ -100,6 +100,15 @@ Historical context only — prefer [[FactLockCam_Product_Baseline_2026-05]] for 
 - [[Master_Context_10MAY2026]] - Superseded by [[Master_Context_11MAY2026]].
 - [[System_Context_Audit_2026-05-09]] - Superseded by [[FactLockCam_Product_Baseline_2026-05]].
 
+## Agent skills (repo)
+
+| Skill | Purpose |
+|-------|---------|
+| `docs/skills/SKILL_QA_Env_Boot.md` | Safe physical-device QA cold-start (`.env.qa.local`, no secrets in agent context) |
+| `docs/skills/SKILL_Compliance_Architecture.md` | Zero-trust lexicon, UGC safety, patent exhibit scaffolding |
+| `docs/skills/SKILL_FORENSIC_UI_REFINEMENT.md` | Presentation-only Heavy Metal layout polish |
+| `docs/skills/SKILL_IMPLEMENT_ARCHIVE_SUBSCRIPTIONS.md` | Three-tier subscription foundation |
+
 ## Maintenance
 
 - [[overview]]

@@ -7,6 +7,7 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
+      "toolArgs": ["--dart-define-from-file=dart_defines.json"],
       "preLaunchTask": "factlockcam: sync Flutter dart defines"
     },
     {
@@ -16,6 +17,7 @@
       "type": "dart",
       "program": "lib/main.dart",
       "flutterMode": "release",
+      "toolArgs": ["--dart-define-from-file=dart_defines.json"],
       "preLaunchTask": "factlockcam: sync Flutter dart defines"
     },
     {
@@ -24,7 +26,8 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
-      "preLaunchTask": "factlockcam: sync Flutter dart defines"
+      "toolArgs": ["--dart-define-from-file=dart_defines.json"],
+      "preLaunchTask": "factlockcam: sync Flutter dart defines (QA)"
     },
     {
       "name": "iOS (QA Tunnel, Release)",
@@ -33,7 +36,8 @@
       "type": "dart",
       "program": "lib/main.dart",
       "flutterMode": "release",
-      "preLaunchTask": "factlockcam: sync Flutter dart defines"
+      "toolArgs": ["--dart-define-from-file=dart_defines.json"],
+      "preLaunchTask": "factlockcam: sync Flutter dart defines (QA)"
     }
   ]
 }

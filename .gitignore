@@ -12,6 +12,7 @@ venv/
 # Secrets and local config
 .env
 .env.local
+.env.qa.local
 factlockcam_app/dart_defines.json
 factlockcam_app/lib/core/config/generated_dart_defines.dart
 .env.*.local

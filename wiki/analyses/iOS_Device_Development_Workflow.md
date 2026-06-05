@@ -9,6 +9,8 @@ summary: "Physical iOS 26 device QA: build/install/manual launch, flutter run at
 
 As of **May 2026**, FactLockCam on a **physical iPhone** (iOS 26.x) with **Flutter 3.38.4** and **Xcode 26.x** routinely **builds and installs** debug binaries. **`flutter run` may fail after launch** when attaching the Dart VM Service (`Error connecting to the service protocol`, `Connection reset by peer`, or `Connection closed before full header was received`). That terminal error is often a **debugger-bridge / toolchain** issue — **not** proof the app failed to start. Always verify the **home-screen UI** before treating attach failure as a crash.
 
+**QA gate (verified 2026-06-05):** Send Proof device cold-start via `docs/skills/SKILL_QA_Env_Boot.md`: copy `.env.qa.example` → `.env.qa.local`, fill Supabase keys locally, then `FACTLOCKCAM_ENV_FILE=$PWD/.env.qa.local ./scripts/sync_flutter_dart_defines.sh` and `./factlockcam_app/run_device.sh`. Courier links must resolve to `{WEB_ARCHIVE_BASE_URL}/courier?pkg={uuid}` (hosted archive or Ngrok tunnel).
+
 **QA gate (verified 2026-05-20):** After `flutter build ios --debug` + `flutter install` from the **canonical repo** (`ProofLockCleanup`), manual launch passes logon → hub → Picture/Video/Archive on iPhoneTanto when Supabase defines are synced from `.env.local`. Requires **lazy camera mount** in `VaultHomeView` (PR0, [[Polygon_Try1_Postmortem]]) so hidden panels do not initialize dual cameras at hub load.
 
 ### What succeeds vs what fails
@@ -22,6 +24,31 @@ As of **May 2026**, FactLockCam on a **physical iPhone** (iOS 26.x) with **Flutt
 | `flutter attach -d <device>` after manual launch | Preferred when hot reload is needed |
 
 ### Recommended workflow
+
+#### Send Proof QA (preferred, 2026-06-05)
+
+1. Scaffold QA env (keys stay local — never commit):
+
+   ```bash
+   cp .env.qa.example .env.qa.local
+   # Edit .env.qa.local: SUPABASE_URL, SUPABASE_ANON_KEY
+   ```
+
+2. Sync defines and cold-start on device:
+
+   ```bash
+   export FACTLOCKCAM_ENV_FILE="$PWD/.env.qa.local"
+   ./scripts/sync_flutter_dart_defines.sh
+   ./factlockcam_app/run_device.sh
+   ```
+
+   Or use VS Code **iOS (QA Tunnel)** — preLaunchTask syncs from `.env.qa.local` automatically.
+
+3. Verify Send Proof share link uses `WEB_ARCHIVE_BASE_URL` from `.env.qa.example` defaults (`https://archive.factlockcam.com`) unless tunnel QA overrides it.
+
+See `docs/skills/SKILL_QA_Env_Boot.md` for the agent-safe interactive procedure.
+
+#### General device install
 
 1. Sync compile-time Supabase keys (never commit `dart_defines.json`):
 
@@ -80,6 +107,7 @@ Do not wrap `main()` in `runZonedGuarded` or add `[CRASH_DIAG]` logging when inv
 
 ## Provenance Tracking
 
+* *Send Proof QA env boot*: Twenty-fifth pass 2026-06-05 — `SKILL_QA_Env_Boot`, `.env.qa.local`, `--dart-define-from-file` cold-start.
 * *Workflow and attach symptoms*: May 2026 device QA on `cursor/wiki-supabase-local-reset-audit`.
 * *Rollback stash*: `pre-rollback: debug session + polygon WIP 2026-05-19`.
 * *Restoration QA + audit reinstall note*: 2026-05-20, [[Polygon_Try1_Postmortem]].
@@ -90,4 +118,5 @@ Do not wrap `main()` in `runZonedGuarded` or add `[CRASH_DIAG]` logging when inv
 * [[FactLockCam_Master_Blueprint]]
 * [[FactLockCam_Product_Baseline_2026-05]]
 * [[MASTER_CONTEXT16MAY2026]]
+* [[Send_Proof_Courier_2026-05]]
 * [[index]]

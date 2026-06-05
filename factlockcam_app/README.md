@@ -82,6 +82,21 @@ FactLockCam **does not send email**. That keeps the app a capture-and-archive ut
 
 Requires `WEB_ARCHIVE_BASE_URL` at build time so courier links open your public web unlock page (Ngrok tunnel or production archive host).
 
+### Device QA (Send Proof)
+
+1. Copy repo-root [`.env.qa.example`](../.env.qa.example) → `.env.qa.local` (recommended for QA) or `.env.local` (production-style sync).
+2. Fill `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
+3. Sync defines from the repo root:
+   - QA file: `FACTLOCKCAM_ENV_FILE=$PWD/.env.qa.local ./scripts/sync_flutter_dart_defines.sh`
+   - Production-style: `./scripts/sync_flutter_dart_defines.sh` (reads `.env.local`)
+4. **Cold-start** the app (hot reload does not refresh compile-time defines):
+   - `FACTLOCKCAM_ENV_FILE=$PWD/.env.qa.local ./factlockcam_app/run_device.sh`, or
+   - VS Code **iOS (QA Tunnel)** (syncs from `.env.qa.local`), or
+   - `scripts/start_qa_env.sh` for Ngrok + simulator (injects tunnel `WEB_ARCHIVE_BASE_URL`).
+5. Confirm generated links use `{WEB_ARCHIVE_BASE_URL}/courier?pkg={uuid}` — e.g. `https://archive.factlockcam.com/courier?pkg=...`.
+
+QA defines: `ENABLE_PROOF_LINKS=true`, `APP_ENVIRONMENT=development`. Set `ENABLE_PROOF_LINKS=false` before App Store archive builds.
+
 ## Foundation
 
 - `lib/core/crypto/`: isolate-backed SHA-256, AES-GCM, and thumbnail work.

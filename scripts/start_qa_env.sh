@@ -95,12 +95,15 @@ if [[ -z "$NGROK_URL" ]]; then
 fi
 
 echo "Web archive tunnel (WEB_ARCHIVE_BASE_URL): $NGROK_URL"
+echo "Send Proof gates: ENABLE_PROOF_LINKS=true, APP_ENVIRONMENT=development"
 
-echo "Launching iOS Simulator target with injected WEB_ARCHIVE_BASE_URL..."
+echo "Launching iOS Simulator target with injected courier QA defines..."
 set +e
 flutter run -d ios \
   --dart-define-from-file="$DEFINES_JSON" \
-  --dart-define="WEB_ARCHIVE_BASE_URL=$NGROK_URL"
+  --dart-define="WEB_ARCHIVE_BASE_URL=$NGROK_URL" \
+  --dart-define=ENABLE_PROOF_LINKS=true \
+  --dart-define=APP_ENVIRONMENT=development
 IOS_EXIT=$?
 set -e
 

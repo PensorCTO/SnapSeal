@@ -10,6 +10,21 @@
         "reveal": "silent",
         "panel": "shared"
       }
+    },
+    {
+      "label": "factlockcam: sync Flutter dart defines (QA)",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/sync_flutter_dart_defines.sh",
+      "options": {
+        "env": {
+          "FACTLOCKCAM_ENV_FILE": "${workspaceFolder}/.env.qa.local"
+        }
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
     }
   ]
 }

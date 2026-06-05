@@ -21,4 +21,4 @@ fi
 
 "$ROOT/scripts/sync_flutter_dart_defines.sh"
 cd "$APP_DIR"
-exec flutter run "$@"
+exec flutter run --dart-define-from-file=dart_defines.json "$@"

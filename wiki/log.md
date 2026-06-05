@@ -7,6 +7,12 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 ## 2026-06-05
 
+- **Twenty-fifth pass — QA env boot + Send Proof device cold-start** — **user QA passed**:
+  - **Env split:** `.env.qa.example` → gitignored `.env.qa.local`; `FACTLOCKCAM_ENV_FILE` selects QA vs production `.env.local` in sync + VS Code **iOS (QA Tunnel)** preLaunchTask.
+  - **Launch path:** All VS Code configs + `run_device.sh` use `--dart-define-from-file=dart_defines.json`; cold start required after define changes.
+  - **Skill:** `docs/skills/SKILL_QA_Env_Boot.md` — interactive boot without exposing Supabase secrets to agent context.
+  - **Device QA:** Archive → Send Proof on physical iPhone; courier links `{WEB_ARCHIVE_BASE_URL}/courier?pkg={uuid}` verified against hosted archive.
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
 - **Twenty-fourth pass — Zero-Trust & App Store Compliance Alignment**:
   - **UGC safety (Guideline 1.2):** `features/ugc_safety/` module; `CourierUnlockView` report/block affordances; `UniversalAssetToolbar` owner report via `additionalActions`; migration `20260605120000_ugc_safety_infrastructure.sql`; Edge Function `courier-content-scan` (async metadata scan off capture hot path).
   - **Archive lexicon (PR3–PR6):** `ArchiveService`, `ArchiveDatabase`, `LocalArchiveStorage`, `ArchiveSyncCoordinator`, `ArchiveBlockchainHandler`, `SupabaseArchiveService`, `ArchiveEncryptionHandler`; deprecated `Vault*` typedef shims retained; `ArchiveCourier.tsx` on marketing site.

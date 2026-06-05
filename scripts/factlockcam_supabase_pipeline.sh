@@ -140,7 +140,7 @@ case "${1:-help}" in
       --env-file "$ENV_FILE" \
       --out "$APP_DIR/dart_defines.json" \
       --dart-out "$APP_DIR/lib/core/config/generated_dart_defines.dart"
-    (cd "$APP_DIR" && flutter run)
+    (cd "$APP_DIR" && flutter run --dart-define-from-file=dart_defines.json)
     ;;
   help|--help|-h)
     usage
