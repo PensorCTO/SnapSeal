@@ -8,17 +8,21 @@ alwaysApply: true
 ## Deprecated
 
 - **DEPRECATE** [`factlockcam_app/lib/ui/mobile/vault/professional_nav_bar.dart`](factlockcam_app/lib/ui/mobile/vault/professional_nav_bar.dart): hub layout is fully centralized; navigation uses explicit panel back buttons only.
+- **DEPRECATE** [`factlockcam_app/lib/ui/mobile/dispatch_primitive_nav_bar.dart`](factlockcam_app/lib/ui/mobile/dispatch_primitive_nav_bar.dart): not mounted in production shell; hub launcher restored.
 
-## HapticHubPanel
+## HapticHubPanel (primary launcher)
 
-- Remove instructional copy ("Choose an action" and similar).
-- Center the tile grid (`MainAxisAlignment.center` or 2×2 grid); exactly four equal-weight tiles: Archive, Picture, Video, Account & Settings.
-- Preserve haptic + backdrop replay on tile tap.
+- Post-login landing: [archive_home_view.dart](factlockcam_app/lib/ui/mobile/archive_home_view.dart) index **0** = `HapticHubPanel`.
+- Five hub tiles: **Archive**, **Picture**, **Video**, **Account & Settings**, **Secure Comm** (portrait stack; landscape 2×2 + Secure Comm row).
+- Hub destinations: Picture=1, Video=2, Archive=3, Account=4, Secure Comm=5.
+- **Secure Comm** opens `SecureCommCaptureView` (Zero-Click: pre-warmed front camera → record with hot lens swap → Access Control overlay → TRANSMIT PROOF + share sheet). Hub pre-warms front camera via `SecureCommCameraPool`.
+- Lazy-mount child panels via `_panelWhenSelected` (PR0 camera rule).
+- Sub-panels MUST expose explicit back via `ArchivePanelNavigationBar` or camera `onBackToHub` → hub index 0.
 
 ## Routing and navigation
 
-- Every child panel (Archive, Picture, Video, Account & Settings) MUST expose an explicit back control returning hub index 0 in `VaultHomeView`.
-- Prefer `CupertinoNavigationBar` or shared `VaultPanelNavigationBar` for consistency.
+- No persistent bottom tab bar on the hub shell.
+- Prefer `CupertinoNavigationBar` or shared `ArchivePanelNavigationBar` for consistency.
 
 ## App Store compliance
 

@@ -13,10 +13,14 @@ class SendProofRequest {
   const SendProofRequest({
     required this.item,
     required this.password,
+    this.maxDownloads,
+    this.linkTtlDays,
   });
 
   final ArchiveItem item;
   final String password;
+  final int? maxDownloads;
+  final int? linkTtlDays;
 }
 
 class SendProofResult {
@@ -75,6 +79,8 @@ class SendProof extends _$SendProof {
     final courierUrl = await vaultService.createCourierPackage(
       assetHash: request.item.assetFingerprint,
       verifierPassword: request.password,
+      maxDownloads: request.maxDownloads,
+      linkTtlDays: request.linkTtlDays,
     );
 
     final packageId = Uri.parse(courierUrl).queryParameters['pkg'];

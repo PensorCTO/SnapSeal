@@ -6,34 +6,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme/app_colors.dart';
-import '../../features/archive_quota/presentation/views/archive_subscription_onboarding_sheet.dart';
 import '../../app/theme/app_typography.dart';
+import '../../core/di/service_providers.dart';
+import '../../features/archive_quota/presentation/views/archive_subscription_onboarding_sheet.dart';
 import '../../data/supabase/auth_repository.dart';
 import '../controllers/key_custody_provider.dart';
-import 'camera/acquisition_mode.dart';
-import 'camera/capture_panel.dart';
 import 'archive/account_settings_panel.dart';
 import 'archive/archive_omni/unified_archive_viewport.dart';
 import 'archive/haptic_hub_panel.dart';
+import 'camera/acquisition_mode.dart';
+import 'camera/capture_panel.dart';
+import 'secure_comm_capture_panel.dart';
 
-/// Post-login archive hub shell.
-///
-/// Hosts an [IndexedStack] with hub + four destination panels. Navigation is
-/// hub-tile push and panel back buttons (no persistent bottom nav).
+/// Post-login shell — hub launcher with lazy-mounted child panels.
 class ArchiveHomeView extends ConsumerStatefulWidget {
   const ArchiveHomeView({super.key});
 
   static const routePath = '/archive';
-
-  /// Legacy deep links and QA notes.
   static const legacyVaultHomePath = '/vault-home';
+
+  static const hubIndex = 0;
+  static const pictureIndex = 1;
+  static const videoIndex = 2;
+  static const archiveIndex = 3;
+  static const accountIndex = 4;
+  static const secureCommIndex = 5;
 
   @override
   ConsumerState<ArchiveHomeView> createState() => _ArchiveHomeViewState();
 }
 
 class _ArchiveHomeViewState extends ConsumerState<ArchiveHomeView> {
-  int _selectedIndex = 0;
+  int _selectedIndex = ArchiveHomeView.hubIndex;
   bool _onboardingScheduled = false;
 
   @override
@@ -52,43 +56,28 @@ class _ArchiveHomeViewState extends ConsumerState<ArchiveHomeView> {
     await showArchiveSubscriptionOnboardingIfNeeded(context);
   }
 
-  void _returnToHub() {
-    setState(() {
-      _selectedIndex = 0;
-    });
-  }
-
-  void _onHubDestinationSelected(int index) {
-    if (kIsWeb && (index == 1 || index == 2)) {
-      return;
+  void _onHubDestinationSelected(int destination) {
+    if (!kIsWeb &&
+        (destination == ArchiveHomeView.pictureIndex ||
+            destination == ArchiveHomeView.videoIndex)) {
+      unawaited(ref.read(secureCommCameraPoolProvider).release());
     }
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = destination);
   }
 
-  /// [IndexedStack] keeps every child in the tree. Mount heavy / Hero-bearing
-  /// panels only while selected (cameras, archive, settings).
+  void _goToHub() {
+    setState(() => _selectedIndex = ArchiveHomeView.hubIndex);
+    if (!kIsWeb) {
+      unawaited(ref.read(secureCommCameraPoolProvider).warmFrontCamera());
+    }
+  }
+
+  /// IndexedStack retains children; mount panel bodies only while selected.
   Widget _panelWhenSelected(int panelIndex, Widget child) {
     if (_selectedIndex != panelIndex) {
       return const SizedBox.shrink();
     }
     return child;
-  }
-
-  /// Only mount [CameraView] while its panel is active; eager camera init for
-  /// hidden panels contends on iOS hardware and can blank the first frame.
-  Widget _cameraPanel(AcquisitionMode mode) {
-    final isPhoto = mode == AcquisitionMode.photo;
-    final panelIndex = isPhoto ? 1 : 2;
-    if (_selectedIndex != panelIndex) {
-      return const SizedBox.shrink();
-    }
-    return buildCapturePanel(
-      key: ValueKey('camera_${mode.name}'),
-      mode: mode,
-      onBackToHub: _returnToHub,
-    );
   }
 
   @override
@@ -128,23 +117,39 @@ class _ArchiveHomeViewState extends ConsumerState<ArchiveHomeView> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          HapticHubPanel(
-            onHubDestinationSelected: _onHubDestinationSelected,
-          ),
-          _cameraPanel(AcquisitionMode.photo),
-          _cameraPanel(AcquisitionMode.video),
           _panelWhenSelected(
-            3,
-            UnifiedArchiveViewport(
-              onCaptureRequested: _onHubDestinationSelected,
-              onBackToHub: _returnToHub,
+            ArchiveHomeView.hubIndex,
+            HapticHubPanel(
+              onHubDestinationSelected: _onHubDestinationSelected,
             ),
           ),
           _panelWhenSelected(
-            4,
-            AccountSettingsPanel(
-              onBackToHub: _returnToHub,
+            ArchiveHomeView.pictureIndex,
+            buildCapturePanel(
+              key: const ValueKey('camera_photo'),
+              mode: AcquisitionMode.photo,
+              onBackToHub: _goToHub,
             ),
+          ),
+          _panelWhenSelected(
+            ArchiveHomeView.videoIndex,
+            buildCapturePanel(
+              key: const ValueKey('camera_video'),
+              mode: AcquisitionMode.video,
+              onBackToHub: _goToHub,
+            ),
+          ),
+          _panelWhenSelected(
+            ArchiveHomeView.archiveIndex,
+            UnifiedArchiveViewport(onBackToHub: _goToHub),
+          ),
+          _panelWhenSelected(
+            ArchiveHomeView.accountIndex,
+            AccountSettingsPanel(onBackToHub: _goToHub),
+          ),
+          _panelWhenSelected(
+            ArchiveHomeView.secureCommIndex,
+            buildSecureCommCapturePanel(onBackToHub: _goToHub),
           ),
         ],
       ),

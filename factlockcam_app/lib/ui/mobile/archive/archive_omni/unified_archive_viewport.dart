@@ -11,6 +11,7 @@ import '../../../../core/ui/widgets/heavy_metal_backdrop.dart';
 import '../../../../core/ui/widgets/archive_panel_navigation_bar.dart';
 import '../../../../data/models/archive_item.dart';
 import '../../../controllers/dashboard_controller.dart';
+import '../../camera/acquisition_mode.dart';
 import '../../archive_item_actions.dart';
 import '../asset_inspector_screen.dart';
 import '../chronology_card.dart';
@@ -22,8 +23,7 @@ import '../../../../features/archive_quota/presentation/widgets/quota_telemetry_
 import '../../../../features/archive_quota/presentation/widgets/egress_pass_badge.dart';
 import '../../../../features/archive_quota/presentation/providers/quota_state_provider.dart';
 
-/// Unified Archive Omni-Surface — the archive tab (Tab Index 3) within the
-/// archive hub shell.
+/// Unified Archive Omni-Surface — root of the ARCHIVE bottom-nav tab.
 ///
 /// Replaces the standalone ArchiveView and ChronologyViewport. Supports
 /// toggling between a date-grouped Grid View and the haptic Chronology View,
@@ -33,13 +33,16 @@ class UnifiedArchiveViewport extends ConsumerStatefulWidget {
     super.key,
     this.onCaptureRequested,
     this.onBackToHub,
+    this.headerActions = const [],
   });
 
-  /// When set, the Picture and Video empty-state tiles switch the parent
-  /// shell index to 1 or 2 respectively.
-  final ValueChanged<int>? onCaptureRequested;
+  /// When set, empty-state Picture/Video tiles switch parent to CAPTURE tab.
+  final ValueChanged<AcquisitionMode>? onCaptureRequested;
 
   final VoidCallback? onBackToHub;
+
+  /// Trailing actions on [HeavyMetalLogoBanner] (e.g. Account settings gear).
+  final List<Widget> headerActions;
 
   @override
   ConsumerState<UnifiedArchiveViewport> createState() =>
@@ -108,6 +111,7 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
                 HeavyMetalLogoBanner(
                   includeTopSafeArea: widget.onBackToHub == null,
                   contentHeight: denseHeader ? 72 : 104,
+                  actions: widget.headerActions,
                 ),
                 EgressPassBadge(compact: denseHeader),
                 _PendingSyncBanner(compact: denseHeader),
@@ -292,7 +296,7 @@ class _PendingSyncBanner extends ConsumerWidget {
 class _EmptyState extends StatelessWidget {
   const _EmptyState({this.onCaptureRequested});
 
-  final ValueChanged<int>? onCaptureRequested;
+  final ValueChanged<AcquisitionMode>? onCaptureRequested;
 
   @override
   Widget build(BuildContext context) {
@@ -336,13 +340,15 @@ class _EmptyState extends StatelessWidget {
                     _QuickActionTile(
                       icon: Icons.photo_camera_outlined,
                       label: 'Picture',
-                      onTap: () => onCaptureRequested!.call(1),
+                      onTap: () =>
+                          onCaptureRequested!.call(AcquisitionMode.photo),
                     ),
                     const SizedBox(height: 12),
                     _QuickActionTile(
                       icon: Icons.videocam_outlined,
                       label: 'Video',
-                      onTap: () => onCaptureRequested!.call(2),
+                      onTap: () =>
+                          onCaptureRequested!.call(AcquisitionMode.video),
                     ),
                   ],
                 ],

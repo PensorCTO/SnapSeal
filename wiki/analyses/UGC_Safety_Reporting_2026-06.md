@@ -16,7 +16,7 @@ Twenty-fourth structural pass (**2026-06-05**): FactLockCam adds **Asynchronous 
 | **Flutter module** | `factlockcam_app/lib/features/ugc_safety/` — `SafetyRepository`, `ReportContentSheet`, `BlockSenderDialog`, Riverpod providers |
 | **Recipient UI** | `CourierUnlockView` — persistent "Report concerning content" + post-unlock "Report & block sender" |
 | **Owner UI** | `ArchiveItemActions.additionalActions` — "Report shared proof" when `get_own_courier_package_id` returns a package |
-| **Supabase** | `20260605120000_ugc_safety_infrastructure.sql` — reports, blocks, moderation queue, `moderation_status` on `courier_packages`; **pushed hosted 2026-06-05** |
+| **Supabase** | `20260605120000_ugc_safety_infrastructure.sql` + repair `20260606120000_repair_ugc_reporting_schema.sql` (hosted drift: tables/RPCs re-applied; report flag threshold **≥3**); **pushed hosted 2026-06-05** |
 | **Edge Function** | `courier-content-scan` — async v1 metadata heuristic on encrypted blob paths (zero-knowledge preserved); **deployed hosted 2026-06-05** (`jqvnwtslmoxjwzusmtxs`, `--no-verify-jwt`) |
 | **Async hook** | `ArchiveService.createCourierPackage` → fire-and-forget `courier-content-scan` after upload |
 | **Skill** | `docs/skills/SKILL_Compliance_Architecture.md` |
@@ -33,6 +33,8 @@ Twenty-fourth structural pass (**2026-06-05**): FactLockCam adds **Asynchronous 
 
 - ML scan operates on **metadata/path heuristics** in v1 — not decrypted plaintext (ZK boundary).
 - Quarantined packages rejected in `attempt_courier_unlock` and surfaced as `quarantined` in `check_courier_attempts`.
+- Report flag threshold: `report_courier_package` sets `moderation_status = 'flagged'` when package report count reaches **3** (no automatic storage purge in Postgres).
+- Blob removal on moderation action deferred to Edge Function with service role (not SQL trigger).
 - Identity verification placeholder: `SafetyRepository.verifyReporterIdentity()` → `notRequired` in v1.
 
 ## Provenance Tracking

@@ -6,6 +6,7 @@ import '../ghost_key/wallet_backup_service.dart';
 import '../platform/platform_channel_coordinator.dart';
 import '../../data/supabase/courier_repository.dart';
 import '../../domain/services/vault_service.dart';
+import '../../features/dispatch/camera/secure_comm_camera_pool.dart';
 import 'locator.dart';
 
 export '../../data/local/vault_database.dart' show vaultDatabaseProvider;
@@ -17,6 +18,10 @@ export '../../domain/export/proof_bundle_export_service.dart'
     show proofBundleExportServiceProvider;
 export '../../features/archive/presentation/providers/send_proof_provider.dart'
     show sendProofProvider;
+export '../../features/dispatch/presentation/dispatch_console_provider.dart'
+    show dispatchConsoleProvider;
+export '../../features/dispatch/presentation/secure_comm_capture_provider.dart'
+    show secureCommCaptureProvider;
 export '../../features/archive_quota/presentation/providers/archive_quota_provider.dart'
     show archiveQuotaNotifierProvider, archiveQuotaServiceProvider;
 export '../../features/archive_quota/presentation/providers/quota_lifecycle_provider.dart'
@@ -66,4 +71,8 @@ final platformChannelCoordinatorProvider =
 
 final courierRepositoryProvider = Provider<CourierRepository>(
   (ref) => getIt<CourierRepository>(),
+);
+
+final secureCommCameraPoolProvider = Provider<SecureCommCameraPool>(
+  (ref) => getIt<SecureCommCameraPool>(),
 );

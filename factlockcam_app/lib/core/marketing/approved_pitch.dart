@@ -47,6 +47,10 @@ const String logonPitchFragment =
 const String archiveHubSubtitle =
     'Verified Digital DNA · sealed on this device';
 
+/// Hub tile subtitle for owner-side Send Proof / courier origination.
+const String secureCommHubSubtitle =
+    'Send verifiable proof · password-protected link';
+
 /// Consumer epistemic boundary (keep in sync with marketing.ts whyBody / trustDisclaimer).
 const String consumerEpistemicLine =
     'Cryptographic snapshot and verifiable chain-of-custody for the file—not '

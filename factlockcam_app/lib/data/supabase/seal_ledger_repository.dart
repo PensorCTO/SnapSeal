@@ -217,6 +217,8 @@ class SealLedgerRepository {
     required String storagePath,
     String? contentMimeType,
     String? contentCategory,
+    int? maxDownloads,
+    int? linkTtlDays,
   }) async {
     final client = _requiredClient();
     final userId = client.auth.currentUser?.id;
@@ -236,6 +238,8 @@ class SealLedgerRepository {
           'p_content_mime_type': contentMimeType,
         if (contentCategory != null && contentCategory.isNotEmpty)
           'p_content_category': contentCategory,
+        if (maxDownloads != null) 'p_max_downloads': maxDownloads,
+        if (linkTtlDays != null) 'p_link_ttl_days': linkTtlDays,
       },
     );
     if (response is! String || response.isEmpty) {

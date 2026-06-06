@@ -9,9 +9,10 @@ summary: "Authoritative May 2026 baseline: verified hub/archive/capture workflow
 
 As of this baseline, the **primary product workflow is verified end-to-end** on hosted Supabase: **logon** → **archive hub** → **capture or browse** → sealed assets with remote proof when online.
 
-**Submission readiness (2026-06-05):** **100% Pre-Connect Submission Ready** + **UGC safety infrastructure** for Guideline 1.2 + **Secure Communications Console QA passed**. Zero-trust communication primitive positioning enforced in wiki and internal `Archive*` service layer (deprecated `Vault*` typedef shims remain for non-breaking migration).
+**Submission readiness (2026-06-06):** **100% Pre-Connect Submission Ready** + **Zero-Click Secure Comm capture QA passed**. Zero-trust communication primitive positioning enforced in wiki and internal `Archive*` service layer (deprecated `Vault*` typedef shims remain for non-breaking migration).
 
-- **Twenty-seventh QA pass 2026-06-05**: **Application stable** — user **QA passed** on Send Proof → web courier E2E (phased console, hosted schema repair, Pages deploy); **101/101** tests ([[Secure_Communications_Console_2026-06]]).
+- **Twenty-eighth QA pass 2026-06-06**: **Secure Comm capture stable** — user **QA passed** on Zero-Click record → seal → Access Control → transmit; isolate byte-read fix; **115/115** tests ([[Zero_Click_Capture_2026-06]]).
+- **Twenty-seventh QA pass 2026-06-05**: **Application stable** — user **QA passed** on Send Proof → web courier E2E (phased console, hosted schema repair, Pages deploy); **101/101** tests at that pass ([[Secure_Communications_Console_2026-06]]).
 - **Twenty-sixth structural pass 2026-06-05**: **Secure Communications Console** — web courier unlock phased UI (hash cascade animation, deferred decrypt, Proof Panel + `get_public_proof_attestation`, viral loop CTA); `docs/skills/SKILL_Secure_Comm_Console.md`; **101/101** tests ([[Web_Deployment_Architecture_2026-05]], [[Secure_Communications_Console_2026-06]]).
 - **Twenty-fifth QA pass 2026-06-05**: **QA env boot + Send Proof device cold-start** — `.env.qa.local` + `FACTLOCKCAM_ENV_FILE`; VS Code / `run_device.sh` `--dart-define-from-file`; user **QA passed** on physical iPhone Send Proof ([[iOS_Device_Development_Workflow]], `docs/skills/SKILL_QA_Env_Boot.md`).
 - **Twenty-fourth QA pass 2026-06-05**: **Zero-trust compliance alignment** — user **QA passed** on hosted report/block + async moderation scan ([[UGC_Safety_Reporting_2026-06]]); migration `20260605120000` + `courier-content-scan` pushed/deployed (`jqvnwtslmoxjwzusmtxs`); Archive service-layer rename with shims ([[Zero_Trust_RLS_Audit_2026-06]], [[Provisional_Patent_Technical_Exhibit_2026-06]]); **96/96** tests.
@@ -42,7 +43,7 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 ### Verified workflow (happy path)
 
 1. Authenticate via Magic Number (6-digit email OTP) when Supabase is configured with Dart defines.
-2. From **`/archive`** (legacy **`/vault-home`** redirects), use the **four-tile hub** (Archive, Picture, Video, Account & Settings). **Picture** and **Video** open embedded `CameraView` panels (`AcquisitionMode.photo` / `video`) inside `ArchiveHomeView`'s `IndexedStack` — cameras **lazy-mount** only when that panel is active (PR0). Photo mode uses `ShutterIrisPainter`, **`ImageFormatGroup.jpeg`**, live GPS/UTC HUD, and **stays on the viewfinder** after each shot (background seal badge). **Archive** opens the unified archive omni-surface. Video mode enables audio with long-press/toggle recording. **Back** on each panel returns to the hub launcher.
+2. From **`/archive`** (legacy **`/vault-home`** redirects), land on the **hub launcher** (`HapticHubPanel`): **Archive**, **Picture**, **Video**, **Account & Settings**, **Secure Comm**. Picture/Video open **lazy-mounted** `CameraView` (PR0) with back to hub. Photo mode uses `ShutterIrisPainter`, **`ImageFormatGroup.jpeg`**, live GPS/UTC HUD, and **stays on the viewfinder** after each shot (background seal badge). Video mode enables audio with long-press/toggle recording. **Archive** opens `UnifiedArchiveViewport` omni-surface with back to hub. **Secure Comm** (`SecureCommCaptureView`) is Zero-Click capture-first: hub pre-warms front camera → live selfie record with hot lens swap → **Anchoring to Archive…** seal → Access Control overlay (Recipient Key, Link Lifespan, Exposure Limit) → **TRANSMIT PROOF** via `sendProofProvider` (certificate PDF + courier URL + share sheet). Child panels mount only while selected (`_panelWhenSelected`).
 3. When **`USE_POLYGON_NOTARIZER=true`** (default after dart-defines sync), capture runs the **Polygon saga**: **`check_proof_status`** → device sign + **EIP-191 EVM sign** → local **AES-GCM** vault + SQLite → **`proof_ledger`** insert (`pending_notarization`) → **await `anchor-relay`** (camera overlay **Generating Proof…**) → local **`chain_tx_hash`** + `pending_sync` cleared ([[Polygon_Saga_Live]]). On successful seal, **`pro_proof`** credit is debited optimistically (`quotaStateProvider`) with RPC reconcile ([[Archive_Quota_Telemetry_2026-06]]). **Certificate draft** includes the ledger transaction hash (local SQLite or remote `proof_ledger` fetch). When the flag is **false**, the legacy synchronous **`SimulatedChainNotarizer`** path applies unchanged.
 4. Browse sealed media from the **Archive** hub tile (`UnifiedArchiveViewport`: grid/chronology omni-surface with filters), not a separate `/archive` route. **Egress Pass** badge shows verification credit balance; **QuotaTelemetryWidget** shows byte storage/egress bars ([[Archive_Quota_Telemetry_2026-06]]). Default **chronology** view: tap card → asset inspector; **⋯** (top-left) or grid tap → action sheet. Chronology scroll keeps scale/fan transforms without opacity dimming ([[UI_Polish_Hub_Archive_2026-05]]). **SECURING FILE…** overlay during writes ([[Isolate_Lock_Coordinator]]). **View/Play media** decrypts via `extractForCourier` (inspector or action sheet). **Download Media** and **verify/export** actions consume a **Verification Credit** after pre-flight modal ([[Archive_Quota_Telemetry_2026-06]]). **Send Proof** (password-only dialog; certificate uses saved title/description) builds PDF + courier URL → share sheet; recipient unlocks at **`{WEB_ARCHIVE_BASE_URL}/courier?pkg=…`** ([[Send_Proof_Courier_2026-05]], [[Web_Deployment_Architecture_2026-05]]). **DELETE FROM DEVICE** removes local SQLite + files (remote ledger may remain).
 
@@ -56,6 +57,17 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 | Proof Panel + `get_public_proof_attestation` deep-dive | Verified — migration + repository wired |
 | Web blob video playback (`courier_web_media_source`) | Implemented — web target |
 | Viral loop CTA overlay (end-of-stream / timed image) | Verified — `courier_unlock_console_test.dart` |
+
+### Mobile Secure Comm capability matrix (2026-06-06)
+
+| Capability | Status |
+|------------|--------|
+| Zero-Click capture entry (`SecureCommCaptureView`) | **QA passed** — hub pre-warm + live front camera |
+| Hot lens swap during recording (audio preserved) | **QA passed** — `setDescription` + blur/haptic |
+| Framed viewport + consumption/quota panel | **QA passed** — `SecureCommViewportFrame` + `SecureCommConsumptionPanel` |
+| Access Control Panel (Key, Lifespan, Exposure Limit) | **QA passed** — maps to `max_downloads` / `link_ttl_days` |
+| Anchoring to Archive seal on capture complete | **QA passed** — sync isolate byte read + `sealAndStoreCapture` |
+| TRANSMIT PROOF + share sheet | **QA passed** — `sendProofProvider` path; **115/115** tests |
 
 ### Branding
 
@@ -78,7 +90,7 @@ As of this baseline, the **primary product workflow is verified end-to-end** on 
 - **Relayer wallet ops:** Active payer is a funded hot wallet (`RELAYER_PRIVATE_KEY` in Supabase secrets); rotate or fund as needed — not the user's profile EVM address ([[Polygon_Mainnet_Wiring_2026-05]]).
 - **Hardware-backed signing:** **Device** `signHash` uses Secure Enclave / Keystore (fifteenth QA); EVM wallet remains software-keyed in Secure Storage. Server-side P-256 verify of `device_signature` is follow-up.
 - **Courier / Send Proof:** Certificate PDF + courier package + share sheet wired; recipient unlock on **`{WEB_ARCHIVE_BASE_URL}/courier`** (Flutter Secure Communications Console). Interim QA host: `main.factlockcam-archive.pages.dev`; bind **`archive.factlockcam.com`** in Cloudflare Pages before App Store review ([[Web_Deployment_Architecture_2026-05]], [[Send_Proof_Courier_2026-05]], [[Secure_Communications_Console_2026-06]]).
-- Automated tests: **101/101** passing under production notarizer defaults (includes Secure Communications Console courier tests); still thinner than a production bar on some crypto/sync edge cases.
+- Automated tests: **115/115** passing under production notarizer defaults (includes Zero-Click Secure Comm + web courier console tests); still thinner than a production bar on some crypto/sync edge cases.
 - **C2PA** and full **ProofLock manifest** assurance: see [[ProofLock_Refactor_Scope]] and [[ProofLock_Architectural_Manifest]].
 
 Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
@@ -91,6 +103,7 @@ Post-baseline reconciliation: [[Project_Audit_2026-05-11]].
 
 ## Related Notes
 
+* [[Zero_Click_Capture_2026-06]]
 * [[Secure_Communications_Console_2026-06]]
 * [[Institution_Grade_Payload_Seal_Backlog]]
 * [[UI_Layout_Polish_2026-06]]

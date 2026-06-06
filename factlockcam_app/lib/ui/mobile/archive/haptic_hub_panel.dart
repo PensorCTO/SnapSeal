@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_typography.dart';
+import '../../../core/di/service_providers.dart';
 import '../../../core/marketing/approved_pitch.dart';
 import '../../../core/services/haptic_service.dart';
 import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
@@ -16,7 +17,7 @@ import '../../controllers/dashboard_controller.dart';
 class HapticHubPanel extends ConsumerStatefulWidget {
   const HapticHubPanel({super.key, this.onHubDestinationSelected});
 
-  /// Picture=1, Video=2, Archive=3, Account=4.
+  /// Picture=1, Video=2, Archive=3, Account=4, Secure Comm=5.
   final ValueChanged<int>? onHubDestinationSelected;
 
   @override
@@ -31,6 +32,9 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref.read(dashboardControllerProvider.notifier).syncPendingInBackground();
+      if (!kIsWeb) {
+        unawaited(ref.read(secureCommCameraPoolProvider).warmFrontCamera());
+      }
     });
   }
 
@@ -180,6 +184,10 @@ class _HapticHubPanelState extends ConsumerState<HapticHubPanel>
                                     () => widget.onHubDestinationSelected
                                         ?.call(4),
                                   ),
+                                  onSecureComm: () => _handleHubTap(
+                                    () => widget.onHubDestinationSelected
+                                        ?.call(5),
+                                  ),
                                 ),
                               ],
                             ),
@@ -207,6 +215,7 @@ class _HubTileLauncher extends StatelessWidget {
     required this.onPicture,
     required this.onVideo,
     required this.onAccount,
+    required this.onSecureComm,
   });
 
   final bool compact;
@@ -215,6 +224,7 @@ class _HubTileLauncher extends StatelessWidget {
   final VoidCallback onPicture;
   final VoidCallback onVideo;
   final VoidCallback onAccount;
+  final VoidCallback onSecureComm;
 
   static const _spacing = 12.0;
 
@@ -248,15 +258,29 @@ class _HubTileLauncher extends StatelessWidget {
       subtitle: 'Logout, legal, delete account',
       onTap: onAccount,
     );
+    final secureComm = HeavyMetalHubTile(
+      compact: compact,
+      icon: Icons.lock_outline,
+      label: 'Secure Comm',
+      subtitle: secureCommHubSubtitle,
+      onTap: onSecureComm,
+    );
 
     if (!captureEnabled) {
       if (compact) {
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        return Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(child: archive),
-            const SizedBox(width: _spacing),
-            Expanded(child: account),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: archive),
+                const SizedBox(width: _spacing),
+                Expanded(child: account),
+              ],
+            ),
+            const SizedBox(height: _spacing),
+            secureComm,
           ],
         );
       }
@@ -266,6 +290,8 @@ class _HubTileLauncher extends StatelessWidget {
           archive,
           const SizedBox(height: _spacing),
           account,
+          const SizedBox(height: _spacing),
+          secureComm,
         ],
       );
     }
@@ -291,6 +317,8 @@ class _HubTileLauncher extends StatelessWidget {
               Expanded(child: account),
             ],
           ),
+          const SizedBox(height: _spacing),
+          secureComm,
         ],
       );
     }
@@ -305,6 +333,8 @@ class _HubTileLauncher extends StatelessWidget {
         video,
         const SizedBox(height: _spacing),
         account,
+        const SizedBox(height: _spacing),
+        secureComm,
       ],
     );
   }

@@ -639,6 +639,8 @@ class ArchiveService {
   Future<String> createCourierPackage({
     required String assetHash,
     required String verifierPassword,
+    int? maxDownloads,
+    int? linkTtlDays,
   }) async {
     if (!AppConfig.enableProofLinks) {
       throw StateError(
@@ -712,6 +714,8 @@ class ArchiveService {
       storagePath: storagePath,
       contentMimeType: resolved.mimeType,
       contentCategory: contentCategory.rpcValue,
+      maxDownloads: maxDownloads,
+      linkTtlDays: linkTtlDays,
     );
 
     unawaited(

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
 import 'package:factlockcam/ui/controllers/dashboard_controller.dart';
 import 'package:factlockcam/ui/mobile/archive_home_view.dart';
+import 'package:factlockcam/ui/mobile/camera/camera_view.dart';
 
 import 'test_dependencies.dart';
 
@@ -18,9 +20,7 @@ void main() {
     expect(ArchiveHomeView.legacyVaultHomePath, '/vault-home');
   });
 
-  testWidgets('archive hub shows four action tiles without instructional copy', (
-    tester,
-  ) async {
+  testWidgets('archive shell shows hub launcher by default', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -33,36 +33,16 @@ void main() {
     );
     await tester.pump(const Duration(seconds: 1));
 
-    expect(find.text('CHOOSE AN ACTION'), findsNothing);
     expect(find.text('ARCHIVE'), findsOneWidget);
-    expect(find.text('PICTURE'), findsWidgets);
-    expect(find.text('VIDEO'), findsWidgets);
-    expect(find.text('ACCOUNT & SETTINGS'), findsOneWidget);
+    expect(find.text('PICTURE'), findsOneWidget);
+    expect(find.text('VIDEO'), findsOneWidget);
+    expect(find.text('SECURE COMM'), findsOneWidget);
+    expect(find.text('DISPATCH CONSOLE'), findsNothing);
+    expect(find.text('NO SEALED ASSETS'), findsNothing);
+    expect(find.byType(CameraView), findsNothing);
   });
 
-  testWidgets('archive hub renders a Stack-based heavy-metal layout', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          dashboardControllerProvider.overrideWith(
-            _EmptyVaultDashboardController.new,
-          ),
-        ],
-        child: const MaterialApp(home: ArchiveHomeView()),
-      ),
-    );
-    await tester.pump(const Duration(seconds: 1));
-
-    final stacks = find.descendant(
-      of: find.byType(ArchiveHomeView),
-      matching: find.byType(Stack),
-    );
-    expect(stacks, findsWidgets);
-  });
-
-  testWidgets('account tile opens account settings panel', (tester) async {
+  testWidgets('archive tile opens omni surface', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 1600));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -78,9 +58,30 @@ void main() {
     );
     await tester.pump(const Duration(seconds: 1));
 
-    final accountTile = find.text('ACCOUNT & SETTINGS');
-    await tester.ensureVisible(accountTile);
-    await tester.tap(accountTile);
+    await tester.tap(find.text('ARCHIVE'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('NO SEALED ASSETS'), findsOneWidget);
+  });
+
+  testWidgets('account tile opens account panel', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          dashboardControllerProvider.overrideWith(
+            _EmptyVaultDashboardController.new,
+          ),
+        ],
+        child: const MaterialApp(home: ArchiveHomeView()),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+
+    await tester.tap(find.text('ACCOUNT & SETTINGS'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -92,15 +93,37 @@ void main() {
     expect(find.text('KEY CUSTODY & LIMITS'), findsOneWidget);
     expect(find.text('BURN ACCOUNT'), findsOneWidget);
     expect(find.text('LOG OUT'), findsOneWidget);
-    expect(
-      find.textContaining('You hold the only keys that decrypt'),
-      findsNothing,
-    );
   });
 
-  testWidgets('shows pending sync banner and retry on archive hub', (
-    tester,
-  ) async {
+  testWidgets('account back returns to hub', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          dashboardControllerProvider.overrideWith(
+            _EmptyVaultDashboardController.new,
+          ),
+        ],
+        child: const MaterialApp(home: ArchiveHomeView()),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+
+    await tester.tap(find.text('ACCOUNT & SETTINGS'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await tester.tap(find.byType(CupertinoNavigationBarBackButton));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('ARCHIVE'), findsOneWidget);
+    expect(find.text('SECURE COMM'), findsOneWidget);
+  });
+
+  testWidgets('shows pending sync banner on hub', (tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -119,6 +142,8 @@ void main() {
 
     expect(find.textContaining('pending sync'), findsOneWidget);
     expect(find.text('RETRY NOW'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 11));
   });
 }
 

@@ -5,8 +5,53 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-06-06
+
+- **Twenty-eighth pass QA — Zero-Click Secure Comm capture stable** — **user QA passed**:
+  - **E2E:** Hub → Secure Comm → record (lens flip) → stop → **Anchoring to Archive…** → Access Control → **TRANSMIT PROOF** → share sheet.
+  - **Isolate fix:** seal byte read uses top-level `readAsBytesSync` inside `Isolate.run` (async `readAsBytes` futures are illegal isolate return values).
+  - **UX hardening:** camera released before seal; framed 9:16 viewport; consumption/quota panel; keyboard gated until `canTransmit`.
+  - **Wiki:** [[Zero_Click_Capture_2026-06]]; baseline + overview reconciled.
+  - **Tests:** **115/115** `flutter test`.
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+- **Zero-Click Capture Architecture** — Secure Comm refactor (structural):
+  - Replaced legacy two-step `CourierDispatchView` asset picker with `SecureCommCaptureView` (capture-first flow).
+  - `SecureCommCameraPool` pre-warms front camera on `HapticHubPanel` idle; releases when Picture/Video mount.
+  - Hot lens swap during recording via `CameraController.setDescription()` + blur/crossfade + light haptic.
+  - Post-capture: looping preview + `ArchiveAccessControlPanel` (Recipient Key, Link Lifespan, Exposure Limit) → `maxDownloads` / `linkTtlDays` RPC params.
+  - Seal path: `sealAndStoreCapture` with **Anchoring to Archive…** UI; transmit via `sendProofProvider` + SharePlus.
+  - Dispatch Primitive Tasks 1–3: UGC schema repair migration, dispatch package params, hub shell restored (see entries below same date).
+  - Skill: `docs/skills/SKILL_Zero_Click_Capture_Architecture.md`.
+
 ## 2026-06-05
 
+- **Hub landing + Secure Comm entry** (post–Task 3 UX correction):
+  - Restored `HapticHubPanel` as post-login landing (index 0); removed `DispatchPrimitiveNavBar` from production shell.
+  - Added fifth hub tile **Secure Comm** → `CourierDispatchView` with two-step flow (select asset → configure/password/transmit).
+  - Picture/Video/Archive/Account return to hub via `ArchivePanelNavigationBar` / `onBackToHub`.
+  - Tests: `hub_secure_comm_nav_test.dart`; updated dashboard/widget/hub layout tests; **110+** `flutter test`.
+- **Task 3 — Mobile Dispatch Console** (Dispatch Primitive Framework):
+  - Replaced `CourierDispatchPlaceholder` with production `CourierDispatchView` on DISPATCH CONSOLE tab.
+  - New: `dispatch_console_state.dart`, `dispatch_console_provider.dart`, `dispatch_error_copy.dart`, `courier_dispatch_view.dart`.
+  - `SendProofRequest` + `createCourierPackage` + `get_or_create_courier_package` accept optional `maxDownloads` / `linkTtlDays` (presets 1|3|5 downloads, 1|7|30 day link window).
+  - Migration **`20260606140000_dispatch_package_params.sql`** pushed hosted.
+  - TRANSMIT PROOF uses full `sendProofProvider` path (certificate PDF + courier URL + share sheet); quota gate via `ensureArchiveQuotaForSendProof`.
+  - **Audit follow-up:** stall was hung `flutter analyze` (env), not code; TRANSMIT now disabled until asset + password set; `scripts/task3_dispatch_params_verify.sql` confirms hosted RPC params.
+  - Tests: `courier_dispatch_view_test.dart` (6 cases); updated `dispatch_primitive_nav_test.dart`; **110/110** `flutter test`; scoped `flutter analyze` clean.
+- **Task 2 — Tri-State Navigation Shell** (Dispatch Primitive Framework):
+  - Replaced four-tile `HapticHubPanel` launcher with persistent `DispatchPrimitiveNavBar`: **CAPTURE**, **ARCHIVE**, **DISPATCH CONSOLE**.
+  - New widgets: `capture_root_panel.dart`, `archive_tab_shell.dart` (gear → Account), `courier_dispatch_placeholder.dart`, `dispatch_primitive_nav_bar.dart`.
+  - PR0 lazy tab + camera mount preserved via `_panelWhenSelected` in `archive_home_view.dart`.
+  - `UnifiedArchiveViewport.onCaptureRequested` now uses `AcquisitionMode`; empty-state tiles switch to CAPTURE tab.
+  - Tests: `dispatch_primitive_nav_test.dart`; updated `archive_dashboard_view_test.dart`, `widget_test.dart`; **104/104** `flutter test`.
+  - Rule: `.cursor/rules/factlockcam-hub-refactor.mdc` superseded for Dispatch Primitive nav.
+- **Task 1 — Dispatch Primitive UGC schema verification** (Dispatch Primitive Framework):
+  - **Skill:** `docs/skills/SKILL_Dispatch_Primitive.md` — Tasks 1–5 decoupled toolkits; cross-links Compliance + Secure Comm Console skills.
+  - **Hosted drift detected:** migration `20260605120000` recorded in history but `courier_content_reports`, `courier_sender_blocks`, `courier_moderation_queue`, and report/block RPCs were absent on linked project.
+  - **Repair pushed:** `20260606120000_repair_ugc_reporting_schema.sql` — idempotent re-apply of UGC tables + RPCs; `report_courier_package` now flags at **≥3** reports (no Postgres storage purge — Edge Function lifecycle per plan).
+  - **Verification:** `scripts/task1_ugc_schema_verify.sql`, `scripts/task1_rpc_probe.sh` — anon attestation returns only safe fields; report RPC never leaks `owner_id`.
+  - **Purge policy:** quarantine via `moderation_status` + `courier-content-scan`; human-reviewed blob delete deferred to future Edge Function.
+  - **Tests:** **101/101** `flutter test`; `python3 scripts/wiki_ingest.py --validate`.
 - **Twenty-seventh pass QA — application stable** — **user QA passed**:
   - **E2E:** iPhone Send Proof → recipient unlock on `{WEB_ARCHIVE_BASE_URL}/courier?pkg=…` through full console phases (gate → cascade → decrypt → media + Proof Panel → viral CTA).
   - **Hosted repair:** `20260605210000_repair_send_proof_schema.sql` restored metering RPCs and 7-param `get_or_create_courier_package` after accidental `my_schema` drift; `get_public_proof_attestation` live.

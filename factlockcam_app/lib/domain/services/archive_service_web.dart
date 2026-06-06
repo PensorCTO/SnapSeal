@@ -92,6 +92,8 @@ class ArchiveService {
   Future<String> createCourierPackage({
     required String assetHash,
     required String verifierPassword,
+    int? maxDownloads,
+    int? linkTtlDays,
   }) async {
     throw UnsupportedError('Courier package origination is mobile-only.');
   }

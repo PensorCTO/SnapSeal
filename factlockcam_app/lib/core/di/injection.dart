@@ -44,6 +44,7 @@ import '../../core/platform/platform_channel_coordinator.dart';
 import '../../features/archive/application/proof_courier_service.dart';
 import '../../features/archive/data/archive_repository.dart';
 import '../../features/archive/domain/repositories/i_archive_repository.dart';
+import '../../features/dispatch/camera/secure_comm_camera_pool.dart';
 import '../config/app_config.dart';
 import 'locator.dart';
 
@@ -257,6 +258,8 @@ Future<void> configureDependencies() async {
       ),
     );
   }
+
+  getIt.registerLazySingleton<SecureCommCameraPool>(SecureCommCameraPool.new);
 
   getIt.registerLazySingleton<ArchiveService>(
     () => ArchiveService(

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +7,7 @@ import 'package:factlockcam/core/ui/widgets/heavy_metal_backdrop.dart';
 import 'package:factlockcam/data/models/archive_item.dart';
 import 'package:factlockcam/ui/controllers/dashboard_controller.dart';
 import 'package:factlockcam/ui/mobile/archive_home_view.dart';
+import 'package:factlockcam/ui/mobile/camera/camera_view.dart';
 
 import 'test_dependencies.dart';
 
@@ -24,7 +24,7 @@ void main() {
     expect(find.text(logonPitchFragment), findsOneWidget);
   });
 
-  testWidgets('hub tiles switch between archive home and camera views', (
+  testWidgets('hub landing switches to picture without eager camera mount', (
     tester,
   ) async {
     final buildCounter = ValueNotifier<int>(0);
@@ -44,20 +44,17 @@ void main() {
     );
     await tester.pump(const Duration(seconds: 1));
 
-    expect(find.text('CHOOSE AN ACTION'), findsNothing);
-    expect(find.text('ARCHIVE'), findsOneWidget);
+    expect(find.text('PICTURE'), findsOneWidget);
+    expect(find.text('SECURE COMM'), findsOneWidget);
+    expect(find.byType(CameraView), findsNothing);
     expect(buildCounter.value, 1);
 
     final pictureTile = find.text('PICTURE');
     await tester.ensureVisible(pictureTile);
     await tester.tap(pictureTile);
     await tester.pump(const Duration(milliseconds: 500));
-    expect(buildCounter.value, 1);
-    expect(find.byType(CupertinoNavigationBarBackButton), findsOneWidget);
 
-    await tester.tap(find.byType(CupertinoNavigationBarBackButton));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('ARCHIVE'), findsOneWidget);
+    expect(find.byType(CameraView), findsOneWidget);
     expect(buildCounter.value, 1);
   });
 }
