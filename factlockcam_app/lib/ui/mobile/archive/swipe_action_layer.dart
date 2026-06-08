@@ -9,8 +9,8 @@ import '../../../data/models/archive_item.dart';
 
 /// Wraps a [child] widget in a horizontal swipe gesture layer.
 ///
-/// Right-swipe reveals a Kinetic Green background with a "Share/Courier"
-/// action icon. Left-swipe reveals a white background with a "Verify Proof"
+/// Right-swipe reveals a Kinetic Green background with a Print Certificate
+/// action icon. Left-swipe reveals a white background with a Verify Proof
 /// icon. When the swipe crosses the action threshold
 /// [HapticFeedback.heavyImpact] fires.
 class SwipeActionLayer extends StatefulWidget {
@@ -85,7 +85,7 @@ class _SwipeActionLayerState extends State<SwipeActionLayer> {
       child: Stack(
         children: [
           // ── Background action layers ────────────────────────────────
-          // Right-swipe: Kinetic Green with share icon
+          // Right-swipe: Kinetic Green with print certificate icon
           if (_dragOffset > 0)
             Positioned.fill(
               child: AnimatedContainer(
@@ -96,8 +96,8 @@ class _SwipeActionLayerState extends State<SwipeActionLayer> {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: _ActionLabel(
-                  icon: Icons.send_outlined,
-                  label: 'Share / Courier',
+                  icon: Icons.print_outlined,
+                  label: 'Print Certificate',
                   alignment: Alignment.centerRight,
                 ),
               ),

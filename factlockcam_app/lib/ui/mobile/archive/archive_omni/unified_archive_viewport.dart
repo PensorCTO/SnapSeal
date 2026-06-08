@@ -194,7 +194,7 @@ class _UnifiedArchiveViewportState extends ConsumerState<UnifiedArchiveViewport>
     unawaited(ref.read(hapticServiceProvider).heavyImpact());
     if (!mounted) return;
     unawaited(
-      ArchiveItemActions.showSendProofDialog(
+      ArchiveItemActions.openCertificateStudio(
         context,
         ref,
         item,

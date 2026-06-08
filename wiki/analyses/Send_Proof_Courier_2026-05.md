@@ -1,9 +1,11 @@
 ---
 tags: [analysis, factlockcam, courier, send_proof, app_store, 2026-05]
-summary: "Send Proof workflow: certificate PDF + courier link via share sheet; recipient unlock on courier-only archive web deploy."
+summary: "Send Proof workflow (historical): certificate PDF + courier link via share sheet; decommissioned 2026-06-08 — use Certificate Studio."
 ---
 
 # Send Proof & Courier (May 2026)
+
+> **Status (2026-06-08):** Send Proof and courier origination **decommissioned** from active mobile and web surfaces. Owner export is **Certificate Studio** (local PDF print/share). Supabase courier backend retained. See [[Unified_Archive_Studio_2026-06]].
 
 ## Core Synthesis
 

@@ -636,6 +636,7 @@ class ArchiveService {
     }
   }
 
+  @Deprecated('Courier dispatch decommissioned; use Certificate Studio.')
   Future<String> createCourierPackage({
     required String assetHash,
     required String verifierPassword,

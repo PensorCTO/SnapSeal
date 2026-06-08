@@ -38,7 +38,7 @@ void main() {
     expect(find.text('PICTURE'), findsOneWidget);
     expect(find.text('VIDEO'), findsOneWidget);
     expect(find.text('ACCOUNT & SETTINGS'), findsOneWidget);
-    expect(find.text('SECURE COMM'), findsOneWidget);
+    expect(find.text('SECURE COMM'), findsNothing);
   });
 }
 

@@ -11,9 +11,10 @@ Read this page first when answering questions about the wiki.
 
 | Page | When to read |
 |------|----------------|
-| [[FactLockCam_Product_Baseline_2026-05]] | **Canonical status** — **100% Pre-Connect Submission Ready** + **twenty-eighth QA passed (2026-06-06)**; Zero-Click Secure Comm capture stable |
-| [[Zero_Click_Capture_2026-06]] | **Twenty-eighth pass QA passed (2026-06-06)** — mobile Secure Comm: pre-warm, hot lens swap, Access Control transmit; **115/115** tests |
-| [[Secure_Communications_Console_2026-06]] | **Twenty-seventh pass QA passed (2026-06-05)** — web `/courier` phased console, hash cascade, Proof Panel, viral CTA |
+| [[FactLockCam_Product_Baseline_2026-05]] | **Canonical status** — **100% Pre-Connect Submission Ready** + **twenty-ninth QA passed (2026-06-08)**; Unified Archive Studio + Certificate Studio |
+| [[Unified_Archive_Studio_2026-06]] | **Twenty-ninth pass QA passed (2026-06-08)** — four-tile hub, Certificate Studio, courier decommission, hub backdrop auto-play; **98/98** tests |
+| [[Zero_Click_Capture_2026-06]] | **Twenty-eighth pass (2026-06-06)** — mobile Secure Comm capture; **superseded** by decommission (orphaned source) |
+| [[Secure_Communications_Console_2026-06]] | **Twenty-seventh pass (2026-06-05)** — web `/courier` phased console; **superseded** — `/courier` redirects to gate |
 | [[Institution_Grade_Payload_Seal_Backlog]] | **Foundation (2026-06-04)** — MIME-agnostic pipeline deferred; consumer stays Picture/Video only |
 | [[UI_Layout_Polish_2026-06]] | **Twenty-first pass QA passed (2026-06-03)** — responsive hub/archive/inspector/account layouts; landscape overflow fix; **90/90** tests |
 | [[Data_Custody_And_Backup_Model_2026]] | **Twentieth pass QA passed (2026-06-03)** — Keys-only `.factlock`; scenario matrix; hosted Terms deployed; **82/82** tests |
@@ -69,7 +70,8 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses (active)
 
-- [[Zero_Click_Capture_2026-06]] — Twenty-eighth pass: Zero-Click mobile Secure Comm capture, device QA stable, **115/115** tests (June 2026).
+- [[Unified_Archive_Studio_2026-06]] — Twenty-ninth pass: Certificate Studio pivot, hub backdrop fix, user QA stable, **98/98** tests (June 2026).
+- [[Zero_Click_Capture_2026-06]] — Twenty-eighth pass: Zero-Click mobile Secure Comm capture (June 2026); **superseded** by Unified Archive Studio decommission.
 - [[Secure_Communications_Console_2026-06]] — Twenty-seventh pass: phased web courier console, user QA stable (June 2026).
 - [[UGC_Safety_Reporting_2026-06]] — Twenty-fourth pass: App Store 1.2 UGC safety, courier report/block, async moderation (June 2026).
 - [[Zero_Trust_RLS_Audit_2026-06]] — RLS matrix and AES-GCM key isolation audit (June 2026).
@@ -108,7 +110,8 @@ Historical context only — prefer [[FactLockCam_Product_Baseline_2026-05]] for 
 
 | Skill | Purpose |
 |-------|---------|
-| `docs/skills/SKILL_Dispatch_Primitive.md` | Dispatch Primitive Framework — Tasks 1–5 bite-sized Secure Communications Console refactor |
+| `docs/skills/SKILL_UNIFIED_ARCHIVE_STUDIO.md` | Unified Archive Studio pivot — hub restore, Certificate Studio, courier decommission |
+| `docs/skills/SKILL_Dispatch_Primitive.md` | Dispatch Primitive Framework — Tasks 1–5 bite-sized Secure Communications Console refactor (historical) |
 | `docs/skills/SKILL_Zero_Click_Capture_Architecture.md` | Zero-Click Secure Comm capture — pre-warm, hot lens swap, Access Control overlay |
 | `docs/skills/SKILL_QA_Env_Boot.md` | Safe physical-device QA cold-start (`.env.qa.local`, no secrets in agent context) |
 | `docs/skills/SKILL_Secure_Comm_Console.md` | Web courier Secure Communications Console — phase machine, attestation RPC, validation |

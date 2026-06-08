@@ -14,9 +14,9 @@ import '../../../core/services/haptic_service.dart';
 import '../../../core/ui/widgets/heavy_metal_backdrop.dart';
 import '../../../data/models/archive_item.dart';
 import '../../../data/models/sealed_asset.dart';
-import '../../../domain/export/certificate_export_service.dart';
 import '../../../domain/services/vault_service.dart';
 import '../archive_item_actions.dart';
+import 'archive_presentation_copy.dart';
 import '../archive_video_source.dart';
 import 'providers/asset_metadata_provider.dart';
 import 'providers/thumbnail_cache_provider.dart';
@@ -25,8 +25,8 @@ import 'providers/thumbnail_cache_provider.dart';
 ///
 /// Displays the thumbnail via Hero transition, provides editable title
 /// and description fields with optimistic metadata mutation via
-/// [assetMetadataProvider], and presents an action matrix for Send Proof,
-/// View/Play media, View Certificate, and Back to Dashboard.
+/// [assetMetadataProvider], and presents an action matrix for Print
+/// Certificate, View/Play media, Download Media, and Back to Archive.
 class AssetInspectorScreen extends ConsumerStatefulWidget {
   const AssetInspectorScreen({
     super.key,
@@ -240,14 +240,12 @@ class _AssetInspectorScreenState extends ConsumerState<AssetInspectorScreen>
     unawaited(ref.read(hapticServiceProvider).selectionClick());
 
     switch (action) {
-      case InspectorAction.sendProof:
-        _onSendProof();
+      case InspectorAction.printCertificate:
+        _onPrintCertificate();
       case InspectorAction.viewFull:
         _onViewFull();
       case InspectorAction.downloadMedia:
         _onDownloadMedia();
-      case InspectorAction.viewCertificate:
-        _onViewCertificate();
       case InspectorAction.delete:
         _onDelete();
       case InspectorAction.exit:
@@ -255,14 +253,10 @@ class _AssetInspectorScreenState extends ConsumerState<AssetInspectorScreen>
     }
   }
 
-  void _onSendProof() {
+  void _onPrintCertificate() {
     if (!mounted) return;
     unawaited(
-      ArchiveItemActions.showSendProofDialog(
-        context,
-        ref,
-        widget.item,
-      ),
+      ArchiveItemActions.openCertificateStudio(context, ref, widget.item),
     );
   }
 
@@ -354,48 +348,6 @@ class _AssetInspectorScreenState extends ConsumerState<AssetInspectorScreen>
     if (mimeType.contains('quicktime')) return '.mov';
     if (mimeType.contains('webm')) return '.webm';
     return '.mp4';
-  }
-
-  Future<void> _onViewCertificate() async {
-    final certService = ref.read(certificateExportServiceProvider);
-    final draft = await certService.buildCertificateDraft(widget.item);
-
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.titaniumPanel,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: BorderSide(
-            color: AppColors.verifiedNeon.withValues(alpha: 0.4),
-            width: 1,
-          ),
-        ),
-        title: Text(
-          'CERTIFICATE DRAFT',
-          style: AppTextStyles.monoMd(color: AppColors.starkWhite),
-        ),
-        content: SingleChildScrollView(
-          child: SelectableText(
-            draft,
-            style: AppTextStyles.monoSm(
-              color: AppColors.starkWhite.withValues(alpha: 0.82),
-              height: 1.5,
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(
-              'CLOSE',
-              style: AppTextStyles.monoSm(color: AppColors.kineticGreen),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -637,10 +589,9 @@ class _InfoStrip extends StatelessWidget {
 
 /// Action buttons at the bottom of the inspector.
 enum InspectorAction {
-  sendProof,
+  printCertificate,
   viewFull,
   downloadMedia,
-  viewCertificate,
   delete,
   exit,
 }
@@ -659,10 +610,10 @@ class _ActionMatrix extends StatelessWidget {
   List<Widget> _tiles() {
     return [
       _ActionTile(
-        icon: Icons.send_outlined,
-        label: 'SEND PROOF',
-        subtitle: 'Generate a courier share link',
-        onTap: () => onAction(InspectorAction.sendProof),
+        icon: Icons.print_outlined,
+        label: ArchivePresentationCopy.inspectorPrintCertificate,
+        subtitle: 'Edit metadata and preview the certificate PDF',
+        onTap: () => onAction(InspectorAction.printCertificate),
       ),
       _ActionTile(
         icon: Icons.visibility_outlined,
@@ -677,12 +628,6 @@ class _ActionMatrix extends StatelessWidget {
           subtitle: 'Save an unencrypted copy via the share sheet',
           onTap: () => onAction(InspectorAction.downloadMedia),
         ),
-      _ActionTile(
-        icon: Icons.shield_outlined,
-        label: 'VIEW CERTIFICATE',
-        subtitle: 'Tamper-evidence certificate draft',
-        onTap: () => onAction(InspectorAction.viewCertificate),
-      ),
       _ActionTile(
         icon: Icons.delete_outline,
         label: 'DELETE FROM DEVICE',

@@ -10,23 +10,20 @@ void main() {
   test('registry maps current media type strings to archive actions', () {
     expect(AssetActionRegistry.getActionsForType('image/jpeg'), [
       MediaActionType.view,
-      MediaActionType.verify,
       MediaActionType.export,
-      MediaActionType.share,
+      MediaActionType.printCertificate,
       MediaActionType.delete,
     ]);
     expect(AssetActionRegistry.getActionsForType('video/mp4'), [
       MediaActionType.view,
-      MediaActionType.verify,
       MediaActionType.export,
-      MediaActionType.share,
+      MediaActionType.printCertificate,
       MediaActionType.delete,
     ]);
     expect(AssetActionRegistry.getActionsForType('application/pdf'), [
       MediaActionType.view,
-      MediaActionType.verify,
       MediaActionType.export,
-      MediaActionType.share,
+      MediaActionType.printCertificate,
       MediaActionType.delete,
     ]);
   });
@@ -44,10 +41,10 @@ void main() {
     );
 
     expect(find.text('View/Play media'), findsOneWidget);
-    expect(find.text('Verify integrity'), findsOneWidget);
     expect(find.text('Download Media'), findsOneWidget);
-    expect(find.text('Send Proof'), findsOneWidget);
-    expect(find.byIcon(CupertinoIcons.share_up), findsOneWidget);
+    expect(find.text('Print Certificate'), findsOneWidget);
+    expect(find.text('Send Proof'), findsNothing);
+    expect(find.text('Verify integrity'), findsNothing);
     expect(find.text('Delete from this device'), findsOneWidget);
   });
 
@@ -64,10 +61,10 @@ void main() {
     );
 
     expect(find.text('View/Play media'), findsOneWidget);
-    expect(find.text('Verify integrity'), findsOneWidget);
     expect(find.text('Download Media'), findsOneWidget);
-    expect(find.text('Send Proof'), findsOneWidget);
-    expect(find.byIcon(CupertinoIcons.share_up), findsOneWidget);
+    expect(find.text('Print Certificate'), findsOneWidget);
+    expect(find.text('Send Proof'), findsNothing);
+    expect(find.text('Verify integrity'), findsNothing);
     expect(find.text('Delete from this device'), findsOneWidget);
   });
 }

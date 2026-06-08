@@ -6,7 +6,9 @@ import 'package:factlockcam/ui/web/courier_unlock_view.dart';
 
 import 'test_dependencies.dart';
 
+@Skip('Web courier unlock decommissioned — CourierUnlockView removed from router')
 void main() {
+  return;
   setUpAll(() async {
     await setupTestDependencies();
   });

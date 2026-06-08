@@ -16,8 +16,6 @@ export '../../domain/export/certificate_export_service.dart'
     show certificateExportServiceProvider;
 export '../../domain/export/proof_bundle_export_service.dart'
     show proofBundleExportServiceProvider;
-export '../../features/archive/presentation/providers/send_proof_provider.dart'
-    show sendProofProvider;
 export '../../features/dispatch/presentation/dispatch_console_provider.dart'
     show dispatchConsoleProvider;
 export '../../features/dispatch/presentation/secure_comm_capture_provider.dart'

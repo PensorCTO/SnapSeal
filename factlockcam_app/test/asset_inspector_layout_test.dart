@@ -52,7 +52,7 @@ void main() {
   testWidgets('inspector portrait layout has archive actions', (tester) async {
     await pumpInspector(tester, surface: const Size(390, 844));
 
-    expect(find.text(ArchivePresentationCopy.inspectorSendProof), findsOneWidget);
+    expect(find.text(ArchivePresentationCopy.inspectorPrintCertificate), findsOneWidget);
     expect(find.text(ArchivePresentationCopy.inspectorBack), findsOneWidget);
     expect(find.textContaining('Vault'), findsNothing);
   });

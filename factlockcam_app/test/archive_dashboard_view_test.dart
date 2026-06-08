@@ -36,7 +36,7 @@ void main() {
     expect(find.text('ARCHIVE'), findsOneWidget);
     expect(find.text('PICTURE'), findsOneWidget);
     expect(find.text('VIDEO'), findsOneWidget);
-    expect(find.text('SECURE COMM'), findsOneWidget);
+    expect(find.text('SECURE COMM'), findsNothing);
     expect(find.text('DISPATCH CONSOLE'), findsNothing);
     expect(find.text('NO SEALED ASSETS'), findsNothing);
     expect(find.byType(CameraView), findsNothing);
@@ -120,7 +120,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('ARCHIVE'), findsOneWidget);
-    expect(find.text('SECURE COMM'), findsOneWidget);
+    expect(find.text('SECURE COMM'), findsNothing);
   });
 
   testWidgets('shows pending sync banner on hub', (tester) async {

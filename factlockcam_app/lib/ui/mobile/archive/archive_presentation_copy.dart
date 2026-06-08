@@ -5,7 +5,7 @@
 class ArchivePresentationCopy {
   const ArchivePresentationCopy._();
 
-  static const inspectorSendProof = 'SEND PROOF';
+  static const inspectorPrintCertificate = 'PRINT CERTIFICATE';
   static const inspectorViewPlay = 'VIEW/PLAY MEDIA';
   static const inspectorDownload = 'DOWNLOAD MEDIA';
   static const inspectorCertificate = 'VIEW CERTIFICATE';
@@ -16,10 +16,9 @@ class ArchivePresentationCopy {
   static const emptyCaptureHint = 'Capture a photo or video to begin.';
 
   static const List<String> curatedUserVisible = [
-    inspectorSendProof,
+    inspectorPrintCertificate,
     inspectorViewPlay,
     inspectorDownload,
-    inspectorCertificate,
     inspectorDelete,
     inspectorBack,
     emptyNoSealedAssets,

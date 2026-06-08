@@ -24,6 +24,8 @@ PODS:
   - libwebp/sharpyuv (1.5.0)
   - libwebp/webp (1.5.0):
     - libwebp/sharpyuv
+  - printing (1.0.0):
+    - Flutter
   - share_plus (0.0.1):
     - Flutter
   - shared_preferences_foundation (0.0.1):
@@ -73,6 +75,7 @@ DEPENDENCIES:
   - flutter_secure_storage_darwin (from `.symlinks/plugins/flutter_secure_storage_darwin/darwin`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - printing (from `.symlinks/plugins/printing/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
@@ -99,6 +102,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/geolocator_apple/darwin"
   integration_test:
     :path: ".symlinks/plugins/integration_test/ios"
+  printing:
+    :path: ".symlinks/plugins/printing/ios"
   share_plus:
     :path: ".symlinks/plugins/share_plus/ios"
   shared_preferences_foundation:
@@ -122,6 +127,7 @@ SPEC CHECKSUMS:
   geolocator_apple: 66b711889fd333205763b83c9dcf0a57a28c7afd
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
+  printing: 233e1b73bd1f4a05615548e9b5a324c98588640b
   share_plus: 8b6f8b3447e494cca5317c8c3073de39b3600d1f
   shared_preferences_foundation: 5086985c1d43c5ba4d5e69a4e8083a389e2909e6
   sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d

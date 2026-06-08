@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../app/theme/app_colors.dart';
@@ -163,8 +165,9 @@ class _HeavyMetalBrandLogoImage extends StatelessWidget {
 ///
 /// Mix into any [State] / [ConsumerState]. The controller is initialized
 /// in [initState] and torn down in [dispose]. The clip is held on its
-/// first frame; call [playBackdropFromStart] to seek-and-play, and the
-/// end-of-clip listener auto-pauses + resets back to frame zero.
+/// first frame until [playBackdropFromStart] or [onBackdropReady] starts
+/// playback; the end-of-clip listener pauses, resets to frame zero, and
+/// fires [signalBackdropEnd] (system click + light haptic on native).
 ///
 /// `HeavyMetalBackdropMixin.enabled` is a static kill-switch flipped to
 /// `false` in `flutter_test_config.dart` so widget tests never touch the
@@ -177,6 +180,7 @@ mixin HeavyMetalBackdropMixin<W extends StatefulWidget> on State<W> {
   VideoPlayerController? _videoController;
   bool _videoReady = false;
   bool _resetting = false;
+  bool _endHandled = false;
 
   VideoPlayerController? get backdropController => _videoController;
   bool get backdropReady => _videoReady;
@@ -217,6 +221,7 @@ mixin HeavyMetalBackdropMixin<W extends StatefulWidget> on State<W> {
       controller.addListener(_onVideoTick);
       if (!mounted) return;
       setState(() => _videoReady = true);
+      onBackdropReady();
     } catch (_) {
       _videoController = null;
       if (controller != null) {
@@ -240,10 +245,32 @@ mixin HeavyMetalBackdropMixin<W extends StatefulWidget> on State<W> {
     if (!value.isInitialized || _resetting) return;
     final duration = value.duration;
     if (duration <= Duration.zero) return;
-    if (value.position >= duration && !value.isPlaying) {
-      unawaited(_resetBackdropToFirstFrame());
+    if (_endHandled) return;
+    if (value.position >= duration - const Duration(milliseconds: 50) &&
+        !value.isPlaying) {
+      _endHandled = true;
+      unawaited(_handleBackdropPlaybackComplete());
     }
   }
+
+  Future<void> _handleBackdropPlaybackComplete() async {
+    signalBackdropEnd();
+    await _resetBackdropToFirstFrame();
+  }
+
+  /// Subtle mechanical click + light haptic when the ambient clip finishes.
+  @protected
+  void signalBackdropEnd() {
+    if (!kIsWeb) {
+      SystemSound.play(SystemSoundType.click);
+    }
+    unawaited(HapticFeedback.lightImpact());
+  }
+
+  /// Called once the controller is initialized and paused on frame zero.
+  /// Override to auto-start playback (e.g. hub landing on each visit).
+  @protected
+  void onBackdropReady() {}
 
   Future<void> _resetBackdropToFirstFrame() async {
     final controller = _videoController;
@@ -262,6 +289,7 @@ mixin HeavyMetalBackdropMixin<W extends StatefulWidget> on State<W> {
   Future<void> playBackdropFromStart() async {
     final controller = _videoController;
     if (controller == null || !controller.value.isInitialized) return;
+    _endHandled = false;
     await controller.seekTo(Duration.zero);
     await controller.play();
   }

@@ -45,7 +45,7 @@ class UniversalAssetToolbar extends ConsumerWidget {
                 }
                 unawaited(_handleAction(context, ref, action));
               },
-              child: _actionChild(action, mediaType),
+              child: Text(_labelForAction(action, mediaType)),
             ),
           ...additionalActions,
         ],
@@ -76,12 +76,18 @@ class UniversalAssetToolbar extends ConsumerWidget {
       if (!allowed) {
         return;
       }
-      await runMeteredVerificationAction(
-        ref,
-        () => ref
+      if (action == MediaActionType.export) {
+        await runMeteredVerificationAction(
+          ref,
+          () => ref
+              .read(assetActionProvider.notifier)
+              .executeAction(action, assetHash),
+        );
+      } else {
+        await ref
             .read(assetActionProvider.notifier)
-            .executeAction(action, assetHash),
-      );
+            .executeAction(action, assetHash);
+      }
     } else {
       await ref
           .read(assetActionProvider.notifier)
@@ -92,8 +98,7 @@ class UniversalAssetToolbar extends ConsumerWidget {
   }
 
   static bool _requiresVerificationCredit(MediaActionType action) {
-    return action == MediaActionType.verify ||
-        action == MediaActionType.export;
+    return action == MediaActionType.export;
   }
 
   static String _messageForMediaType(String mediaType) {
@@ -112,24 +117,6 @@ class UniversalAssetToolbar extends ConsumerWidget {
     return 'Actions for this sealed asset.';
   }
 
-  static Widget _actionChild(MediaActionType action, String mediaType) {
-    final style = action == MediaActionType.verify
-        ? const TextStyle(color: Color(0xFF00D26A))
-        : null;
-    if (action != MediaActionType.share) {
-      return Text(_labelForAction(action, mediaType), style: style);
-    }
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(CupertinoIcons.share_up, size: 20),
-        const SizedBox(width: 8),
-        Text(_labelForAction(action, mediaType), style: style),
-      ],
-    );
-  }
-
   static String _labelForAction(MediaActionType action, String mediaType) {
     switch (action) {
       case MediaActionType.view:
@@ -142,6 +129,8 @@ class UniversalAssetToolbar extends ConsumerWidget {
         return 'Send Proof';
       case MediaActionType.export:
         return _exportLabelForMediaType(mediaType);
+      case MediaActionType.printCertificate:
+        return 'Print Certificate';
     }
   }
 

@@ -10,7 +10,9 @@ import 'package:factlockcam/ui/web/widgets/hash_cascade_ticker.dart';
 
 import 'test_dependencies.dart';
 
+@Skip('Web courier unlock decommissioned — CourierUnlockView removed from router')
 void main() {
+  return;
   setUpAll(() async {
     await setupTestDependencies();
   });

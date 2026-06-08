@@ -47,9 +47,12 @@ const String logonPitchFragment =
 const String archiveHubSubtitle =
     'Verified Digital DNA · sealed on this device';
 
-/// Hub tile subtitle for owner-side Send Proof / courier origination.
-const String secureCommHubSubtitle =
-    'Send verifiable proof · password-protected link';
+/// Certificate Studio hub positioning (legacy Secure Comm tile removed).
+const String certificateStudioHubSubtitle =
+    'Edit metadata · preview and print certificates';
+
+/// @deprecated Courier dispatch decommissioned; retained for orphaned modules.
+const String secureCommHubSubtitle = certificateStudioHubSubtitle;
 
 /// Consumer epistemic boundary (keep in sync with marketing.ts whyBody / trustDisclaimer).
 const String consumerEpistemicLine =

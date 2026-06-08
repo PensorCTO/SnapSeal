@@ -13,9 +13,8 @@ alwaysApply: true
 ## HapticHubPanel (primary launcher)
 
 - Post-login landing: [archive_home_view.dart](factlockcam_app/lib/ui/mobile/archive_home_view.dart) index **0** = `HapticHubPanel`.
-- Five hub tiles: **Archive**, **Picture**, **Video**, **Account & Settings**, **Secure Comm** (portrait stack; landscape 2×2 + Secure Comm row).
-- Hub destinations: Picture=1, Video=2, Archive=3, Account=4, Secure Comm=5.
-- **Secure Comm** opens `SecureCommCaptureView` (Zero-Click: pre-warmed front camera → record with hot lens swap → Access Control overlay → TRANSMIT PROOF + share sheet). Hub pre-warms front camera via `SecureCommCameraPool`.
+- Four hub tiles: **Archive**, **Picture**, **Video**, **Account & Settings** (portrait column; landscape 2×2 grid).
+- Hub destinations: Picture=1, Video=2, Archive=3, Account=4.
 - Lazy-mount child panels via `_panelWhenSelected` (PR0 camera rule).
 - Sub-panels MUST expose explicit back via `ArchivePanelNavigationBar` or camera `onBackToHub` → hub index 0.
 

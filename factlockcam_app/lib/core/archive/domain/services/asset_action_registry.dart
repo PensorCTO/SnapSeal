@@ -6,40 +6,25 @@ import '../models/media_action_type.dart';
 class AssetActionRegistry {
   const AssetActionRegistry._();
 
-  static const _baseActions = <MediaActionType>[
-    MediaActionType.verify,
+  static const _studioActions = <MediaActionType>[
+    MediaActionType.view,
+    MediaActionType.export,
+    MediaActionType.printCertificate,
     MediaActionType.delete,
   ];
 
-  static const _viewableActions = <MediaActionType>[
-    MediaActionType.view,
-    MediaActionType.verify,
+  static const _binaryActions = <MediaActionType>[
     MediaActionType.export,
-    MediaActionType.share,
-    MediaActionType.delete,
-  ];
-
-  static const _documentActions = <MediaActionType>[
-    MediaActionType.view,
-    MediaActionType.verify,
-    MediaActionType.export,
-    MediaActionType.share,
+    MediaActionType.printCertificate,
     MediaActionType.delete,
   ];
 
   /// Returns the actions available for [mediaType] on the current platform.
-  ///
-  /// On the web [MediaActionType.verify] is excluded because
-  /// `VaultService.extractForCourier` requires the local filesystem
-  /// (`dart:io`) and is mobile-only.
   static List<MediaActionType> getActionsForType(String mediaType) {
     final actions = _resolveActions(mediaType);
     if (kIsWeb) {
       return actions
-          .where(
-            (a) =>
-                a != MediaActionType.verify && a != MediaActionType.export,
-          )
+          .where((a) => a != MediaActionType.export)
           .toList(growable: false);
     }
     return actions;
@@ -49,13 +34,12 @@ class AssetActionRegistry {
     switch (categoryFromMime(mediaType)) {
       case ArchiveContentCategory.image:
       case ArchiveContentCategory.video:
-        return _viewableActions;
       case ArchiveContentCategory.document:
       case ArchiveContentCategory.audio:
       case ArchiveContentCategory.archive:
-        return _documentActions;
+        return _studioActions;
       case ArchiveContentCategory.binary:
-        return _baseActions;
+        return _binaryActions;
     }
   }
 }

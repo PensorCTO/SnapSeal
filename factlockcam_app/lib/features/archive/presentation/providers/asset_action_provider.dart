@@ -38,11 +38,11 @@ class AssetAction extends _$AssetAction {
           await vaultService.deleteArchiveItem(assetHash);
           break;
         case MediaActionType.share:
-          // Send Proof requires [BuildContext]; use [ArchiveItemActions.showSendProofDialog]
-          // from vault UI entry points until this provider accepts a UI delegate.
           break;
         case MediaActionType.export:
-          // Certificate/PDF binary export is not yet available on this action path.
+          break;
+        case MediaActionType.printCertificate:
+          // Certificate Studio navigation is owned by presentation routes.
           break;
       }
     });

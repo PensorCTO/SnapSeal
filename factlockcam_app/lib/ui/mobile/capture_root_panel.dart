@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter/widgets.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_typography.dart';

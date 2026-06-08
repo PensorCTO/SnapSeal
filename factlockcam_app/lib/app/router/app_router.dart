@@ -9,7 +9,6 @@ import '../../ui/mobile/archive_home_view.dart';
 import '../../ui/mobile/logon_view.dart';
 import '../../ui/mobile/settings/burn_account_view.dart';
 import '../../ui/mobile/settings/restore_archive_view.dart';
-import '../../ui/web/courier_unlock_view.dart';
 import '../../ui/web/web_archive_gate_view.dart';
 
 /// Keeps a single [GoRouter] instance while auth/custody changes trigger redirect.
@@ -23,15 +22,20 @@ class AppRouterRefreshNotifier extends ChangeNotifier {
 
   String? redirect(BuildContext context, GoRouterState state) {
     final location = state.matchedLocation;
-    final isCourierRoute = location == CourierUnlockView.routePath;
     final isArchiveGate = location == WebArchiveGateView.routePath;
+    const courierRoutePath = '/courier';
+    final isCourierRoute = location == courierRoutePath;
 
-    // Archive subdomain web bundle: courier unlock + gate page only.
+    // Archive subdomain web bundle: gate page only (courier decommissioned).
     if (kIsWeb) {
-      if (isCourierRoute || isArchiveGate) {
+      if (isArchiveGate) {
         return null;
       }
       return WebArchiveGateView.routePath;
+    }
+
+    if (isCourierRoute) {
+      return LogonView.routePath;
     }
 
     final authChange = _ref.read(authStateProvider).asData?.value;
@@ -79,7 +83,7 @@ class AppRouterRefreshNotifier extends ChangeNotifier {
       return ArchiveHomeView.routePath;
     }
 
-    if (!isAuthenticated && !isOnLogon && !isCourierRoute) {
+    if (!isAuthenticated && !isOnLogon) {
       return LogonView.routePath;
     }
 
@@ -137,9 +141,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         redirect: (_, _) => ArchiveHomeView.routePath,
       ),
       GoRoute(
-        path: CourierUnlockView.routePath,
-        builder: (context, state) =>
-            CourierUnlockView(packageId: state.uri.queryParameters['pkg']),
+        path: '/courier',
+        redirect: (_, _) =>
+            kIsWeb ? WebArchiveGateView.routePath : LogonView.routePath,
       ),
     ],
   );

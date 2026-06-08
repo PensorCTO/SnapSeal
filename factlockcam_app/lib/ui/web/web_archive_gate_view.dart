@@ -5,10 +5,11 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_typography.dart';
 import '../../core/config/app_config.dart';
 
-/// Minimal landing for the archive subdomain when no courier package is linked.
+/// Minimal landing for the archive subdomain web bundle.
 ///
-/// Production web on `archive.factlockcam.com` is **courier unlock only** — not a
-/// browser edition of the mobile app. Origination stays on native iOS/Android.
+/// Production web on `archive.factlockcam.com` points recipients and visitors
+/// to the native app and marketing site. Courier unlock was decommissioned in
+/// favor of local Certificate Studio on iOS and Android.
 class WebArchiveGateView extends StatelessWidget {
   const WebArchiveGateView({super.key});
 
@@ -53,7 +54,7 @@ class WebArchiveGateView extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'COURIER UNLOCK ONLY',
+                    'CERTIFICATE STUDIO · NATIVE APP',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.monoSm(
                       color: AppColors.kineticGreen,
@@ -62,9 +63,9 @@ class WebArchiveGateView extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'This address unlocks password-protected Send Proof packages '
-                    'shared with you. Open the full link from your sender — it '
-                    'includes a package id in the URL.',
+                    'Archive origination, sealing, and tamper-proof certificates '
+                    'run on the native iOS and Android application with '
+                    'hardware-backed attestation and a local-first encrypted archive.',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.monoSm(
                       color: AppColors.starkWhite.withValues(alpha: 0.62),
@@ -72,8 +73,9 @@ class WebArchiveGateView extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Capture, seal, and archive origination require the native '
-                    'iOS or Android application with hardware-backed attestation.',
+                    'Password-protected courier links are no longer offered. '
+                    'Use Certificate Studio in the app to edit metadata, preview, '
+                    'print, or share a certificate PDF directly from your device.',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.monoSm(
                       color: AppColors.starkWhite.withValues(alpha: 0.42),

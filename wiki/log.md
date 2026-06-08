@@ -5,6 +5,23 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-06-08
+
+- **Twenty-ninth pass QA — Unified Archive Studio stable** — **user QA passed**:
+  - **E2E:** Four-tile hub → capture/browse → **Print Certificate** → Certificate Studio (metadata + live PDF) → print/share PDF; hub backdrop **auto-plays** on return from sub-panels; end-of-video **click + light haptic**.
+  - **Hub backdrop fix:** `_panelWhenSelected` remount → `onBackdropReady()` + `playBackdropFromStart()`; `signalBackdropEnd()` in `HeavyMetalBackdropMixin`.
+  - **Wiki:** [[Unified_Archive_Studio_2026-06]]; baseline + overview + index reconciled.
+  - **Tests:** **98/98** `flutter test`.
+  - Validation: `python3 scripts/wiki_ingest.py --validate`.
+- **Unified Archive Studio & Secure Comm decommission** — product pivot to local certificate workflow:
+  - **Hub:** Restored canonical **four-tile** launcher (Archive, Picture, Video, Account & Settings); Secure Comm tile **unmounted** (source retained, not routed).
+  - **Actions:** Removed Send Proof / courier dispatch from `UniversalAssetToolbar`, inspector, and active Riverpod UI paths; retained View, Download Media, Delete, **Print Certificate**.
+  - **Certificate Studio:** New `CertificateStudioView` — local title/description edit (SQLite only via `assetMetadataProvider`), debounced live `PdfPreview` (`printing` package), Print + Share PDF.
+  - **Courier decommission:** `enableProofLinks` defaults false; web `/courier` redirects to gate; `WebArchiveGateView` copy updated; marketing site `/courier` redirects to guide. Supabase courier RPCs **unchanged** (backend retained).
+  - **Metadata:** No SQLite migration — `title`/`description` columns already present (schema v3+).
+  - **Wiki:** [[FactLockCam_Product_Baseline_2026-05]] reconciled; hub refactor cursor rule updated.
+  - **Tests:** Courier/Secure Comm widget tests `@Skip`; hub/action/inspector tests updated.
+
 ## 2026-06-06
 
 - **Twenty-eighth pass QA — Zero-Click Secure Comm capture stable** — **user QA passed**:

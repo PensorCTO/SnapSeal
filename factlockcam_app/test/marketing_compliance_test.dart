@@ -11,7 +11,7 @@ void main() {
     logonPitchFragment,
     logonComplianceFootnote,
     archiveHubSubtitle,
-    secureCommHubSubtitle,
+    certificateStudioHubSubtitle,
     certificatePdfSubtitle,
     sendProofShareIntro,
     packageDescription,

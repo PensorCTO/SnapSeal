@@ -45,7 +45,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('PICTURE'), findsOneWidget);
-    expect(find.text('SECURE COMM'), findsOneWidget);
+    expect(find.text('SECURE COMM'), findsNothing);
     expect(find.byType(CameraView), findsNothing);
     expect(buildCounter.value, 1);
 

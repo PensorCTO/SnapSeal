@@ -64,11 +64,11 @@ export const panel1Bullets = [
 export const panel2Title = 'Proof on demand';
 export const panel2Label = 'Tamper-proof certificate';
 export const panel2Body =
-  'When you need to show what was captured, generate a tamper-proof certificate anchored to an independent global public ledger. Send Proof delivers the certificate PDF plus a password-protected courier link—recipients unlock and verify at archive.factlockcam.com without installing the app.';
+  'When you need to show what was captured, open Certificate Studio in the app: edit title and description, preview a tamper-proof certificate PDF with your asset hash and ledger anchor, then print or share the PDF directly from your device.';
 export const panel2Bullets = [
   'Independent global public ledger',
-  'Courier unlock at archive.factlockcam.com',
-  'Share via Messages, Mail, or AirDrop',
+  'Live certificate preview in the app',
+  'Print or share PDF from your device',
 ] as const;
 
 /** Why — use cases */

@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_typography.dart';
-import '../../core/di/service_providers.dart';
 import '../../features/archive_quota/presentation/views/archive_subscription_onboarding_sheet.dart';
 import '../../data/supabase/auth_repository.dart';
 import '../controllers/key_custody_provider.dart';
@@ -16,7 +15,6 @@ import 'archive/archive_omni/unified_archive_viewport.dart';
 import 'archive/haptic_hub_panel.dart';
 import 'camera/acquisition_mode.dart';
 import 'camera/capture_panel.dart';
-import 'secure_comm_capture_panel.dart';
 
 /// Post-login shell — hub launcher with lazy-mounted child panels.
 class ArchiveHomeView extends ConsumerStatefulWidget {
@@ -30,7 +28,6 @@ class ArchiveHomeView extends ConsumerStatefulWidget {
   static const videoIndex = 2;
   static const archiveIndex = 3;
   static const accountIndex = 4;
-  static const secureCommIndex = 5;
 
   @override
   ConsumerState<ArchiveHomeView> createState() => _ArchiveHomeViewState();
@@ -57,19 +54,11 @@ class _ArchiveHomeViewState extends ConsumerState<ArchiveHomeView> {
   }
 
   void _onHubDestinationSelected(int destination) {
-    if (!kIsWeb &&
-        (destination == ArchiveHomeView.pictureIndex ||
-            destination == ArchiveHomeView.videoIndex)) {
-      unawaited(ref.read(secureCommCameraPoolProvider).release());
-    }
     setState(() => _selectedIndex = destination);
   }
 
   void _goToHub() {
     setState(() => _selectedIndex = ArchiveHomeView.hubIndex);
-    if (!kIsWeb) {
-      unawaited(ref.read(secureCommCameraPoolProvider).warmFrontCamera());
-    }
   }
 
   /// IndexedStack retains children; mount panel bodies only while selected.
@@ -146,10 +135,6 @@ class _ArchiveHomeViewState extends ConsumerState<ArchiveHomeView> {
           _panelWhenSelected(
             ArchiveHomeView.accountIndex,
             AccountSettingsPanel(onBackToHub: _goToHub),
-          ),
-          _panelWhenSelected(
-            ArchiveHomeView.secureCommIndex,
-            buildSecureCommCapturePanel(onBackToHub: _goToHub),
           ),
         ],
       ),
