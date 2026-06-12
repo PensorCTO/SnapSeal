@@ -91,7 +91,8 @@ void main() {
     expect(find.text('APP WEB PAGE'), findsOneWidget);
     expect(find.text('USER GUIDE'), findsOneWidget);
     expect(find.text('KEY CUSTODY & LIMITS'), findsOneWidget);
-    expect(find.text('BURN ACCOUNT'), findsOneWidget);
+    expect(find.text('DELETE ACCOUNT'), findsOneWidget);
+    expect(find.text('RESTORE PURCHASES'), findsOneWidget);
     expect(find.text('LOG OUT'), findsOneWidget);
   });
 

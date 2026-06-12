@@ -30,12 +30,16 @@ Phase 1 wires **App Store 3.1.1–aligned** three-tier metering on top of the ex
 ### Legal UI
 
 - `archiveSubscriptionTierDisclaimer` in `disclaimers.dart` — higher tiers = bandwidth only, **zero data recovery**.
-- `SubscriptionUpgradeView` — disclaimer + Core Pro / Sovereign Archivist cards (mock billing).
+- `SubscriptionUpgradeView` — disclaimer + proof-centric cards (Intro Week / Weekly / Annual in final pass); old GB tier names retained only for backend `tier_id` values.
 - `ArchiveSubscriptionOnboardingSheet` — first run after logon (`shared_preferences` key `archive_subscription_onboarding_seen_v1`).
 
 ### Supabase delta
 
 - Migration `20260603120000_archive_tiers_compliant_labels.sql` — display names, `max_single_capture_bytes`, extended `get_my_archive_quota()` JSON.
+
+### Final-pass UI presentation (2026-06-12)
+
+Thirtieth pass ([[Camera_HUD_Quota_Pricing_Polish_2026-06]]) updated the visible paywall and camera HUD to a **proof/seal** mental model (Intro Week $0.99 for 25 seals, Weekly $4.99, Annual $49.99 for 500 proofs/year) with an interactive pulsing `ProofQuotaHudChip`. The byte/storage enforcement substrate (`LocalArchiveQuotaGate`, tier limits, `set_archive_tier`) and backend RPCs were left unchanged; the paywall is now a presentation layer aligned with how users experience "running out of seals" in the viewfinder.
 
 ### Deferred (Phase 2+)
 

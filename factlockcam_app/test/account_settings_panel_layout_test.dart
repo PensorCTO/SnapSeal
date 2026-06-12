@@ -40,7 +40,8 @@ void main() {
 
     expect(find.text('ACCOUNT & SETTINGS'), findsOneWidget);
     expect(find.text('LOG OUT'), findsOneWidget);
-    expect(find.text('BURN ACCOUNT'), findsOneWidget);
+    expect(find.text('RESTORE PURCHASES'), findsOneWidget);
+    expect(find.text('DELETE ACCOUNT'), findsOneWidget);
   });
 
   testWidgets('account settings landscape avoids RenderFlex overflow', (

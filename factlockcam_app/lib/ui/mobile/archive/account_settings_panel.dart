@@ -217,6 +217,28 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
     context.push(BurnAccountView.routePath);
   }
 
+  Future<void> _restorePurchases() async {
+    setState(() => _busy = true);
+    try {
+      final restored =
+          await ref.read(subscriptionUpgradeProvider.notifier).restore();
+      if (!mounted) return;
+      await _showAlert(
+        restored ? 'Purchases restored' : 'Nothing to restore',
+        restored
+            ? 'Your active Archive subscription entitlements have been restored.'
+            : 'We did not find any previous purchases linked to this account.',
+      );
+    } catch (error) {
+      if (!mounted) return;
+      await _showAlert('Restore failed', error.toString());
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
   Future<void> _showKeyCustodyLimits() {
     return showCupertinoDialog<void>(
       context: context,
@@ -407,6 +429,13 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
         color: AppColors.kineticGreen,
         onPressed: busy ? null : _signOut,
       ),
+      const SizedBox(height: 12),
+      _ActionButton(
+        compact: compact,
+        label: 'Restore Purchases',
+        color: AppColors.kineticGreen,
+        onPressed: busy ? null : _restorePurchases,
+      ),
       if (_keyCustodyEnabled) ...[
         const SizedBox(height: 12),
         _ActionButton(
@@ -426,7 +455,7 @@ class _AccountSettingsPanelState extends ConsumerState<AccountSettingsPanel>
       const SizedBox(height: 12),
       _ActionButton(
         compact: compact,
-        label: 'Burn account',
+        label: 'Delete Account',
         color: CupertinoColors.destructiveRed,
         onPressed: busy ? null : _openBurnAccount,
       ),

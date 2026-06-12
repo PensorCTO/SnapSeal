@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:factlockcam/core/ui/painters/reticle_painter.dart';
 import 'package:factlockcam/features/archive_quota/domain/models/quota_state.dart';
 import 'package:factlockcam/features/archive_quota/presentation/providers/quota_state_provider.dart';
+import 'package:factlockcam/features/archive_quota/presentation/widgets/proof_quota_hud_chip.dart';
 import 'package:factlockcam/ui/mobile/camera/acquisition_mode.dart';
 import 'package:factlockcam/ui/mobile/camera/telemetry_overlay.dart';
 
@@ -67,9 +68,8 @@ void main() {
     await tester.pump();
   });
 
-  testWidgets('TelemetryOverlay shows PROOFS gas gauge when quota is set', (
-    tester,
-  ) async {
+  testWidgets('ProofQuotaHudChip shows PROOFS REMAINING gauge when quota is set',
+      (tester) async {
     const quota = QuotaState(
       proProofsRemaining: 34,
       proProofsBase: 50,
@@ -82,18 +82,71 @@ void main() {
           quotaStateProvider.overrideWith(() => _FixedQuotaStateNotifier(quota)),
         ],
         child: const MaterialApp(
-          home: Scaffold(
-            body: TelemetryOverlay(
-              acquisitionMode: AcquisitionMode.photo,
-              isRecording: false,
-              archivingCount: 0,
-            ),
-          ),
+          home: Scaffold(body: ProofQuotaHudChip()),
         ),
       ),
     );
 
-    expect(find.textContaining('PROOFS: 34/50'), findsOneWidget);
+    expect(find.textContaining('PROOFS REMAINING: 34/50'), findsOneWidget);
+    expect(find.text('UPGRADE'), findsNothing);
+
+    await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
+    await tester.pump();
+  });
+
+  testWidgets('ProofQuotaHudChip enters warning state when proofs near zero', (
+    tester,
+  ) async {
+    const quota = QuotaState(
+      proProofsRemaining: 1,
+      proProofsBase: 50,
+      egressCreditsBalance: 0,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          quotaStateProvider.overrideWith(() => _FixedQuotaStateNotifier(quota)),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(body: ProofQuotaHudChip()),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.textContaining('PROOFS REMAINING: 1/50'), findsOneWidget);
+    expect(find.text('UPGRADE'), findsOneWidget);
+
+    // Stop the repeating pulse animation before tearing down.
+    await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
+    await tester.pump();
+  });
+
+  testWidgets('ProofQuotaHudChip opens the subscription paywall on tap', (
+    tester,
+  ) async {
+    const quota = QuotaState(
+      proProofsRemaining: 2,
+      proProofsBase: 50,
+      egressCreditsBalance: 4,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          quotaStateProvider.overrideWith(() => _FixedQuotaStateNotifier(quota)),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(body: ProofQuotaHudChip()),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byType(ProofQuotaHudChip));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Upgrade Archive'), findsOneWidget);
 
     await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
     await tester.pump();

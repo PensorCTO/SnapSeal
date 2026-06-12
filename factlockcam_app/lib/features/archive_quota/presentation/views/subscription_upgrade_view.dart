@@ -25,7 +25,7 @@ class SubscriptionUpgradeView extends ConsumerWidget {
     return SafeArea(
       child: Material(
         color: AppColors.titaniumDeep,
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -54,19 +54,30 @@ class SubscriptionUpgradeView extends ConsumerWidget {
               ),
               const SizedBox(height: 20),
               _TierCard(
-                title: 'Core Pro Tier',
-                priceLabel: '\$1 / month',
-                storageLabel: '5 GB Archive',
-                egressLabel: '25 GB egress / month',
+                title: 'Intro Week',
+                priceLabel: '\$0.99 first week',
+                proofLabel: '25 seals',
+                detailLabel: 'Try sealing for one week',
+                badge: 'INTRO',
                 busy: busy,
                 onUpgrade: () => _upgrade(ref, 'picture'),
               ),
               const SizedBox(height: 10),
               _TierCard(
-                title: 'Sovereign Archivist',
-                priceLabel: '\$10 / month',
-                storageLabel: '50 GB Archive',
-                egressLabel: '200 GB egress / month',
+                title: 'Weekly',
+                priceLabel: '\$4.99 / week',
+                proofLabel: 'Ongoing proof access',
+                detailLabel: 'Renews weekly after the intro week',
+                busy: busy,
+                onUpgrade: () => _upgrade(ref, 'picture'),
+              ),
+              const SizedBox(height: 10),
+              _TierCard(
+                title: 'Annual',
+                priceLabel: '\$49.99 / year',
+                proofLabel: '500 proofs / year',
+                detailLabel: 'Best value — save vs. weekly',
+                badge: 'BEST VALUE',
                 busy: busy,
                 onUpgrade: () => _upgrade(ref, 'video'),
               ),
@@ -90,11 +101,11 @@ class SubscriptionUpgradeView extends ConsumerWidget {
   static String _reasonCopy(ArchiveQuotaBlockReason reason) {
     return switch (reason) {
       ArchiveQuotaBlockReason.storage =>
-        'Your Archive storage limit has been reached. Upgrade to seal more assets.',
+        'You have used all of your sealing proofs. Subscribe to keep sealing.',
       ArchiveQuotaBlockReason.egress =>
-        'Your monthly Archive egress limit has been reached. Upgrade to send more proofs.',
+        'You have used your verification credits. Subscribe for more proofs.',
       ArchiveQuotaBlockReason.singleCapture =>
-        'Free tier video captures are limited to 50 MB. Upgrade for longer recordings.',
+        'Free captures are limited to 50 MB. Subscribe for full-length proofs.',
     };
   }
 
@@ -111,18 +122,20 @@ class _TierCard extends StatelessWidget {
   const _TierCard({
     required this.title,
     required this.priceLabel,
-    required this.storageLabel,
-    required this.egressLabel,
+    required this.proofLabel,
+    required this.detailLabel,
     required this.busy,
     required this.onUpgrade,
+    this.badge,
   });
 
   final String title;
   final String priceLabel;
-  final String storageLabel;
-  final String egressLabel;
+  final String proofLabel;
+  final String detailLabel;
   final bool busy;
   final VoidCallback onUpgrade;
+  final String? badge;
 
   @override
   Widget build(BuildContext context) {
@@ -137,12 +150,49 @@ class _TierCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: AppTextStyles.monoMd(fontWeight: FontWeight.w700)),
+            Row(
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.monoMd(fontWeight: FontWeight.w700),
+                ),
+                const Spacer(),
+                if (badge != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: AppColors.verifiedNeon),
+                    ),
+                    child: Text(
+                      badge!,
+                      style: AppTextStyles.monoSm(
+                        color: AppColors.verifiedNeon,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             const SizedBox(height: 4),
-            Text(priceLabel, style: AppTextStyles.monoSm(color: AppColors.kineticGreen)),
+            Text(
+              priceLabel,
+              style: AppTextStyles.monoSm(color: AppColors.kineticGreen),
+            ),
             const SizedBox(height: 6),
-            Text(storageLabel, style: AppTextStyles.monoSm()),
-            Text(egressLabel, style: AppTextStyles.monoSm()),
+            Text(
+              proofLabel,
+              style: AppTextStyles.monoSm(fontWeight: FontWeight.w600),
+            ),
+            Text(
+              detailLabel,
+              style: AppTextStyles.monoSm(
+                color: AppColors.starkWhite.withValues(alpha: 0.65),
+              ),
+            ),
             const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
@@ -153,7 +203,7 @@ class _TierCard extends StatelessWidget {
                 child: busy
                     ? const CupertinoActivityIndicator(color: AppColors.titaniumDeep)
                     : Text(
-                        'Upgrade to $title',
+                        'Choose $title',
                         style: AppTextStyles.monoSm(
                           color: AppColors.titaniumDeep,
                           fontWeight: FontWeight.w700,

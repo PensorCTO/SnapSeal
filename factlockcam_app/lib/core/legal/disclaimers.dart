@@ -59,10 +59,10 @@ const String hardwareCapabilityDisclaimer =
     'signing (Secure Enclave or Keystore). Web and simulator builds do not '
     'originate device seals.';
 
-/// Subscription tiers — bandwidth only; no key recovery or escrow.
+/// Subscription tiers — sealing proofs only; no key recovery or escrow.
 const String archiveSubscriptionTierDisclaimer =
-    'Higher tiers provide larger bandwidth pipelines, but zero data recovery. '
-    'FactLockCam cannot restore lost keys or decrypt your archive.';
+    'Subscriptions provide additional sealing proofs only, with zero data '
+    'recovery. FactLockCam cannot restore lost keys or decrypt your archive.';
 
 /// Restore / brick screen — non-recovery emphasis.
 const String restoreKeyCustodyDisclaimer =

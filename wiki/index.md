@@ -11,7 +11,7 @@ Read this page first when answering questions about the wiki.
 
 | Page | When to read |
 |------|----------------|
-| [[FactLockCam_Product_Baseline_2026-05]] | **Canonical status** — **100% Pre-Connect Submission Ready** + **twenty-ninth QA passed (2026-06-08)**; Unified Archive Studio + Certificate Studio |
+| [[FactLockCam_Product_Baseline_2026-05]] | **Canonical status** — **100% Pre-Connect Submission Ready** + **thirtieth / final pre-submission pass (2026-06-12)**: interactive ProofQuotaHudChip, 3:4 framed camera previews, proof-centric subscription pricing, Restore Purchases + Delete Account labels; **100 tests green** (4 skips); Unified Archive Studio + Certificate Studio |
 | [[Unified_Archive_Studio_2026-06]] | **Twenty-ninth pass QA passed (2026-06-08)** — four-tile hub, Certificate Studio, courier decommission, hub backdrop auto-play; **98/98** tests |
 | [[Zero_Click_Capture_2026-06]] | **Twenty-eighth pass (2026-06-06)** — mobile Secure Comm capture; **superseded** by decommission (orphaned source) |
 | [[Secure_Communications_Console_2026-06]] | **Twenty-seventh pass (2026-06-05)** — web `/courier` phased console; **superseded** — `/courier` redirects to gate |
@@ -56,8 +56,8 @@ Read this page first when answering questions about the wiki.
 - [[App_Store_Remediation_2026-05]] - Tenth QA: App Store remediation, WEB_ARCHIVE_BASE_URL, courier archive indices, TestFlight-first.
 - [[Production_Transition_2026-05]] - Ninth QA: production config, courier lookup migrations, iOS compliance, test suite.
 - [[Data_Custody_And_Backup_Model_2026]] - Canonical backup/custody: device `.seal`, `.factlock` keys, cloud ciphertext (not user media backup).
-- [[Archive_Subscription_Tiers_2026]] - Three-tier subscription foundation: local-first gates, 50 MB free video cap, compliant tier names, legal onboarding (June 2026).
-- [[Archive_Quota_Telemetry_2026-06]] - Dual-layer Archive metering: byte storage/egress + credit pro proofs/verification credits; gas gauge, Egress Pass badge, paywall (June 2026, device QA).
+- [[Archive_Subscription_Tiers_2026]] - Three-tier subscription foundation: local-first gates, 50 MB free video cap, compliant tier names, legal onboarding (June 2026). Final-pass (2026-06-12) paywall presentation switched to proof-centric "Intro Week / Weekly / Annual" language while byte-enforcement substrate unchanged.
+- [[Archive_Quota_Telemetry_2026-06]] - Dual-layer Archive metering: byte storage/egress + credit pro proofs/verification credits; gas gauge, Egress Pass badge, paywall (June 2026, device QA). Final pass added interactive `ProofQuotaHudChip` (tappable, warning pulse) in camera HUD.
 - [[Archive_Owner_UX_2026-05]] - Sixteenth QA: Download Media, certificate metadata from asset, View/Play labels, chronology actions icon.
 - [[Send_Proof_Courier_2026-05]] - Send Proof: certificate PDF + courier link; utility positioning; production web archive URL.
 - [[FactLockCam_Product_Baseline_2026-05]] - Verified hub/archive/capture workflow and compressed Supabase baseline (start here for FactLockCam status).
@@ -70,6 +70,7 @@ Read this page first when answering questions about the wiki.
 
 ## Analyses (active)
 
+- [[Camera_HUD_Quota_Pricing_Polish_2026-06]] — Thirtieth / final pre-submission pass (2026-06-12): interactive ProofQuotaHudChip, RepaintBoundary + 3:4 framed cover-cropped camera, proof-based paywall pricing (Intro/Weekly/Annual), Restore Purchases + Delete Account; device reinstall; **100 tests**; wiki cleaned for App Store submission.
 - [[Unified_Archive_Studio_2026-06]] — Twenty-ninth pass: Certificate Studio pivot, hub backdrop fix, user QA stable, **98/98** tests (June 2026).
 - [[Zero_Click_Capture_2026-06]] — Twenty-eighth pass: Zero-Click mobile Secure Comm capture (June 2026); **superseded** by Unified Archive Studio decommission.
 - [[Secure_Communications_Console_2026-06]] — Twenty-seventh pass: phased web courier console, user QA stable (June 2026).

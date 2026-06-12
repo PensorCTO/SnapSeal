@@ -5,6 +5,20 @@ summary: "Append-only chronology of wiki maintenance and major documentation eve
 
 # Wiki log
 
+## 2026-06-12
+
+- **Thirtieth / final pre-submission pass — Camera HUD, interactive quota chip, proof pricing & framing QA fixes** — **user QA passed on device**:
+  - **Interactive HUD**: New `ProofQuotaHudChip` (reads `quotaStateProvider` credit layer). Renders `PROOFS REMAINING: n/base` in monospaced forensic style with `verifiedNeon` border. Pulses (amber) + shows "UPGRADE" when `<=1` remaining; tap opens subscription paywall. Own `RepaintBoundary`; animation gated to warning state only.
+  - **Camera framing & performance**: Picture/Video viewports now use a centered `AspectRatio(3/4)` framed window (no more elongated full-bleed strip). Live `CameraPreview` wrapped in `FittedBox(BoxFit.cover)` for undistorted cover-crop of the sensor feed + `RepaintBoundary` so heavy AES-GCM sealing does not drop viewfinder frames. Overlays and shutter iris already bounded.
+  - **Subscription presentation (QA fix #1)**: Paywall (`SubscriptionUpgradeView`) restructured to proof/seal language per user feedback — **Intro Week** $0.99 first week (25 seals, INTRO badge), **Weekly** $4.99 (ongoing access), **Annual** $49.99 (500 proofs/year, BEST VALUE). Block reasons and cards updated; `archiveSubscriptionTierDisclaimer` refined to "additional sealing proofs only, with zero data recovery" (compliance test phrases preserved). Old GB tier names (Core Pro / Sovereign Archivist) superseded in the consumer modal while byte-enforcement substrate remains.
+  - **App Store compliance (Guideline 3.1.1 / 5.1.1)**: `SubscriptionBillingGateway` extended with `restorePurchases()`; notifier gained `restore()`. Account panel now shows prominent **Restore Purchases** button + **Delete Account** label for the existing typed-`OBLITERATE` burn flow (token and `BurnAccountView` unchanged).
+  - **Shell preserved**: Hub-first `IndexedStack` + `HapticHubPanel` + lazy camera mount (per `factlockcam-hub-refactor.mdc` and PR0 rule) — no `ProfessionalNavBar` or bottom tabs reintroduced.
+  - **Device QA gotcha**: After code changes, simple app relaunch showed stale binary (edits invisible). Resolved by `flutter build ios --debug --dart-define-from-file=dart_defines.json` + `flutter install` to `iPhoneTanto` (followed [[iOS_Device_Development_Workflow]]).
+  - **Tests**: **100 passed + 4 intentional skips** (decommissioned courier/Secure Comm suites). Forensic viewfinder tests migrated `PROOFS` assertions to the new chip (including tap-to-paywall); layout tests updated for new button labels. `flutter analyze` clean.
+  - **Wiki**: New [[Camera_HUD_Quota_Pricing_Polish_2026-06]]; index "Start here" and Analyses (active) updated; baseline + overview + glossary + subscription tiers concept reconciled; `python3 scripts/wiki_ingest.py --validate`.
+  - New file: `factlockcam_app/lib/features/archive_quota/presentation/widgets/proof_quota_hud_chip.dart`.
+- **Wiki maintenance & git push**: All session changes (camera framing, HUD chip, subscription UI, gateway restore, disclaimers, tests, account panel) + wiki updates committed and pushed per user request after QA sign-off.
+
 ## 2026-06-08
 
 - **Twenty-ninth pass QA — Unified Archive Studio stable** — **user QA passed**:

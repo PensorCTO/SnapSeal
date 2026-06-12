@@ -20,6 +20,7 @@ import '../../../features/archive_quota/presentation/interceptors/archive_quota_
 import '../../../features/archive_quota/presentation/interceptors/metering_credit_interceptor.dart';
 import '../../../features/archive_quota/presentation/providers/local_archive_quota_gate_provider.dart';
 import '../../../features/archive_quota/presentation/interceptors/archive_quota_block_reason.dart';
+import '../../../features/archive_quota/presentation/widgets/proof_quota_hud_chip.dart';
 import 'acquisition_mode.dart';
 import 'camera_chrome_frame.dart';
 import 'camera_geolocation_stream.dart';
@@ -445,6 +446,11 @@ class _CameraViewState extends ConsumerState<CameraView> {
               ),
             ),
           ),
+          const Positioned(
+            top: 12,
+            right: 12,
+            child: ProofQuotaHudChip(),
+          ),
           if (_errorMessage != null)
             Positioned(
               left: 16,
@@ -459,6 +465,18 @@ class _CameraViewState extends ConsumerState<CameraView> {
               ),
             ),
         ],
+      ),
+    );
+
+    // Frame the camera/video window at normal photographic dimensions (centered
+    // 3:4 portrait) instead of a full-bleed strip that looks elongated.
+    final framedPreview = Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: AspectRatio(
+          aspectRatio: 3 / 4,
+          child: previewStack,
+        ),
       ),
     );
 
@@ -481,7 +499,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            previewStack,
+            framedPreview,
             Positioned(
               left: 0,
               right: 0,
@@ -502,7 +520,7 @@ class _CameraViewState extends ConsumerState<CameraView> {
         ),
         title: Text(isVideo ? 'Capture video' : 'Capture'),
       ),
-      body: previewStack,
+      body: framedPreview,
       floatingActionButton: shutter,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
@@ -531,7 +549,27 @@ class _CameraViewState extends ConsumerState<CameraView> {
         ),
       );
     }
-    return CameraPreview(_controller!);
+    final controller = _controller!;
+    final previewSize = controller.value.previewSize;
+    if (previewSize == null) {
+      return RepaintBoundary(child: CameraPreview(controller));
+    }
+    // Cover-crop the sensor feed into the framed window so the preview is never
+    // stretched/elongated. previewSize is in sensor (landscape) coordinates, so
+    // swap width/height for the upright portrait child.
+    return RepaintBoundary(
+      child: ClipRect(
+        child: FittedBox(
+          fit: BoxFit.cover,
+          clipBehavior: Clip.hardEdge,
+          child: SizedBox(
+            width: previewSize.height,
+            height: previewSize.width,
+            child: CameraPreview(controller),
+          ),
+        ),
+      ),
+    );
   }
 }
 

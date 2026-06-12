@@ -17,4 +17,10 @@ class MockSubscriptionBillingGateway implements SubscriptionBillingGateway {
     await _repository.setTier(targetTierId);
     return true;
   }
+
+  @override
+  Future<bool> restorePurchases() async {
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+    return _repository.isConfigured;
+  }
 }
