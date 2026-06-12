@@ -1,3 +1,6 @@
+@Skip('Web courier unlock decommissioned — CourierUnlockView removed from router')
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,9 +13,7 @@ import 'package:factlockcam/ui/web/widgets/hash_cascade_ticker.dart';
 
 import 'test_dependencies.dart';
 
-@Skip('Web courier unlock decommissioned — CourierUnlockView removed from router')
 void main() {
-  return;
   setUpAll(() async {
     await setupTestDependencies();
   });

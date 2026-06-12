@@ -1,3 +1,6 @@
+@Skip('Courier dispatch decommissioned — CourierDispatchView unmounted from hub')
+library;
+
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
@@ -13,9 +16,7 @@ import 'package:factlockcam/ui/mobile/courier_dispatch_view.dart';
 
 import 'test_dependencies.dart';
 
-@Skip('Courier dispatch decommissioned — CourierDispatchView unmounted from hub')
 void main() {
-  return;
   setUpAll(() async {
     await setupTestDependencies();
   });

@@ -12,7 +12,6 @@ import '../../../app/theme/app_typography.dart';
 import '../../../core/di/service_providers.dart';
 import '../../../core/ui/widgets/archive_panel_navigation_bar.dart';
 import '../../../data/models/archive_item.dart';
-import '../../../domain/export/certificate_export_service.dart';
 import 'providers/asset_metadata_provider.dart';
 
 /// Interactive certificate editor with live PDF preview and local metadata save.

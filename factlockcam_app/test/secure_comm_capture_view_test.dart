@@ -1,3 +1,6 @@
+@Skip('Secure Comm unmounted from hub — widget tests retained for orphaned module')
+library;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,9 +13,7 @@ import 'package:factlockcam/features/dispatch/presentation/secure_comm_capture_s
 
 import 'test_dependencies.dart';
 
-@Skip('Secure Comm unmounted from hub — widget tests retained for orphaned module')
 void main() {
-  return;
   setUpAll(() async {
     await setupTestDependencies();
   });

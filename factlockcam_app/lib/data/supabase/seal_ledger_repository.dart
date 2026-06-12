@@ -238,8 +238,8 @@ class SealLedgerRepository {
           'p_content_mime_type': contentMimeType,
         if (contentCategory != null && contentCategory.isNotEmpty)
           'p_content_category': contentCategory,
-        if (maxDownloads != null) 'p_max_downloads': maxDownloads,
-        if (linkTtlDays != null) 'p_link_ttl_days': linkTtlDays,
+        'p_max_downloads': ?maxDownloads,
+        'p_link_ttl_days': ?linkTtlDays,
       },
     );
     if (response is! String || response.isEmpty) {
